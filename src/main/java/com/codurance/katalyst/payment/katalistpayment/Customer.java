@@ -11,7 +11,7 @@ public class Customer {
 
     private String company;
 
-    private String dninif;
+    private String dnicif;
 
     private String paymentMethod;
 
@@ -55,12 +55,12 @@ public class Customer {
         this.company = company;
     }
 
-    public String getDninif() {
-        return dninif;
+    public String getDnicif() {
+        return dnicif;
     }
 
-    public void setDninif(String dninif) {
-        this.dninif = dninif;
+    public void setDnicif(String dnicif) {
+        this.dnicif = dnicif;
     }
 
     public String getPaymentMethod() {

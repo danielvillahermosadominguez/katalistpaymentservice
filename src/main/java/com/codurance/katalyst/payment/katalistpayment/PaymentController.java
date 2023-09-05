@@ -10,10 +10,9 @@ public class PaymentController {
     public String heatlhCheck() {
         return String.format("OK! Working");
     }
-   // @RequestMapping(value = "/freesuscription", method = RequestMethod.POST)
-    @PostMapping("/freesuscription")
+    @RequestMapping(value = "/freesuscription", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity freeSuscription(@RequestBody String customer) {
+    public ResponseEntity freeSuscription(@RequestBody Customer customer) {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }
