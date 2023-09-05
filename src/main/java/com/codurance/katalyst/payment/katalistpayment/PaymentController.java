@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class PaymentController {
     @GetMapping("/healthcheck")
     public String heatlhCheck() {
-        return String.format("OK!");
+        return String.format("OK! Working");
     }
 }
