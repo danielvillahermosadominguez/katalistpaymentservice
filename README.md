@@ -22,6 +22,8 @@ It should return "OK!"
   - The user try to subscribe to a course where he is subscribed yet
   - The mail is wrong. We don't have registered users, everyone can request
   - There is a problem in on of the integrations. Should we retry?, send an email to manually correct it?.
+  - How are we going to control the time of the subscription and deny the access when the subscription has finalized
+  - How are we going to allow the cancellation of the course by the user.
   
 # Task related with the POC
 
@@ -38,6 +40,7 @@ It should return "OK!"
 - [ ] Environments variables in HTML5. How not to harcode the url
 - [ ] Enviroment variables in Service
 - [ ] Refactor of the service and some test coverage after the poc
+- [ ] Validation the correct input in the service. surely with tests
 - [ ] Send a mail with an account. The idea it could be neccesary, at least to the edge cases
 - [ ] Basic integration of in azure with Moodle. Tests
 - [ ] Basic integration in azure with Holded. Test
