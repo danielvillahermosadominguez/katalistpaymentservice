@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.katalistpayment;
+package com.codurance.katalyst.payment.katalistpayment.configuration;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;

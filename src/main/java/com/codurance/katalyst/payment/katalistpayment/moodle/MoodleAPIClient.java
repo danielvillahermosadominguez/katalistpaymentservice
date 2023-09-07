@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.katalistpayment;
+package com.codurance.katalyst.payment.katalistpayment.moodle;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -20,10 +20,11 @@ import java.util.stream.Collectors;
 @Component
 public class MoodleAPIClient {
     // We need to create
-    private static String URL_BASE = "https://codurance.moodlecloud.com/webservice/rest/server.php?";
-    private String token = "3ef9b832fd76a6cac0c67c053d0a38d5";
-    //private static String URL_BASE = "https://exampleforcodurance.moodlecloud.com/webservice/rest/server.php?";
-    //private String token = "672349878c7a8d767a16bd5523be32b6";
+    //private static String URL_BASE = "https://codurance.moodlecloud.com/webservice/rest/server.php?";
+    //private String token = "3ef9b832fd76a6cac0c67c053d0a38d5";
+
+    private static String URL_BASE = "https://exampleforcodurance.moodlecloud.com/webservice/rest/server.php?";
+    private String token = "672349878c7a8d767a16bd5523be32b6";
     private String format = "json";
 
     @Autowired
@@ -48,7 +49,7 @@ public class MoodleAPIClient {
         return !filtered.isEmpty();
     }
 
-    public MoodleUserDTO getUser(String email) throws UnsupportedEncodingException {
+    public MoodleUserDTO getUserByMail(String email) throws UnsupportedEncodingException {
         MoodleUserDTO result = null;
         String url = URL_BASE + "wstoken=" + token + "&wsfunction=core_user_get_users_by_field" + "&moodlewsrestformat=" + format;
         HttpHeaders headers = new HttpHeaders();
@@ -59,7 +60,7 @@ public class MoodleAPIClient {
         String urlParameters ="values[0]=" + URLEncoder.encode("1", "UTF-8");
 
         map.add("field", "email");
-        map.add("values[0]", email);
+        map.add("values[0]",  email);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
         ResponseEntity<MoodleUserDTO[]> response = null;
         try {
@@ -104,7 +105,7 @@ public class MoodleAPIClient {
         return result.get(0);
     }
 
-    public void subscribeUserToTheCourse(String courseId, MoodleUserDTO user) {
+    public void subscribeUserToTheCourse(MoodleCourseDTO course, MoodleUserDTO user) {
         String url = URL_BASE + "wstoken=" + token + "&wsfunction=enrol_manual_enrol_users" + "&moodlewsrestformat=" + format;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -115,7 +116,7 @@ public class MoodleAPIClient {
         String userId = user.getId();
         map.add("enrolments[0][roleid]", roleId);
         map.add("enrolments[0][userid]", userId);
-        map.add("enrolments[0][courseid]=", courseId);
+        map.add("enrolments[0][courseid]=", course.getId()+"");
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
         ResponseEntity<String> response = null;
         try {
@@ -123,5 +124,30 @@ public class MoodleAPIClient {
         } catch (Exception ex) {
             String errorMessage = ex.getMessage();
         }
+    }
+
+    public MoodleCourseDTO getCourse(String courseId) {
+        String url = URL_BASE+ "wstoken=" + token + "&wsfunction=core_course_get_courses"+"&moodlewsrestformat="+format;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE));
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+        map.add("options[ids][0]", courseId);
+        //map.add("value", courseId);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        MoodleCourseDTO result = null;
+        ResponseEntity<MoodleCourseDTO[]> response = null;
+        try {
+            response = restTemplate.postForEntity(url, request, MoodleCourseDTO[].class);
+            List<MoodleCourseDTO> courses = Arrays.stream(response.getBody()).toList();
+            //response = restTemplate.postForEntity(url, request, String.class);
+            if(!courses.isEmpty()) {
+                result = courses.get(0);
+            }
+        } catch (Exception ex) {
+            String errorMessage = ex.getMessage();
+            //Habria que controlar
+        }
+
+        return result;
     }
 }

@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.katalistpayment;
+package com.codurance.katalyst.payment.katalistpayment.moodle;
 
 public class MoodleUserDTO {
     private String id;

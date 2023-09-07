@@ -1,5 +1,8 @@
 package com.codurance.katalyst.payment.katalistpayment;
 
+import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleAPIClient;
+import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleCourseDTO;
+import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +24,20 @@ public class PaymentController {
     @RequestMapping(value = "/freesubscription", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity freeSubscription(@RequestBody Customer customer) throws UnsupportedEncodingException {
-        if (moodleAPIClient.existsAnUserinThisCourse(customer.getCourseId(), customer.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "The user has a subscription for this course");
+        MoodleCourseDTO course = moodleAPIClient.getCourse(customer.getCourseId());
+        if(course == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The course with the id " + customer.getCourseId() + " doesn't exists" );
         }
 
-        MoodleUserDTO user = moodleAPIClient.getUser(customer.getEmail());
+        if (moodleAPIClient.existsAnUserinThisCourse(customer.getCourseId(), customer.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "The user has a subscription for this course");
+        }
+
+        MoodleUserDTO user = moodleAPIClient.getUserByMail(customer.getEmail());
         if(user == null) {
             user = moodleAPIClient.createAnUser(customer.getName(), customer.getSurname(), customer.getEmail());
         }
-        moodleAPIClient.subscribeUserToTheCourse(customer.getCourseId(), user);
+        moodleAPIClient.subscribeUserToTheCourse(course, user);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }
