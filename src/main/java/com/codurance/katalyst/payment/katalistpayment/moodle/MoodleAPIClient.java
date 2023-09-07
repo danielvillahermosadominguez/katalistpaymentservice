@@ -85,7 +85,7 @@ public class MoodleAPIClient {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
 
         //map.add("users[0][createpassword]", "0");
-        map.add("users[0][username]", "usuarionuevo");
+        map.add("users[0][username]", generateUserNameBasedOn(email));
         map.add("users[0][password]", "@Codurance2023$");
         //map.add("users[0][email]",  URLEncoder.encode(email, "UTF-8"));
         map.add("users[0][email]",  email);
@@ -103,6 +103,17 @@ public class MoodleAPIClient {
         List<MoodleUserDTO> result = Arrays.stream(response.getBody()).toList();
         //We need to encapusalte in our own exception
         return result.get(0);
+    }
+
+    private String generateUserNameBasedOn(String mail) {
+        String finalOutput = "";
+        String arrayOfStr[] = mail.split("@");
+        if (arrayOfStr.length == 2) {
+            finalOutput = arrayOfStr[0];
+        }
+        finalOutput = finalOutput.replaceAll("[!#$%&'*+-/=?]","");
+
+        return finalOutput;
     }
 
     public void subscribeUserToTheCourse(MoodleCourseDTO course, MoodleUserDTO user) {

@@ -1,6 +1,6 @@
-package com.codurance.katalyst.payment.katalistpayment;
+package com.codurance.katalyst.payment.katalistpayment.inputform;
 
-public class Customer {
+public class PotentialCustomerData {
     private String courseId;
 
     private String email;

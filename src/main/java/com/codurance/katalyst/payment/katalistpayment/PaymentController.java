@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.katalistpayment;
 
+import com.codurance.katalyst.payment.katalistpayment.inputform.PotentialCustomerData;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleAPIClient;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleCourseDTO;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleUserDTO;
@@ -23,7 +24,7 @@ public class PaymentController {
     }
     @RequestMapping(value = "/freesubscription", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity freeSubscription(@RequestBody Customer customer) throws UnsupportedEncodingException {
+    public ResponseEntity freeSubscription(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
         MoodleCourseDTO course = moodleAPIClient.getCourse(customer.getCourseId());
         if(course == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The course with the id " + customer.getCourseId() + " doesn't exists" );
