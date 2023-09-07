@@ -25,10 +25,11 @@ public class PaymentController {
             throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "The user has a subscription for this course");
         }
 
-        if(!moodleAPIClient.existAnUser(customer.getEmail())) {
-            moodleAPIClient.createAnUser(customer.getName(), customer.getSurname(), customer.getEmail());
+        MoodleUserDTO user = moodleAPIClient.getUser(customer.getEmail());
+        if(user == null) {
+            user = moodleAPIClient.createAnUser(customer.getName(), customer.getSurname(), customer.getEmail());
         }
-        moodleAPIClient.subscribeUserToTheCourse(customer.getCourseId(), customer.getEmail());
+        moodleAPIClient.subscribeUserToTheCourse(customer.getCourseId(), user);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }

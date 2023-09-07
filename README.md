@@ -20,10 +20,20 @@ It should return "OK!"
       this Id. 
 - [ ] What kind of edge paths we have in the uses cases?:
   - The user try to subscribe to a course where he is subscribed yet
+    - Decision: We can return an error and show a message in the form.
   - The mail is wrong. We don't have registered users, everyone can request
+    - Proposition: Sending an email with the payment, we are sure the mail exists.
   - There is a problem in on of the integrations. Should we retry?, send an email to manually correct it?.
+    - Proposition: first version send an email to the support with the problem and do the process manually 
   - How are we going to control the time of the subscription and deny the access when the subscription has finalized
+    - Proposition: first version manually. With a mail of support. Next versions, automatize this process 
   - How are we going to allow the cancellation of the course by the user.
+    - Proposition: first version manually. With a mail of support. Next versions, automatize this process
+  - How to calculate the user (extract from the mail for example) and what happen if the user exists (use numbers at the end for example)
+    - Decision: use like username the email until the "@", in lowercase, and remove special characters " ! # $ % & ' * + - / = ? ^ _ ` { |" and " ( ) , : ; < > @ [ \ ]"
+    - In case we have a user with the same name we will include numbers at the end
+    - https://knowledge.validity.com/hc/en-us/articles/220560587-What-are-the-rules-for-email-address-syntax-#:~:text=The%20most%20commonly%20used%20special,(%2D)%20and%20plus%20sign%20(%2B).&text=These%20alternative%20special%20characters%20may,a%20sending%20or%20receiving%20server.
+
   
 # Task related with the POC
 

@@ -12,7 +12,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -20,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class MoodleAPIClient {
+    // We need to create
     private static String URL_BASE = "https://codurance.moodlecloud.com/webservice/rest/server.php?";
     private String token = "3ef9b832fd76a6cac0c67c053d0a38d5";
     //private static String URL_BASE = "https://exampleforcodurance.moodlecloud.com/webservice/rest/server.php?";
@@ -48,7 +48,8 @@ public class MoodleAPIClient {
         return !filtered.isEmpty();
     }
 
-    public boolean existAnUser(String email) throws UnsupportedEncodingException {
+    public MoodleUserDTO getUser(String email) throws UnsupportedEncodingException {
+        MoodleUserDTO result = null;
         String url = URL_BASE + "wstoken=" + token + "&wsfunction=core_user_get_users_by_field" + "&moodlewsrestformat=" + format;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -63,20 +64,47 @@ public class MoodleAPIClient {
         ResponseEntity<MoodleUserDTO[]> response = null;
         try {
             response = restTemplate.postForEntity(url, request, MoodleUserDTO[].class);
-            List<MoodleUserDTO> result = Arrays.stream(response.getBody()).toList();
-            return !result.isEmpty();
+            List<MoodleUserDTO> resultList = Arrays.stream(response.getBody()).toList();
+            if(!resultList.isEmpty()) {
+                result = resultList.get(0); //What happen if we receive more than one, what is this case?. It shouldn't happen, the email is unique?
+            }
         } catch (Exception ex) {
             String errorMessage = ex.getMessage();
         }
 
-        return false;
+        return result;
     }
 
-    public void createAnUser(String name, String surname, String email) {
+    public MoodleUserDTO createAnUser(String name, String surname, String email) throws UnsupportedEncodingException {
+        String url = URL_BASE + "wstoken=" + token + "&wsfunction=core_user_create_users" + "&moodlewsrestformat=" + format;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setContentLanguage(Locale.US);
 
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+
+        //map.add("users[0][createpassword]", "0");
+        map.add("users[0][username]", "usuarionuevo");
+        map.add("users[0][password]", "@Codurance2023$");
+        //map.add("users[0][email]",  URLEncoder.encode(email, "UTF-8"));
+        map.add("users[0][email]",  email);
+        map.add("users[0][firstname]",name);
+        map.add("users[0][lastname]", surname);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        ResponseEntity<MoodleUserDTO[]> response = null;
+
+        try {
+            response = restTemplate.postForEntity(url, request, MoodleUserDTO[].class);
+        } catch (Exception ex) {
+            String errorMessage = ex.getMessage();
+        }
+        List<MoodleUserDTO> result = Arrays.stream(response.getBody()).toList();
+        //We need to encapusalte in our own exception
+        return result.get(0);
     }
 
-    public void subscribeUserToTheCourse(String courseId, String email) {
+    public void subscribeUserToTheCourse(String courseId, MoodleUserDTO user) {
         String url = URL_BASE + "wstoken=" + token + "&wsfunction=enrol_manual_enrol_users" + "&moodlewsrestformat=" + format;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -84,8 +112,7 @@ public class MoodleAPIClient {
 
         //Concept test
         String roleId = "5";
-        //String userId = "144";
-        String userId = "4";
+        String userId = user.getId();
         map.add("enrolments[0][roleid]", roleId);
         map.add("enrolments[0][userid]", userId);
         map.add("enrolments[0][courseid]=", courseId);
