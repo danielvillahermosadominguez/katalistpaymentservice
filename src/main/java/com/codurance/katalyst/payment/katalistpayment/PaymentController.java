@@ -1,5 +1,8 @@
 package com.codurance.katalyst.payment.katalistpayment;
 
+import com.codurance.katalyst.payment.katalistpayment.holded.HoldedAPIClient;
+import com.codurance.katalyst.payment.katalistpayment.holded.HoldedContactDTO;
+import com.codurance.katalyst.payment.katalistpayment.holded.HoldedInvoiceDTO;
 import com.codurance.katalyst.payment.katalistpayment.inputform.PotentialCustomerData;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleAPIClient;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleCourseDTO;
@@ -17,6 +20,9 @@ public class PaymentController {
 
     @Autowired
     private MoodleAPIClient moodleAPIClient;
+
+    @Autowired
+    private HoldedAPIClient holdedAPIClient;
 
     @GetMapping("/healthcheck")
     public String heatlhCheck() {
@@ -39,6 +45,29 @@ public class PaymentController {
             user = moodleAPIClient.createAnUser(customer.getName(), customer.getSurname(), customer.getEmail());
         }
         moodleAPIClient.subscribeUserToTheCourse(course, user);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/invoicing", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity onlyHoldedTest(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
+           HoldedContactDTO contact = holdedAPIClient.getContact(customer.getEmail());
+           if(contact == null) {
+               contact =holdedAPIClient.createContact(customer.getName(),
+                       customer.getSurname(),
+                       customer.getEmail(),
+                       customer.getCompany(),
+                       customer.getDnicif());
+           }
+           String concept = "KATALIST CURSO";
+           String description = "KATALIST CURSO DESCRIPTION";
+           int amount = 1;
+           double price = 60.0;
+           HoldedInvoiceDTO invoce = holdedAPIClient.createInvoice(contact,
+                   concept,
+                   description,
+                   amount,
+                   price );
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }
