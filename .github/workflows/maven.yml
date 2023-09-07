@@ -52,6 +52,7 @@ jobs:
       contents: read
     steps:      
       - name: 'Login via Azure CLI'
+        continue-on-error: true
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZ_CREDENTIALS }}              
@@ -60,5 +61,6 @@ jobs:
           app-name: ${{ secrets.AZURE_APP_SERVICE_NAME }} 
           images: ${{ secrets.ACR_ENDPOINT }}
       - name: Azure logout
+        continue-on-error: true
         run:
           az logout
