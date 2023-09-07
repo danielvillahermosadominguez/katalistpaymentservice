@@ -13,7 +13,12 @@ curl http://localhost:8080/healthcheck
 ```
 
 It should return "OK!"
+# Swagger (OpenAPI)
 
+You can access to the OpenAPI in local:
+```
+http://localhost:8080/swagger-ui/index.html#/
+```
 # Doubts
 - [ ] How is going to be the full use case for the user. The courses have an ID, and now it is necessary
       for the subscription. We could have the courses in the form or maybe we could call from the website with
