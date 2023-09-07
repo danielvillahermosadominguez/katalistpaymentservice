@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.UnsupportedEncodingException;
+
 @RestController
 public class PaymentController {
 
@@ -18,10 +20,15 @@ public class PaymentController {
     }
     @RequestMapping(value = "/freesubscription", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity freeSubscription(@RequestBody Customer customer) {
+    public ResponseEntity freeSubscription(@RequestBody Customer customer) throws UnsupportedEncodingException {
         if (moodleAPIClient.existsAnUserinThisCourse(customer.getCourseId(), customer.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "The user has a suscription for this course");
+            throw new ResponseStatusException(HttpStatus.NOT_ACCEPTABLE, "The user has a subscription for this course");
         }
+
+        if(!moodleAPIClient.existAnUser(customer.getEmail())) {
+            moodleAPIClient.createAnUser(customer.getName(), customer.getSurname(), customer.getEmail());
+        }
+        moodleAPIClient.subscribeUserToTheCourse(customer.getCourseId(), customer.getEmail());
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }

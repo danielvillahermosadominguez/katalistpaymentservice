@@ -56,4 +56,5 @@ It should return "OK!"
 - [ ] Review the infrastructure and dockerization. 
 - [ ] Review if the playground is the best place for it.
 - [ ] Transfer repositories to codurance organization in Github
-- [ ] Problem with the automatic deployment of the service. User in azure to deploy. 
+- [ ] Problem with the automatic deployment of the service. User in azure to deploy.
+- [ ] Migration to AWS
