@@ -24,7 +24,7 @@ public class PotentialCustomerData {
     }
 
     public String getEmail() {
-        return email;
+        return email.toLowerCase();
     }
 
     public void setEmail(String email) {
@@ -56,7 +56,7 @@ public class PotentialCustomerData {
     }
 
     public String getDnicif() {
-        return dnicif;
+        return dnicif.toUpperCase();
     }
 
     public void setDnicif(String dnicif) {

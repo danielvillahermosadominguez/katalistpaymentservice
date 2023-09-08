@@ -51,7 +51,7 @@ public class PaymentController {
     @RequestMapping(value = "/invoicing", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity onlyHoldedTest(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
-           HoldedContactDTO contact = holdedAPIClient.getContact(customer.getEmail());
+           HoldedContactDTO contact = holdedAPIClient.getContactByCustomId(customer.getDnicif());
            if(contact == null) {
               contact =holdedAPIClient.createContact(customer.getName(),
                        customer.getSurname(),

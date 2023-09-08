@@ -20,7 +20,7 @@ public class HoldedAPIClient {
     @Autowired
     private RestTemplate restTemplate;
 
-    public HoldedContactDTO getContact(String email) throws UnsupportedEncodingException {
+    public HoldedContactDTO getContactByMailOrCustomId(String email, String customId) throws UnsupportedEncodingException {
         HoldedContactDTO result = null;
         String url = URL_BASE + "invoicing/v1/contacts?email={email}";
 
@@ -30,6 +30,34 @@ public class HoldedAPIClient {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         Map<String, String> vars = new HashMap<>();
         vars.put("email", email);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
+        ResponseEntity<HoldedContactDTO[]> response = null;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.GET, request, HoldedContactDTO[].class, vars);
+            List<HoldedContactDTO> contacts = Arrays.stream(response.getBody()).toList();
+            if (!contacts.isEmpty()) {
+                result = contacts.get(0);
+            } else {
+                result = getContactByCustomId(customId);
+            }
+        } catch (Exception ex) {
+            String errorMessage = ex.getMessage();
+        }
+
+        return result;
+    }
+
+    public HoldedContactDTO getContactByCustomId(String customId) {
+        HoldedContactDTO result = null;
+        String url = URL_BASE + "invoicing/v1/contacts?customId={customId}";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE));
+        headers.add("key", apyKey);
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        Map<String, String> vars = new HashMap<>();
+        vars.put("customId", customId);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
         ResponseEntity<HoldedContactDTO[]> response = null;
@@ -58,6 +86,7 @@ public class HoldedAPIClient {
         map.add("email", email);
         map.add("type", "client");
         map.add("code", dnicif);
+        map.add("CustomId", dnicif);
         map.add("isperson", "true");
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
@@ -65,7 +94,7 @@ public class HoldedAPIClient {
         try {
             response = restTemplate.postForEntity(url, request, HoldedResponse.class);
             if (response.getBody().getStatus() == 1) {
-                result = getContact(email);
+                result = getContactByCustomId(dnicif);
             }
         } catch (Exception ex) {
             String errorMessage = ex.getMessage();
