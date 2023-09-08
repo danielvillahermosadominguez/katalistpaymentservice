@@ -23,6 +23,10 @@ http://localhost:8080/swagger-ui/index.html#/
 - [ ] How is going to be the full use case for the user. The courses have an ID, and now it is necessary
       for the subscription. We could have the courses in the form or maybe we could call from the website with
       this Id. 
+- [ ] Problems of security because we don't have user autentication. Some ideas:
+  - inject a token to the form
+  - Using a cookie with the URL to call
+  - block access to the endpoint in the infrastructure.
 - [ ] What kind of edge paths we have in the uses cases?:
   - The user try to subscribe to a course where he is subscribed yet
     - Decision: We can return an error and show a message in the form.
