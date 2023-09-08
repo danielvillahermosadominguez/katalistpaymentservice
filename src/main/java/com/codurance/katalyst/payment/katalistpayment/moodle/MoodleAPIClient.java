@@ -82,12 +82,13 @@ public class MoodleAPIClient {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
 
         map.add("users[0][username]", generateUserNameBasedOn(email));
-        map.add("users[0][password]", "@Codurance2023$");
+        map.add("users[0][createpassword]", "1");
+        //map.add("users[0][password]", "@Codurance2023$");
         map.add("users[0][email]",  email);
         map.add("users[0][firstname]",name);
         map.add("users[0][lastname]", surname);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<MultiValueMap<String,String>> request = new HttpEntity<>(map, headers);
         ResponseEntity<MoodleUserDTO[]> response = null;
 
         try {
