@@ -68,7 +68,7 @@ public class PaymentController {
                    description,
                    amount,
                    price );
-           holdedAPIClient.sendInvoice(invoice);
+           holdedAPIClient.sendInvoice(invoice, contact.getEmail());
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }

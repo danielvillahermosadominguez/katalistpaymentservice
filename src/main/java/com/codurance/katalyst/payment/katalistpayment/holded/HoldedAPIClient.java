@@ -2,7 +2,6 @@ package com.codurance.katalyst.payment.katalistpayment.holded;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -124,7 +123,21 @@ public class HoldedAPIClient {
     }
 
 
-    public void sendInvoice(HoldedInvoiceDTO invoice) {
+    public void sendInvoice(HoldedInvoiceDTO invoice, String emails) {
+        String url = URL_BASE + "invoicing/v1/documents/invoice/"+invoice.getId()+"/send";
 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.add("key", apyKey);
+        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+        map.add("emails", emails);
+
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
+        ResponseEntity<String> response = null;
+        try {
+            response = restTemplate.postForEntity(url, request, String.class);
+        } catch (Exception ex) {
+            String errorMessage = ex.getMessage();
+        }
     }
 }
