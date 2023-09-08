@@ -9,11 +9,14 @@ import java.time.Duration;
 
 @Configuration
 public class RestTemplateConfiguration {
+
+    public static final int TIMEOUT_LIMIT = 3000;
+
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
-                .setConnectTimeout(Duration.ofMillis(3000))
-                .setReadTimeout(Duration.ofMillis(3000))
+                .setConnectTimeout(Duration.ofMillis(TIMEOUT_LIMIT))
+                .setReadTimeout(Duration.ofMillis(TIMEOUT_LIMIT))
                 .build();
     }
 }

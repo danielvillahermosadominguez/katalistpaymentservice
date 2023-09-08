@@ -42,6 +42,10 @@ http://localhost:8080/swagger-ui/index.html#/
     - Decision: use like username the email until the "@", in lowercase, and remove special characters " ! # $ % & ' * + - / = ? ^ _ ` { |" and " ( ) , : ; < > @ [ \ ]"
     - In case we have a user with the same name we will include numbers at the end
     - https://knowledge.validity.com/hc/en-us/articles/220560587-What-are-the-rules-for-email-address-syntax-#:~:text=The%20most%20commonly%20used%20special,(%2D)%20and%20plus%20sign%20(%2B).&text=These%20alternative%20special%20characters%20may,a%20sending%20or%20receiving%20server.
+  - Prize of courses. Where is the source of information. Options
+    - Database and manually fill this information?
+    - Moodle. I haven't found any way to find it
+    - The same prize for every course. Hardcode, constant
 
   
 # Task related with the POC
@@ -50,18 +54,18 @@ http://localhost:8080/swagger-ui/index.html#/
 - [x] Basic service in Java without security in the playground. Github repository + deployement
 - [x] Basic Integration between website form and service
 - [x] Access to Moodle and configuration for interaction with the API
-- [ ] Moodle interaction - basic uses cases
+- [x] Moodle interaction - basic uses cases
 - [ ] TPV and Sandbox (Paycomet) access
 - [ ] TPV interaction - basic uses cases
-- [ ] Access to holded
-- [ ] holded interaction - basic uses cases
+- [x] Access to holded
+- [x] holded interaction - basic uses cases
 - [ ] Workaround. Create a new account with other email in holded to test the api
 - [ ] Environments variables in HTML5. How not to harcode the url
 - [ ] Enviroment variables in Service
 - [ ] Refactor of the service and some test coverage after the poc
 - [ ] Validation the correct input in the service. surely with tests
 - [ ] Send a mail with an account. The idea it could be neccesary, at least to the edge cases
-- [ ] Basic integration of in azure with Moodle. Tests
+- [x] Basic integration of in azure with Moodle. Tests
 - [ ] Basic integration in azure with Holded. Test
 - [ ] Basic integration in azure with TPV. Test
 - [ ] Service security in the backend
@@ -77,3 +81,5 @@ http://localhost:8080/swagger-ui/index.html#/
 - [ ] Transfer repositories to codurance organization in Github
 - [ ] Problem with the automatic deployment of the service. User in azure to deploy.
 - [ ] Migration to AWS
+- [ ] Form with token and remove the courseID (this could be a parameter)
+- [ ] Restrict connection with the service, only for the static form (cookies?)

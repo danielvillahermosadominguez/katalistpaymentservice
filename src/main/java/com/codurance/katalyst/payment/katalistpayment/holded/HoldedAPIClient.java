@@ -60,21 +60,13 @@ public class HoldedAPIClient {
         map.add("code", dnicif);
         map.add("isperson", "true");
 
-
-        Map<String, String> vars = new HashMap<>();
-
-
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
         ResponseEntity<HoldedResponse> response = null;
         try {
             response = restTemplate.postForEntity(url, request, HoldedResponse.class);
-            result = new HoldedContactDTO();
-            result.setId(response.getBody().getId());
-            //List<HoldedContactDTO> contacts = Arrays.stream(response.getBody()).toList();
-            //response = restTemplate.postForEntity(url, request, String.class);
-            //if (!contacts.isEmpty()) {
-            //    result = contacts.get(0);
-            //}
+            if (response.getBody().getStatus() == 1) {
+                result = getContact(email);
+            }
         } catch (Exception ex) {
             String errorMessage = ex.getMessage();
         }
@@ -95,19 +87,12 @@ public class HoldedAPIClient {
         map.add("desc",description);
         OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
         Date date = Date.from(utc.toInstant());
-        map.add("date", date.toInstant().toEpochMilli() +"");
         map.add("date", date.toInstant().getEpochSecond()+"");
-        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO();
-        item.setName( "Suscription to Katalist");
-        //item.setDesc("");
-        item.setUnits(1);
-        item.setSubtotal(60);
-        //item.setSku("prueba SKU");
+        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO("Suscription to Katalist", 1, 60.99);
         List<HoldedInvoiceItemDTO> items = Arrays.asList(item);
         Gson gson = new Gson();
         String jsonArray = gson.toJson(items);
         map.add("items",jsonArray);
-        //map.add("items","[{\"name\":\"Suscripción curso KATALIST\", \"units\":1}]");
 
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
         ResponseEntity<HoldedInvoiceDTO> response = null;
