@@ -11,7 +11,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +38,6 @@ public class MoodleAPIClient {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
         ResponseEntity<MoodleUserDTO[]> response = restTemplate.postForEntity(url, request, MoodleUserDTO[].class);
 
-
         return Arrays.stream(response.getBody()).toList();
     }
 
@@ -57,7 +55,6 @@ public class MoodleAPIClient {
         headers.setContentLanguage(Locale.US);
 
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        String urlParameters ="values[0]=" + URLEncoder.encode("1", "UTF-8");
 
         map.add("field", "email");
         map.add("values[0]",  email);
@@ -67,7 +64,7 @@ public class MoodleAPIClient {
             response = restTemplate.postForEntity(url, request, MoodleUserDTO[].class);
             List<MoodleUserDTO> resultList = Arrays.stream(response.getBody()).toList();
             if(!resultList.isEmpty()) {
-                result = resultList.get(0); //What happen if we receive more than one, what is this case?. It shouldn't happen, the email is unique?
+                result = resultList.get(0);
             }
         } catch (Exception ex) {
             String errorMessage = ex.getMessage();
@@ -84,10 +81,8 @@ public class MoodleAPIClient {
 
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
 
-        //map.add("users[0][createpassword]", "0");
         map.add("users[0][username]", generateUserNameBasedOn(email));
         map.add("users[0][password]", "@Codurance2023$");
-        //map.add("users[0][email]",  URLEncoder.encode(email, "UTF-8"));
         map.add("users[0][email]",  email);
         map.add("users[0][firstname]",name);
         map.add("users[0][lastname]", surname);
@@ -143,14 +138,12 @@ public class MoodleAPIClient {
         headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE));
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add("options[ids][0]", courseId);
-        //map.add("value", courseId);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
         MoodleCourseDTO result = null;
         ResponseEntity<MoodleCourseDTO[]> response = null;
         try {
             response = restTemplate.postForEntity(url, request, MoodleCourseDTO[].class);
             List<MoodleCourseDTO> courses = Arrays.stream(response.getBody()).toList();
-            //response = restTemplate.postForEntity(url, request, String.class);
             if(!courses.isEmpty()) {
                 result = courses.get(0);
             }
