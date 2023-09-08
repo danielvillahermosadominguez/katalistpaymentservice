@@ -63,11 +63,12 @@ public class PaymentController {
            String description = "KATALIST CURSO DESCRIPTION";
            int amount = 1;
            double price = 60.0;
-           HoldedInvoiceDTO invoce = holdedAPIClient.createInvoice(contact,
+           HoldedInvoiceDTO invoice = holdedAPIClient.createInvoice(contact,
                    concept,
                    description,
                    amount,
                    price );
+           holdedAPIClient.sendInvoice(invoice);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }
