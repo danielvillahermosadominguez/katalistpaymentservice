@@ -83,3 +83,13 @@ http://localhost:8080/swagger-ui/index.html#/
 - [ ] Migration to AWS
 - [ ] Form with token and remove the courseID (this could be a parameter)
 - [ ] Restrict connection with the service, only for the static form (cookies?)
+
+# Detected BUGS
+- [ ] When an email contains "+" character. For example daniel.villahermosa+user@codurance.com. We receive an error with the following data:
+  - Course ID : 9
+  - Email: daniel.villahermosa+user@codurance.com
+  - Name: Daniel
+  - Surname: Garcia
+  - Company Name: Su empresa
+  - DNI/CIF: 339939393F
+  - Only invoice with Holded
