@@ -19,6 +19,33 @@ You can access to the OpenAPI in local:
 ```
 http://localhost:8080/swagger-ui/index.html#/
 ```
+
+# Database configuration
+## Build the docker image
+We have the database dockerfile in docker/database/Dockerfile
+
+To build the image:
+```
+docker build --build-arg postgres_password=YOUR_PASSWORD . -t katalistdb:latest
+docker images
+C:\workspace\bench\katalistpaymentservice\docker\database>docker images
+REPOSITORY   TAG       IMAGE ID       CREATED      SIZE
+katalistdb   latest    bcb7a245125d   2 days ago   412MB
+```
+The postgres_password value is in Bitlocker. You can find this information there.
+
+## Run the database in local with docker
+```
+docker run -p 7432:7432 -it bcb7a245125d
+```
+## Run the database in local docker-composer for development
+
+Interesting commands:
+
+```
+
+```
+
 # Doubts
 - [ ] How is going to be the full use case for the user. The courses have an ID, and now it is necessary
       for the subscription. We could have the courses in the form or maybe we could call from the website with
