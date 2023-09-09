@@ -20,31 +20,41 @@ You can access to the OpenAPI in local:
 http://localhost:8080/swagger-ui/index.html#/
 ```
 
-# Database configuration
-## Build the docker image
-We have the database dockerfile in docker/database/Dockerfile
+# Database configuration and deploy
 
-To build the image:
-```
-docker build --build-arg postgres_password=YOUR_PASSWORD . -t katalistdb:latest
-docker images
-C:\workspace\bench\katalistpaymentservice\docker\database>docker images
-REPOSITORY   TAG       IMAGE ID       CREATED      SIZE
-katalistdb   latest    bcb7a245125d   2 days ago   412MB
-```
-The postgres_password value is in Bitlocker. You can find this information there.
-
-## Run the database in local with docker
-```
-docker run -p 7432:7432 -it bcb7a245125d
-```
 ## Run the database in local docker-composer for development
 
 Interesting commands:
 
 ```
-
+docker-compose up -d
 ```
+## The production Database in Azure
+We have created a database in production. Now it is in Azure and we have created the database here.
+
+If you need to create the database, you can follow this guide:
+- Create new resource -> Select azure Database for PostgreSQL
+- Select Flexible server(Recommended) -> Better cost
+- resource group: katalistpayment_group
+- server name: katalistdb
+- postgreSQL version: 15
+- Workload type: Development 
+- Authentication method: PostgreSQL authentication only
+- Admin username: katalist
+- Password: see in bitlocker
+- Create-> Create server without firewall rules
+
+When you have the database you will need to configurate the networking. Go to the database and choose
+the Networking in the menu.
+- Public access
+- Add current client IP address 0.0.0.0 - 255.255.255.255
+And save. 
+
+Go to Databases and create a new one: the name is katalist. 
+
+You can try to connect with your database client
+You can see how to connect in the section "Connect". Remember the password is in Bitlocker.
+
 
 # Doubts
 - [ ] How is going to be the full use case for the user. The courses have an ID, and now it is necessary
