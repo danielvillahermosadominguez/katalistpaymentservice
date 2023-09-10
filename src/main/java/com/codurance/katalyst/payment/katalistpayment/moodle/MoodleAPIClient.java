@@ -19,10 +19,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class MoodleAPIClient {
-    // We need to create
-    //private static String URL_BASE = "https://codurance.moodlecloud.com/webservice/rest/server.php?";
-    //private String token = "3ef9b832fd76a6cac0c67c053d0a38d5";
-
     @Value("${moodle.urlbase}")
     private String URL_BASE;
 

@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.katalistpayment.holded;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -15,8 +16,12 @@ import java.util.*;
 
 @Component
 public class HoldedAPIClient {
-    private static String URL_BASE = "https://api.holded.com/api/";
-    private String apyKey = "2a1b27283346f020db6c33889f2eaeae";
+
+    @Value("${holded.urlbase}")
+    private String URL_BASE;
+
+    @Value("${holded.apikey}")
+    private String apyKey;
     @Autowired
     private RestTemplate restTemplate;
 
