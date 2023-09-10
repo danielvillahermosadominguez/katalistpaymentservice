@@ -37,10 +37,6 @@ jobs:
       
     - name: Build with Maven
       run: mvn -B package --file pom.xml
-
-    - name: Stop containers
-      if: always()
-      run: docker-compose -f "docker-compose.yml" down
       
     - name: Docker Login
       uses: docker/login-action@v2.1.0
@@ -54,6 +50,9 @@ jobs:
          context: .
          push: true
          tags: ${{ secrets.ACR_ENDPOINT }}
+    - name: Stop containers
+      if: always()
+      run: docker-compose -f "docker-compose.yml" down
   deploy:
     runs-on: ubuntu-latest
     needs:  build-test-deploy-docker   
