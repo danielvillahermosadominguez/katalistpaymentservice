@@ -23,7 +23,10 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Start containers
-      run: docker-compose -f "docker-compose.yml" up -d --build
+      shell: bash
+      run: |
+        docker-compose -f "docker-compose.yml" up -d --build
+        docker ps
 
     - name: Set up JDK 18
       uses: actions/setup-java@v3
@@ -33,15 +36,7 @@ jobs:
         cache: maven
       
     - name: Build with Maven
-    
-      shell: bash
-      run: |
-        #define variables for local test
-        SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/katalist
-        SPRING_DATASOURCE_PASSWORD=password
-        SPRING_DATASOURCE_USERNAME=postgres
-        #execute maven
-        mvn -B package --file pom.xml
+      run: mvn -B package --file pom.xml
 
     - name: Stop containers
       if: always()
