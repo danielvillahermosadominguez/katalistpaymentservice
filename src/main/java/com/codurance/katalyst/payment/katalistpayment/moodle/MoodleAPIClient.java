@@ -1,6 +1,7 @@
 package com.codurance.katalyst.payment.katalistpayment.moodle;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,8 +23,11 @@ public class MoodleAPIClient {
     //private static String URL_BASE = "https://codurance.moodlecloud.com/webservice/rest/server.php?";
     //private String token = "3ef9b832fd76a6cac0c67c053d0a38d5";
 
-    private static String URL_BASE = "https://exampleforcodurance.moodlecloud.com/webservice/rest/server.php?";
-    private String token = "672349878c7a8d767a16bd5523be32b6";
+    @Value("${moodle.urlbase}")
+    private String URL_BASE;
+
+    @Value("${moodle.token}")
+    private String token;
     private String format = "json";
 
     @Autowired
@@ -144,6 +148,7 @@ public class MoodleAPIClient {
         ResponseEntity<MoodleCourseDTO[]> response = null;
         try {
             response = restTemplate.postForEntity(url, request, MoodleCourseDTO[].class);
+
             List<MoodleCourseDTO> courses = Arrays.stream(response.getBody()).toList();
             if(!courses.isEmpty()) {
                 result = courses.get(0);

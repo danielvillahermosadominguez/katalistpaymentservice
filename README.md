@@ -29,12 +29,16 @@ SPRING_DATASOURCE_USERNAME=postgres
 SPRING_DATASOURCE_HOSTNAME=localhost
 DATABASE_HOST=localhost
 DATABASE_NAME=katalist
+MOODLE_URL_BASE=https://<your moodle domain>.moodlecloud.com/webservice/rest/server.php?
+MOODLE_TOKEN=<TOKEN FOR MOODLE>
 ## Environemnt variables in production
 The environment variables to production are in Bitlocker.
 To configurate them manually you will need to follow the following steps:
 - Go to App Services and select katalistpaymentservice
-- Go to configuration
-- 
+- Go to configuration-> Application settings
+- Add the variable
+
+NOTE: Update this information for a container
 
 # Database configuration and deploy
 
