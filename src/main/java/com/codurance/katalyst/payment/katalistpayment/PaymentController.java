@@ -7,16 +7,15 @@ import com.codurance.katalyst.payment.katalistpayment.inputform.PotentialCustome
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleAPIClient;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleCourseDTO;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleUserDTO;
+import com.codurance.katalyst.payment.katalistpayment.responses.Course;
+import com.codurance.katalyst.payment.katalistpayment.responses.Error;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.UnsupportedEncodingException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 @RestController
 public class PaymentController {
@@ -40,7 +39,6 @@ public class PaymentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The course with the id " + id + " doesn't exists" );
         }
 
-        //return ResponseEntity.ok().body(new Course(course.getId(), course.getDisplayname()));
         return new ResponseEntity<>(new Course(course.getId(), course.getDisplayname(),66.99), HttpStatus.OK);
     }
 
@@ -49,11 +47,11 @@ public class PaymentController {
     public ResponseEntity freeSubscription(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
         MoodleCourseDTO course = moodleAPIClient.getCourse(customer.getCourseId());
         if(course == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The course with the id " + customer.getCourseId() + " doesn't exists" );
+            return new ResponseEntity<>(new Error(1,"The course with the id " + customer.getCourseId() + " doesn't exists"), HttpStatus.BAD_REQUEST);
         }
 
         if (moodleAPIClient.existsAnUserinThisCourse(customer.getCourseId(), customer.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "The user has a subscription for this course");
+            return new ResponseEntity<>(new Error(2,"The user has a subscription for this course"), HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
         MoodleUserDTO user = moodleAPIClient.getUserByMail(customer.getEmail());
@@ -67,24 +65,28 @@ public class PaymentController {
     @RequestMapping(value = "/invoicing", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity onlyHoldedTest(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
-           HoldedContactDTO contact = holdedAPIClient.getContactByCustomId(customer.getDnicif());
-           if(contact == null) {
-              contact =holdedAPIClient.createContact(customer.getName(),
-                       customer.getSurname(),
-                       customer.getEmail(),
-                       customer.getCompany(),
-                       customer.getDnicif());
-           }
-           String concept = "KATALIST CURSO";
-           String description = "KATALIST CURSO DESCRIPTION";
-           int amount = 1;
-           double price = 60.0;
-           HoldedInvoiceDTO invoice = holdedAPIClient.createInvoice(contact,
-                   concept,
-                   description,
-                   amount,
-                   price );
-           holdedAPIClient.sendInvoice(invoice, contact.getEmail());
+        try {
+            HoldedContactDTO contact = holdedAPIClient.getContactByCustomId(customer.getDnicif());
+            if (contact == null) {
+                contact = holdedAPIClient.createContact(customer.getName(),
+                        customer.getSurname(),
+                        customer.getEmail(),
+                        customer.getCompany(),
+                        customer.getDnicif());
+            }
+            String concept = "KATALIST CURSO";
+            String description = "KATALIST CURSO DESCRIPTION";
+            int amount = 1;
+            double price = 66.99;
+            HoldedInvoiceDTO invoice = holdedAPIClient.createInvoice(contact,
+                    concept,
+                    description,
+                    amount,
+                    price);
+            holdedAPIClient.sendInvoice(invoice, contact.getEmail());
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new Error(3,"We have had a problem with the creation of the contact and the invoicing"), HttpStatus.BAD_REQUEST);
+        }
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }
