@@ -71,6 +71,31 @@ Go to Databases and create a new one: the name is katalist.
 You can try to connect with your database client
 You can see how to connect in the section "Connect". Remember the password is in Bitlocker.
 
+# Create manually the docker image
+The docker image is based on the Dockerfile in the root of the repository.
+To create this step by step in local you should:
+- You need to have a database in local. Based on "docker-composer.yml"
+```
+docker-compose up -d
+```
+- Create the package in the target folder
+```j
+mvn clean -e -B package
+```
+- build the docker image
+```
+docker build . -t katalist
+docker image list
+C:\workspace\bench\katalistpaymentservice>docker image list
+REPOSITORY   TAG       IMAGE ID       CREATED         SIZE
+katalist     latest    df26454a4829   7 seconds ago   379MB
+postgres     15.4      69e765e8cdbe   2 days ago      412MB
+```
+- To test it, you should execute
+```java
+docker run -p 8080:8080 --net=host -it df26454a4829 # if you want to run only
+# Notice that --net=host is to access to local host with the 127.0.0.1 -> local database
+```
 
 # Doubts
 - [ ] How is going to be the full use case for the user. The courses have an ID, and now it is necessary
