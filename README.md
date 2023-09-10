@@ -19,6 +19,22 @@ You can access to the OpenAPI in local:
 ```
 http://localhost:8080/swagger-ui/index.html#/
 ```
+# Environment variables
+You will use to develop in local a .env file in the root of the repository. The main variables are to work on local.
+
+FLYWAY_URL=jdbc:postgresql://localhost:5432/katalist?user=postgres&password=password
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/katalist
+SPRING_DATASOURCE_PASSWORD=password
+SPRING_DATASOURCE_USERNAME=postgres
+SPRING_DATASOURCE_HOSTNAME=localhost
+DATABASE_HOST=localhost
+DATABASE_NAME=katalist
+## Environemnt variables in production
+The environment variables to production are in Bitlocker.
+To configurate them manually you will need to follow the following steps:
+- Go to App Services and select katalistpaymentservice
+- Go to configuration
+- 
 
 # Database configuration and deploy
 
