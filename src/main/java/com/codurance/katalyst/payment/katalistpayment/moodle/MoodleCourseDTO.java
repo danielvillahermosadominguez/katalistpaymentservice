@@ -7,7 +7,12 @@ public class MoodleCourseDTO {
     private String shortname;
     private int categoryid;
 
+
     public int getId() {
         return id;
+    }
+
+    public String getDisplayname() {
+        return displayname;
     }
 }

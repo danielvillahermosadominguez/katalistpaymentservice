@@ -9,11 +9,14 @@ import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleCourseDTO;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleUserDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.UnsupportedEncodingException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @RestController
 public class PaymentController {
@@ -28,6 +31,19 @@ public class PaymentController {
     public String heatlhCheck() {
         return String.format("OK! Working");
     }
+
+    @GetMapping(value = "/courses/{id}")
+    @ResponseBody
+    public ResponseEntity<?> getCourse(@PathVariable("id") String id) {
+        MoodleCourseDTO course = moodleAPIClient.getCourse(id);
+        if(course == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The course with the id " + id + " doesn't exists" );
+        }
+
+        //return ResponseEntity.ok().body(new Course(course.getId(), course.getDisplayname()));
+        return new ResponseEntity<>(new Course(course.getId(), course.getDisplayname(),66.99), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/freesubscription", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity freeSubscription(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
