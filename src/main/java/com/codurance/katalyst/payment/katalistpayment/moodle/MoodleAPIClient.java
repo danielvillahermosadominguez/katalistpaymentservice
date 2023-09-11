@@ -2,10 +2,7 @@ package com.codurance.katalyst.payment.katalistpayment.moodle;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -19,6 +16,9 @@ import java.util.stream.Collectors;
 
 @Component
 public class MoodleAPIClient {
+    public static final String WSTOKEN = "wstoken=";
+    public static final String WSFUNCTION = "&wsfunction=";
+    public static final String MOODLEWSRESTFORMAT = "&moodlewsrestformat=";
     @Value("${moodle.urlbase}")
     private String URL_BASE;
 
@@ -29,15 +29,21 @@ public class MoodleAPIClient {
     @Autowired
     private RestTemplate restTemplate;
 
-    private List<MoodleUserDTO> getUsersForCourse(String courseId) {
-        String url = URL_BASE+ "wstoken=" + token + "&wsfunction=core_enrol_get_enrolled_users"+"&moodlewsrestformat="+format;
+    private HttpEntity<MultiValueMap<String, String>> createRequest(MultiValueMap<String, String> map) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE));
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
-        map.add("courseid", courseId);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        return  request;
+    }
+    private String createURL(String moodleWsFunction) {
+        return URL_BASE+ WSTOKEN + token + WSFUNCTION +moodleWsFunction+ MOODLEWSRESTFORMAT +format;
+    }
+    private List<MoodleUserDTO> getUsersForCourse(String courseId) {
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+        String url = createURL("core_enrol_get_enrolled_users");
+        map.add("courseid", courseId);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
         ResponseEntity<MoodleUserDTO[]> response = restTemplate.postForEntity(url, request, MoodleUserDTO[].class);
-
         return Arrays.stream(response.getBody()).toList();
     }
 
@@ -49,7 +55,7 @@ public class MoodleAPIClient {
 
     public MoodleUserDTO getUserByMail(String email) throws UnsupportedEncodingException {
         MoodleUserDTO result = null;
-        String url = URL_BASE + "wstoken=" + token + "&wsfunction=core_user_get_users_by_field" + "&moodlewsrestformat=" + format;
+        String url = URL_BASE + WSTOKEN + token + "&wsfunction=core_user_get_users_by_field" + MOODLEWSRESTFORMAT + format;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setContentLanguage(Locale.US);
@@ -74,7 +80,7 @@ public class MoodleAPIClient {
     }
 
     public MoodleUserDTO createAnUser(String name, String surname, String email) throws UnsupportedEncodingException {
-        String url = URL_BASE + "wstoken=" + token + "&wsfunction=core_user_create_users" + "&moodlewsrestformat=" + format;
+        String url = URL_BASE + WSTOKEN + token + "&wsfunction=core_user_create_users" + MOODLEWSRESTFORMAT + format;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setContentLanguage(Locale.US);
@@ -113,7 +119,7 @@ public class MoodleAPIClient {
     }
 
     public void subscribeUserToTheCourse(MoodleCourseDTO course, MoodleUserDTO user) {
-        String url = URL_BASE + "wstoken=" + token + "&wsfunction=enrol_manual_enrol_users" + "&moodlewsrestformat=" + format;
+        String url = URL_BASE + WSTOKEN + token + "&wsfunction=enrol_manual_enrol_users" + MOODLEWSRESTFORMAT + format;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
@@ -134,7 +140,7 @@ public class MoodleAPIClient {
     }
 
     public MoodleCourseDTO getCourse(String courseId) {
-        String url = URL_BASE+ "wstoken=" + token + "&wsfunction=core_course_get_courses"+"&moodlewsrestformat="+format;
+        String url = URL_BASE+ WSTOKEN + token + "&wsfunction=core_course_get_courses"+ MOODLEWSRESTFORMAT +format;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE));
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
