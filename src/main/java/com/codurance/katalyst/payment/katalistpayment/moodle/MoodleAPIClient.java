@@ -19,6 +19,7 @@ public class MoodleAPIClient {
     public static final String WSTOKEN = "wstoken=";
     public static final String WSFUNCTION = "&wsfunction=";
     public static final String MOODLEWSRESTFORMAT = "&moodlewsrestformat=";
+    public static final String STUDENT_ROLE_ID = "5";
     @Value("${moodle.urlbase}")
     private String URL_BASE;
 
@@ -113,23 +114,21 @@ public class MoodleAPIClient {
         return result;
     }
 
-    public void subscribeUserToTheCourse(MoodleCourseDTO course, MoodleUserDTO user) {
-        String url = URL_BASE + WSTOKEN + token + "&wsfunction=enrol_manual_enrol_users" + MOODLEWSRESTFORMAT + format;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-
-        //Concept test
-        String roleId = "5";
+    public void enroleToTheCourse(MoodleCourseDTO course, MoodleUserDTO user) {
+        MoodleUserDTO result = null;
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+        String url = createURL("enrol_manual_enrol_users");
+        String roleId = STUDENT_ROLE_ID;
         String userId = user.getId();
         map.add("enrolments[0][roleid]", roleId);
         map.add("enrolments[0][userid]", userId);
         map.add("enrolments[0][courseid]=", course.getId()+"");
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-        ResponseEntity<String> response = null;
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
+
         try {
-            response = restTemplate.postForEntity(url, request, String.class);
+            restTemplate.postForEntity(url, request, String.class);
         } catch (Exception ex) {
+            //TODO: Include log and Throw Exception
             String errorMessage = ex.getMessage();
         }
     }
