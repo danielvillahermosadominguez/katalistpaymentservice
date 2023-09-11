@@ -100,7 +100,21 @@ postgres     15.4      69e765e8cdbe   2 days ago      412MB
 docker run -p 8080:8080 --net=host -it df26454a4829 # if you want to run only
 # Notice that --net=host is to access to local host with the 127.0.0.1 -> local database
 ```
+# Integration with Moodle - Considerations
 
+# Integration with Holded - Considerations
+In Holded we need to follow the following steps:
+- We receive the following data :
+  - name
+  - surname
+  - email 
+  - NIF/CIF 
+  - isCIF (pending) :
+  - Address (pending) :
+- The process look for if the contact exists with the custom_id = <NIF/CIF><email> encoding in utf8 
+- if the contact doesn't exist we create a new contact with this data
+- we create an invoice
+- we send the invoice
 # Doubts
 - [ ] How is going to be the full use case for the user. The courses have an ID, and now it is necessary
       for the subscription. We could have the courses in the form or maybe we could call from the website with

@@ -66,7 +66,8 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity onlyHoldedTest(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
         try {
-            HoldedContactDTO contact = holdedAPIClient.getContactByCustomId(customer.getDnicif());
+            String customId = holdedAPIClient.createCustomId(customer.getDnicif(), customer.getEmail());
+            HoldedContactDTO contact = holdedAPIClient.getContactByCustomId(customId);
             if (contact == null) {
                 contact = holdedAPIClient.createContact(customer.getName(),
                         customer.getSurname(),

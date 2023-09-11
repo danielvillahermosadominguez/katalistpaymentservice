@@ -23,4 +23,16 @@ public class HoldedContactDTO {
     public String getEmail() {
         return email;
     }
+
+    public String getCustomId() {
+        return customId;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getType() {
+        return type;
+    }
 }

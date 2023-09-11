@@ -10,9 +10,15 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Date;
+
 
 @Component
 public class HoldedAPIClient {
@@ -56,7 +62,6 @@ public class HoldedAPIClient {
     public HoldedContactDTO getContactByCustomId(String customId) {
         HoldedContactDTO result = null;
         String url = URL_BASE + "invoicing/v1/contacts?customId={customId}";
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE));
         headers.add("key", apyKey);
@@ -79,7 +84,7 @@ public class HoldedAPIClient {
         return result;
     }
 
-    public HoldedContactDTO createContact(String name, String surname, String email, String company, String dnicif) {
+    public HoldedContactDTO createContact(String name, String surname, String email, String company, String dnicif) throws UnsupportedEncodingException {
         HoldedContactDTO result = null;
         String url = URL_BASE + "invoicing/v1/contacts";
 
@@ -87,11 +92,11 @@ public class HoldedAPIClient {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.add("key", apyKey);
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("name", name + " " + surname + "("+ company+ ")");
+        map.add("name", name + " " + surname + "(" + company + ")");
         map.add("email", email);
         map.add("type", "client");
         map.add("code", dnicif);
-        map.add("CustomId", dnicif);
+        map.add("CustomId", createCustomId(dnicif, email));
         map.add("isperson", "true");
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
@@ -99,7 +104,8 @@ public class HoldedAPIClient {
         try {
             response = restTemplate.postForEntity(url, request, HoldedResponse.class);
             if (response.getBody().getStatus() == 1) {
-                result = getContactByCustomId(dnicif);
+                String customId = createCustomId(dnicif, email);
+                result = getContactByCustomId(customId);
             }
         } catch (Exception ex) {
             String errorMessage = ex.getMessage();
@@ -158,5 +164,9 @@ public class HoldedAPIClient {
         } catch (Exception ex) {
             String errorMessage = ex.getMessage();
         }
+    }
+
+    public String createCustomId(String nifCif, String email) throws UnsupportedEncodingException {
+        return nifCif + URLEncoder.encode(email, "UTF-8");
     }
 }
