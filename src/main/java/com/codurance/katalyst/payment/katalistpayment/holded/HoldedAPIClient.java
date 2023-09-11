@@ -18,6 +18,7 @@ import java.util.*;
 @Component
 public class HoldedAPIClient extends APIClient {
 
+    public static final String CUSTOM_ID = "customId";
     @Value("${holded.urlbase}")
     private String URL_BASE;
 
@@ -25,29 +26,29 @@ public class HoldedAPIClient extends APIClient {
     private String apyKey;
 
     public HoldedAPIClient() {
-        this.setHeaderParameter("key", apyKey);
         this.setMediaType(MediaType.APPLICATION_JSON_VALUE);
     }
 
+    @Override
+    protected void getHeaderParameter(HttpHeaders headers) {
+        headers.add("key", apyKey);
+    }
+    private String generateEndPoint(String function) {
+        return URL_BASE + function;
+    }
     public HoldedContactDTO getContactByCustomId(String customId) {
         HoldedContactDTO result = null;
-        String url = URL_BASE + "invoicing/v1/contacts?customId={customId}";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE));
-        headers.add("key", apyKey);
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        String url = generateEndPoint("invoicing/v1/contacts?customId={customId}");
         Map<String, String> vars = new HashMap<>();
-        vars.put("customId", customId);
+        vars.put(CUSTOM_ID, customId);
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(null);
         ResponseEntity<HoldedContactDTO[]> response = null;
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, request, HoldedContactDTO[].class, vars);
-            List<HoldedContactDTO> contacts = Arrays.stream(response.getBody()).toList();
-            if (!contacts.isEmpty()) {
-                result = contacts.get(0);
-            }
+            result = getFirst(response);
         } catch (Exception ex) {
+            // Use log and throw exception
             String errorMessage = ex.getMessage();
         }
 

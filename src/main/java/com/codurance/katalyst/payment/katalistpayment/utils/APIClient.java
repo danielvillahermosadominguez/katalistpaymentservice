@@ -10,24 +10,28 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class APIClient {
     @Autowired
     protected RestTemplate restTemplate;
 
-    private MultiValueMap<String, String> headersParams = new LinkedMultiValueMap<>();
+    private Map<String, String> headersParams = new HashMap<>();
     private String mediaType;
     protected HttpEntity<MultiValueMap<String, String>> createRequest(MultiValueMap<String, String> map) {
         HttpHeaders headers = new HttpHeaders();
+        getHeaderParameter(headers);
         headers.setContentType(MediaType.valueOf(mediaType));
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<MultiValueMap<String, String>> request = map == null? new HttpEntity<>(headers) : new HttpEntity<>(map, headers);
         return  request;
     }
 
-    protected void setHeaderParameter(String name, String value) {
-        headersParams.add(name, value);
+
+    protected void getHeaderParameter(HttpHeaders headers) {
+
     }
 
     protected void setMediaType(String mediaType) {
