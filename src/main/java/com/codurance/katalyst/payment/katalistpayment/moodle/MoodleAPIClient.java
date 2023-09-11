@@ -41,17 +41,13 @@ public class MoodleAPIClient extends APIClient {
     private String token;
     private String format = "json";
 
-    public MoodleAPIClient() {
-        this.setMediaType(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-    }
-
     private String generateEndPoint(String moodleWsFunction) {
         return URL_BASE+ WSTOKEN + token + WSFUNCTION +moodleWsFunction+ MOODLEWSRESTFORMAT +format;
     }
     private List<MoodleUserDTO> getUsersForCourse(String courseId) {
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add(COURSEID, courseId);
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         ResponseEntity<MoodleUserDTO[]> response = restTemplate.postForEntity(
                 generateEndPoint("core_enrol_get_enrolled_users"),
                 request,
@@ -80,7 +76,7 @@ public class MoodleAPIClient extends APIClient {
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add(FIELD, "email");
         map.add(VALUES_ARRAY_0,  email);
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             response = restTemplate.postForEntity(
@@ -106,7 +102,7 @@ public class MoodleAPIClient extends APIClient {
         map.add(USERS_0_EMAIL,  email);
         map.add(USERS_0_FIRSTNAME,name);
         map.add(USERS_0_LASTNAME, surname);
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             response = restTemplate.postForEntity(
@@ -130,7 +126,7 @@ public class MoodleAPIClient extends APIClient {
         map.add(ENROLMENTS_0_ROLEID, roleId);
         map.add(ENROLMENTS_0_USERID, userId);
         map.add(ENROLMENTS_0_COURSEID, course.getId()+"");
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             restTemplate.postForEntity(
@@ -148,7 +144,7 @@ public class MoodleAPIClient extends APIClient {
         MoodleCourseDTO result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add(OPTIONS_IDS_0, courseId);
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             response = restTemplate.postForEntity(

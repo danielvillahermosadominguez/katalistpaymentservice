@@ -20,8 +20,8 @@ public class APIClient {
     protected RestTemplate restTemplate;
 
     private Map<String, String> headersParams = new HashMap<>();
-    private String mediaType;
-    protected HttpEntity<MultiValueMap<String, String>> createRequest(MultiValueMap<String, String> map) {
+
+    protected HttpEntity<MultiValueMap<String, String>> createRequest(MultiValueMap<String, String> map, String mediaType) {
         HttpHeaders headers = new HttpHeaders();
         getHeaderParameter(headers);
         headers.setContentType(MediaType.valueOf(mediaType));
@@ -32,10 +32,6 @@ public class APIClient {
 
     protected void getHeaderParameter(HttpHeaders headers) {
 
-    }
-
-    protected void setMediaType(String mediaType) {
-        this.mediaType = mediaType;
     }
 
     protected  <T> T getFirst(ResponseEntity<T[]> response) {

@@ -19,15 +19,19 @@ import java.util.*;
 public class HoldedAPIClient extends APIClient {
 
     public static final String CUSTOM_ID = "customId";
+    public static final String NAME = "name";
+    public static final String EMAIL = "email";
+    public static final String TYPE = "type";
+    public static final String CODE = "code";
+    public static final String CUSTOM_ID1 = "CustomId";
+    public static final String ISPERSON = "isperson";
+    public static final int OK = 1;
+    public static final String CLIENT_VALUE = "client";
     @Value("${holded.urlbase}")
     private String URL_BASE;
 
     @Value("${holded.apikey}")
     private String apyKey;
-
-    public HoldedAPIClient() {
-        this.setMediaType(MediaType.APPLICATION_JSON_VALUE);
-    }
 
     @Override
     protected void getHeaderParameter(HttpHeaders headers) {
@@ -42,10 +46,11 @@ public class HoldedAPIClient extends APIClient {
         Map<String, String> vars = new HashMap<>();
         vars.put(CUSTOM_ID, customId);
 
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(null);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(null, MediaType.APPLICATION_JSON_VALUE);
         ResponseEntity<HoldedContactDTO[]> response = null;
         try {
             response = restTemplate.exchange(url, HttpMethod.GET, request, HoldedContactDTO[].class, vars);
+
             result = getFirst(response);
         } catch (Exception ex) {
             // Use log and throw exception
@@ -57,31 +62,27 @@ public class HoldedAPIClient extends APIClient {
 
     public HoldedContactDTO createContact(String name, String surname, String email, String company, String dnicif) throws UnsupportedEncodingException {
         HoldedContactDTO result = null;
-        String url = URL_BASE + "invoicing/v1/contacts";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.add("key", apyKey);
+        String url = generateEndPoint("invoicing/v1/contacts");
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("name", name + " " + surname + "(" + company + ")");
-        map.add("email", email);
-        map.add("type", "client");
-        map.add("code", dnicif);
-        map.add("CustomId", createCustomId(dnicif, email));
-        map.add("isperson", "true");
+        map.add(NAME, name + " " + surname + "(" + company + ")");
+        map.add(EMAIL, email);
+        map.add(TYPE, CLIENT_VALUE);
+        map.add(CODE, dnicif);
+        map.add(CUSTOM_ID1, createCustomId(dnicif, email));
+        map.add(ISPERSON, "true");
 
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         ResponseEntity<HoldedResponse> response = null;
         try {
             response = restTemplate.postForEntity(url, request, HoldedResponse.class);
-            if (response.getBody().getStatus() == 1) {
+            if (response.getBody().getStatus() == OK) {
                 String customId = createCustomId(dnicif, email);
                 result = getContactByCustomId(customId);
             }
         } catch (Exception ex) {
+            // Use log and throw exception
             String errorMessage = ex.getMessage();
         }
-
 
         return result;
     }
@@ -99,7 +100,7 @@ public class HoldedAPIClient extends APIClient {
         OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
         Date date = Date.from(utc.toInstant());
         map.add("date", date.toInstant().getEpochSecond()+"");
-        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO("Suscription to Katalist", 1, 60.99);
+        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO("Suscription to Katalist", OK, 60.99);
         List<HoldedInvoiceItemDTO> items = Arrays.asList(item);
         Gson gson = new Gson();
         String jsonArray = gson.toJson(items);
