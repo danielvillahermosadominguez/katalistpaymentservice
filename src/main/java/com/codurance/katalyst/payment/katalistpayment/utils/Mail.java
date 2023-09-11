@@ -1,5 +1,8 @@
 package com.codurance.katalyst.payment.katalistpayment.utils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 public class Mail {
     public static final String AT = "@";
     public static final String SPECIAL_CHARACTERS = "[!#$%&'*+-/=?]";
@@ -20,5 +23,9 @@ public class Mail {
         finalOutput = finalOutput.replaceAll(SPECIAL_CHARACTERS,"");
 
         return finalOutput;
+    }
+
+    public String getInUnicodeFormat() throws UnsupportedEncodingException {
+        return URLEncoder.encode(email, "UTF-8");
     }
 }

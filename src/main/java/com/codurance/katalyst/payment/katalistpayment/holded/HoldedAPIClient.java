@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.katalistpayment.holded;
 
+import com.codurance.katalyst.payment.katalistpayment.utils.Mail;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -167,6 +168,7 @@ public class HoldedAPIClient {
     }
 
     public String createCustomId(String nifCif, String email) throws UnsupportedEncodingException {
-        return nifCif + URLEncoder.encode(email, "UTF-8");
+        Mail mail = new Mail(email);
+        return nifCif + mail.getInUnicodeFormat();
     }
 }
