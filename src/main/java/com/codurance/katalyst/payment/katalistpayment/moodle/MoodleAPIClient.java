@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.katalistpayment.moodle;
 
+import com.codurance.katalyst.payment.katalistpayment.utils.Mail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -93,7 +94,8 @@ public class MoodleAPIClient {
         MoodleUserDTO result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         String url = createURL("core_user_create_users");
-        map.add("users[0][username]", generateUserNameBasedOn(email));
+        Mail mail = new Mail(email);
+        map.add("users[0][username]", mail.getUserName());
         map.add("users[0][createpassword]", "1");
         map.add("users[0][email]",  email);
         map.add("users[0][firstname]",name);
@@ -109,17 +111,6 @@ public class MoodleAPIClient {
         }
 
         return result;
-    }
-
-    private String generateUserNameBasedOn(String mail) {
-        String finalOutput = "";
-        String arrayOfStr[] = mail.split("@");
-        if (arrayOfStr.length == 2) {
-            finalOutput = arrayOfStr[0];
-        }
-        finalOutput = finalOutput.replaceAll("[!#$%&'*+-/=?]","");
-
-        return finalOutput;
     }
 
     public void subscribeUserToTheCourse(MoodleCourseDTO course, MoodleUserDTO user) {
