@@ -1,5 +1,7 @@
 package com.codurance.katalyst.payment.katalistpayment;
 
+import com.codurance.katalyst.payment.katalistpayment.courses.DBCourse;
+import com.codurance.katalyst.payment.katalistpayment.courses.DBCourseRepository;
 import com.codurance.katalyst.payment.katalistpayment.holded.HoldedAPIClient;
 import com.codurance.katalyst.payment.katalistpayment.holded.HoldedContactDTO;
 import com.codurance.katalyst.payment.katalistpayment.holded.HoldedInvoiceDTO;
@@ -7,7 +9,7 @@ import com.codurance.katalyst.payment.katalistpayment.inputform.PotentialCustome
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleAPIClient;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleCourseDTO;
 import com.codurance.katalyst.payment.katalistpayment.moodle.MoodleUserDTO;
-import com.codurance.katalyst.payment.katalistpayment.responses.Course;
+import com.codurance.katalyst.payment.katalistpayment.courses.Course;
 import com.codurance.katalyst.payment.katalistpayment.responses.Error;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Optional;
 
 @RestController
 public class PaymentController {
@@ -25,6 +28,9 @@ public class PaymentController {
 
     @Autowired
     private HoldedAPIClient holdedAPIClient;
+
+    @Autowired
+    private DBCourseRepository courseRepository;
 
     @GetMapping("/healthcheck")
     public String heatlhCheck() {
@@ -39,7 +45,18 @@ public class PaymentController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The course with the id " + id + " doesn't exists" );
         }
 
+        double price = getPriceFromDB(id);
+        course.setPrice(price);
         return new ResponseEntity<>(new Course(course.getId(), course.getDisplayname(),66.99), HttpStatus.OK);
+    }
+
+    private double getPriceFromDB(String id) {
+        Long idNumber = Long.parseLong(id);
+        Optional<DBCourse> dbCourse = courseRepository.findByCourseId(idNumber);
+        if(!dbCourse.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "We don't have available to subscriptions the course with the id " + id );
+        }
+        return dbCourse.get().getPrice();
     }
 
     @RequestMapping(value = "/freesubscription", method = RequestMethod.POST)
@@ -66,6 +83,14 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity onlyHoldedTest(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
         try {
+            MoodleCourseDTO course = moodleAPIClient.getCourse(customer.getCourseId());
+            if(course == null) {
+                return new ResponseEntity<>(new Error(1,"The course with the id " + customer.getCourseId() + " doesn't exists"), HttpStatus.BAD_REQUEST);
+            } else {
+                double price = getPriceFromDB(customer.getCourseId());
+                course.setPrice(price);
+            }
+
             String customId = holdedAPIClient.createCustomId(customer.getDnicif(), customer.getEmail());
             HoldedContactDTO contact = holdedAPIClient.getContactByCustomId(customId);
             if (contact == null) {
@@ -75,10 +100,11 @@ public class PaymentController {
                         customer.getCompany(),
                         customer.getDnicif());
             }
-            String concept = "KATALIST CURSO";
-            String description = "KATALIST CURSO DESCRIPTION";
+
+            String concept = course.getDisplayname();
+            String description =  "";
             int amount = 1;
-            double price = 66.99;
+            double price = course.getPrice();
             HoldedInvoiceDTO invoice = holdedAPIClient.createInvoice(contact,
                     concept,
                     description,

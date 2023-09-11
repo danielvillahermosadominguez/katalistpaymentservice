@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.katalistpayment.responses;
+package com.codurance.katalyst.payment.katalistpayment.courses;
 
 public class Course {
     private int id;
