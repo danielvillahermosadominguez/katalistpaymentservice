@@ -12,7 +12,11 @@ import org.springframework.util.MultiValueMap;
 import java.io.UnsupportedEncodingException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
 
 
 @Component
@@ -27,6 +31,12 @@ public class HoldedAPIClient extends APIClient {
     public static final String ISPERSON = "isperson";
     public static final int OK = 1;
     public static final String CLIENT_VALUE = "client";
+    public static final String CONTACT_ID = "contactId";
+    public static final String DESC = "desc";
+    public static final String DATE = "date";
+    public static final String ITEMS = "items";
+    public static final String EMAILS = "emails";
+    public static final String API_KEY_PARAM_NAME = "key";
     @Value("${holded.urlbase}")
     private String URL_BASE;
 
@@ -35,7 +45,7 @@ public class HoldedAPIClient extends APIClient {
 
     @Override
     protected void getHeaderParameter(HttpHeaders headers) {
-        headers.add("key", apyKey);
+        headers.add(API_KEY_PARAM_NAME, apyKey);
     }
     private String generateEndPoint(String function) {
         return URL_BASE + function;
@@ -92,16 +102,16 @@ public class HoldedAPIClient extends APIClient {
         String url = generateEndPoint("invoicing/v1/documents/invoice");
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-        map.add("contactId", contact.getId());
-        map.add("desc",description);
+        map.add(CONTACT_ID, contact.getId());
+        map.add(DESC,description);
         OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
         Date date = Date.from(utc.toInstant());
-        map.add("date", date.toInstant().getEpochSecond()+"");
-        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO("Suscription to Katalist", OK, price);
+        map.add(DATE, date.toInstant().getEpochSecond()+"");
+        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO(concept, amount, price);
         List<HoldedInvoiceItemDTO> items = Arrays.asList(item);
         Gson gson = new Gson();
         String jsonArray = gson.toJson(items);
-        map.add("items",jsonArray);
+        map.add(ITEMS,jsonArray);
 
         HttpEntity<MultiValueMap<String, Object>> request = createRequest(map,MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         ResponseEntity<HoldedInvoiceDTO> response = null;
@@ -113,27 +123,28 @@ public class HoldedAPIClient extends APIClient {
             String errorMessage = ex.getMessage();
         }
 
-
         return result;
     }
 
-
     public void sendInvoice(HoldedInvoiceDTO invoice, String emails) {
-        String url = URL_BASE + "invoicing/v1/documents/invoice/"+invoice.getId()+"/send";
+        String url = generateEndPoint("invoicing/v1/documents/invoice/"+invoice.getId()+"/send");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.add("key", apyKey);
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-        map.add("emails", emails);
+        map.add(EMAILS, emails);
 
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
-        ResponseEntity<String> response = null;
+        HttpEntity<MultiValueMap<String, Object>> request = createRequest(map,MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        ResponseEntity<HoldedResponse> response = null;
         try {
-            response = restTemplate.postForEntity(url, request, String.class);
+            response = restTemplate.postForEntity(url, request, HoldedResponse.class);
+            if (response.getBody().getStatus() != OK) {
+                // Use log and throw exception
+                String errorMessage = "";
+            }
         } catch (Exception ex) {
+            // Use log and throw exception
             String errorMessage = ex.getMessage();
         }
+
     }
 
     public String createCustomId(String nifCif, String email) throws UnsupportedEncodingException {
