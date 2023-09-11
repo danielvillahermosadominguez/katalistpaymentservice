@@ -48,32 +48,42 @@ public class MoodleAPIClient {
     }
 
     public boolean existsAnUserinThisCourse(String courseId, String email) {
+        //TODO: We need to review this function - performance issue
+        String lowerCaseEmailInput = email.toLowerCase();
         List<MoodleUserDTO> users = getUsersForCourse(courseId);
-        List<MoodleUserDTO> filtered = users.stream().filter(c -> c.getEmail().toLowerCase().equals(email.toLowerCase())).collect(Collectors.toList());
+        List<MoodleUserDTO> filtered = users
+                .stream()
+                .filter(user -> {
+                    String userEmail = user.getEmail();
+                    String lowerCaseEmail = userEmail.toLowerCase();
+                    return lowerCaseEmail.equals(lowerCaseEmailInput);
+                })
+                .collect(Collectors.toList());
         return !filtered.isEmpty();
     }
 
+    private MoodleUserDTO getFirst(ResponseEntity<MoodleUserDTO[]> response) {
+        List<MoodleUserDTO> resultList = Arrays.stream(response.getBody()).toList();
+        if(!resultList.isEmpty()) {
+            return resultList.get(0);
+        }
+        return null;
+    }
     public MoodleUserDTO getUserByMail(String email) throws UnsupportedEncodingException {
+        ResponseEntity<MoodleUserDTO[]> response = null;
         MoodleUserDTO result = null;
-        String url = URL_BASE + WSTOKEN + token + "&wsfunction=core_user_get_users_by_field" + MOODLEWSRESTFORMAT + format;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setContentLanguage(Locale.US);
-
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+        String url = createURL("core_user_get_users_by_field");
         map.add("field", "email");
         map.add("values[0]",  email);
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-        ResponseEntity<MoodleUserDTO[]> response = null;
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
+
         try {
             response = restTemplate.postForEntity(url, request, MoodleUserDTO[].class);
-            List<MoodleUserDTO> resultList = Arrays.stream(response.getBody()).toList();
-            if(!resultList.isEmpty()) {
-                result = resultList.get(0);
-            }
+            result = getFirst(response);
         } catch (Exception ex) {
             String errorMessage = ex.getMessage();
+
         }
 
         return result;
