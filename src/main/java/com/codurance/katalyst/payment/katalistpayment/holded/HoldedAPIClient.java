@@ -1,14 +1,13 @@
 package com.codurance.katalyst.payment.katalistpayment.holded;
 
+import com.codurance.katalyst.payment.katalistpayment.utils.APIClient;
 import com.codurance.katalyst.payment.katalistpayment.utils.Mail;
 import com.google.gson.Gson;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.time.OffsetDateTime;
@@ -17,42 +16,17 @@ import java.util.*;
 
 
 @Component
-public class HoldedAPIClient {
+public class HoldedAPIClient extends APIClient {
 
     @Value("${holded.urlbase}")
     private String URL_BASE;
 
     @Value("${holded.apikey}")
     private String apyKey;
-    @Autowired
-    private RestTemplate restTemplate;
 
-    public HoldedContactDTO getContactByMailOrCustomId(String email, String customId) throws UnsupportedEncodingException {
-        HoldedContactDTO result = null;
-        String url = URL_BASE + "invoicing/v1/contacts?email={email}";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_JSON_VALUE));
-        headers.add("key", apyKey);
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        Map<String, String> vars = new HashMap<>();
-        vars.put("email", email);
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
-        ResponseEntity<HoldedContactDTO[]> response = null;
-        try {
-            response = restTemplate.exchange(url, HttpMethod.GET, request, HoldedContactDTO[].class, vars);
-            List<HoldedContactDTO> contacts = Arrays.stream(response.getBody()).toList();
-            if (!contacts.isEmpty()) {
-                result = contacts.get(0);
-            } else {
-                result = getContactByCustomId(customId);
-            }
-        } catch (Exception ex) {
-            String errorMessage = ex.getMessage();
-        }
-
-        return result;
+    public HoldedAPIClient() {
+        this.setHeaderParameter("key", apyKey);
+        this.setMediaType(MediaType.APPLICATION_JSON_VALUE);
     }
 
     public HoldedContactDTO getContactByCustomId(String customId) {

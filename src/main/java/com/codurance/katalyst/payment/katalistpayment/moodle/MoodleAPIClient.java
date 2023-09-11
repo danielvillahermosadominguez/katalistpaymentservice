@@ -4,6 +4,7 @@ import com.codurance.katalyst.payment.katalistpayment.utils.APIClient;
 import com.codurance.katalyst.payment.katalistpayment.utils.Mail;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -39,6 +40,10 @@ public class MoodleAPIClient extends APIClient {
     @Value("${moodle.token}")
     private String token;
     private String format = "json";
+
+    public MoodleAPIClient() {
+        this.setMediaType(MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+    }
 
     private String generateEndPoint(String moodleWsFunction) {
         return URL_BASE+ WSTOKEN + token + WSFUNCTION +moodleWsFunction+ MOODLEWSRESTFORMAT +format;
