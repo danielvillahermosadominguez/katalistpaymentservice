@@ -21,11 +21,11 @@ public class APIClient {
 
     private Map<String, String> headersParams = new HashMap<>();
 
-    protected HttpEntity<MultiValueMap<String, String>> createRequest(MultiValueMap<String, String> map, String mediaType) {
+    protected <T> HttpEntity<MultiValueMap<String, T>> createRequest(MultiValueMap<String, T> map, String mediaType) {
         HttpHeaders headers = new HttpHeaders();
         getHeaderParameter(headers);
         headers.setContentType(MediaType.valueOf(mediaType));
-        HttpEntity<MultiValueMap<String, String>> request = map == null? new HttpEntity<>(headers) : new HttpEntity<>(map, headers);
+        HttpEntity<MultiValueMap<String, T>> request = map == null? new HttpEntity<>(headers) : new HttpEntity<>(map, headers);
         return  request;
     }
 

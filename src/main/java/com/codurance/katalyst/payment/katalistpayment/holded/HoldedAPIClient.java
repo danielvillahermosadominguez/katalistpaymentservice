@@ -89,29 +89,27 @@ public class HoldedAPIClient extends APIClient {
 
     public HoldedInvoiceDTO createInvoice(HoldedContactDTO contact, String concept, String description, int amount, double price) {
         HoldedInvoiceDTO result = null;
-        String url = URL_BASE + "invoicing/v1/documents/invoice";
+        String url = generateEndPoint("invoicing/v1/documents/invoice");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.add("key", apyKey);
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add("contactId", contact.getId());
         map.add("desc",description);
         OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
         Date date = Date.from(utc.toInstant());
         map.add("date", date.toInstant().getEpochSecond()+"");
-        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO("Suscription to Katalist", OK, 60.99);
+        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO("Suscription to Katalist", OK, price);
         List<HoldedInvoiceItemDTO> items = Arrays.asList(item);
         Gson gson = new Gson();
         String jsonArray = gson.toJson(items);
         map.add("items",jsonArray);
 
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
+        HttpEntity<MultiValueMap<String, Object>> request = createRequest(map,MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         ResponseEntity<HoldedInvoiceDTO> response = null;
         try {
             response = restTemplate.postForEntity(url, request, HoldedInvoiceDTO.class);
             result = response.getBody();
         } catch (Exception ex) {
+            // Use log and throw exception
             String errorMessage = ex.getMessage();
         }
 
