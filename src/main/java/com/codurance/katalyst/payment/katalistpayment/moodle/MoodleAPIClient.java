@@ -1,16 +1,13 @@
 package com.codurance.katalyst.payment.katalistpayment.moodle;
 
+import com.codurance.katalyst.payment.katalistpayment.utils.APIClient;
 import com.codurance.katalyst.payment.katalistpayment.utils.Mail;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -18,7 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class MoodleAPIClient {
+public class MoodleAPIClient extends APIClient {
     public static final String WSTOKEN = "wstoken=";
     public static final String WSFUNCTION = "&wsfunction=";
     public static final String MOODLEWSRESTFORMAT = "&moodlewsrestformat=";
@@ -43,15 +40,6 @@ public class MoodleAPIClient {
     private String token;
     private String format = "json";
 
-    @Autowired
-    private RestTemplate restTemplate;
-
-    private HttpEntity<MultiValueMap<String, String>> createRequest(MultiValueMap<String, String> map) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE));
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-        return  request;
-    }
     private String generateEndPoint(String moodleWsFunction) {
         return URL_BASE+ WSTOKEN + token + WSFUNCTION +moodleWsFunction+ MOODLEWSRESTFORMAT +format;
     }
@@ -81,14 +69,6 @@ public class MoodleAPIClient {
         return !filtered.isEmpty();
     }
 
-    private <T> T getFirst(ResponseEntity<T[]> response) {
-        List<T> resultList = Arrays.stream(response.getBody()).toList();
-        if(resultList.isEmpty()) {
-            return null;
-        }
-
-        return resultList.get(0);
-    }
     public MoodleUserDTO getUserByMail(String email) throws UnsupportedEncodingException {
         ResponseEntity<MoodleUserDTO[]> response = null;
         MoodleUserDTO result = null;
