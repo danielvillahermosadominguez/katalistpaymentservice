@@ -11,7 +11,6 @@ import org.springframework.web.client.RestTemplate;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.stream.Collectors;
 
 @Component
@@ -82,39 +81,34 @@ public class MoodleAPIClient {
             response = restTemplate.postForEntity(url, request, MoodleUserDTO[].class);
             result = getFirst(response);
         } catch (Exception ex) {
+            //TODO: Include log and Throw Exception
             String errorMessage = ex.getMessage();
-
         }
 
         return result;
     }
 
-    public MoodleUserDTO createAnUser(String name, String surname, String email) throws UnsupportedEncodingException {
-        String url = URL_BASE + WSTOKEN + token + "&wsfunction=core_user_create_users" + MOODLEWSRESTFORMAT + format;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setContentLanguage(Locale.US);
-
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-
+    public MoodleUserDTO createUser(String name, String surname, String email) throws UnsupportedEncodingException {
+        ResponseEntity<MoodleUserDTO[]> response = null;
+        MoodleUserDTO result = null;
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+        String url = createURL("core_user_create_users");
         map.add("users[0][username]", generateUserNameBasedOn(email));
         map.add("users[0][createpassword]", "1");
-        //map.add("users[0][password]", "@Codurance2023$");
         map.add("users[0][email]",  email);
         map.add("users[0][firstname]",name);
         map.add("users[0][lastname]", surname);
-
-        HttpEntity<MultiValueMap<String,String>> request = new HttpEntity<>(map, headers);
-        ResponseEntity<MoodleUserDTO[]> response = null;
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
 
         try {
             response = restTemplate.postForEntity(url, request, MoodleUserDTO[].class);
+            result = getFirst(response);
         } catch (Exception ex) {
+            //TODO: Include log and Throw Exception
             String errorMessage = ex.getMessage();
         }
-        List<MoodleUserDTO> result = Arrays.stream(response.getBody()).toList();
-        //We need to encapusalte in our own exception
-        return result.get(0);
+
+        return result;
     }
 
     private String generateUserNameBasedOn(String mail) {

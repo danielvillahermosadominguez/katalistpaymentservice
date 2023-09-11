@@ -56,7 +56,7 @@ public class PaymentController {
 
         MoodleUserDTO user = moodleAPIClient.getUserByMail(customer.getEmail());
         if(user == null) {
-            user = moodleAPIClient.createAnUser(customer.getName(), customer.getSurname(), customer.getEmail());
+            user = moodleAPIClient.createUser(customer.getName(), customer.getSurname(), customer.getEmail());
         }
         moodleAPIClient.subscribeUserToTheCourse(course, user);
         return ResponseEntity.ok(HttpStatus.OK);
