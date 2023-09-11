@@ -63,12 +63,13 @@ public class MoodleAPIClient {
         return !filtered.isEmpty();
     }
 
-    private MoodleUserDTO getFirst(ResponseEntity<MoodleUserDTO[]> response) {
-        List<MoodleUserDTO> resultList = Arrays.stream(response.getBody()).toList();
-        if(!resultList.isEmpty()) {
-            return resultList.get(0);
+    private <T> T getFirst(ResponseEntity<T[]> response) {
+        List<T> resultList = Arrays.stream(response.getBody()).toList();
+        if(resultList.isEmpty()) {
+            return null;
         }
-        return null;
+
+        return resultList.get(0);
     }
     public MoodleUserDTO getUserByMail(String email) throws UnsupportedEncodingException {
         ResponseEntity<MoodleUserDTO[]> response = null;
@@ -134,24 +135,19 @@ public class MoodleAPIClient {
     }
 
     public MoodleCourseDTO getCourse(String courseId) {
-        String url = URL_BASE+ WSTOKEN + token + "&wsfunction=core_course_get_courses"+ MOODLEWSRESTFORMAT +format;
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf(MediaType.APPLICATION_FORM_URLENCODED_VALUE));
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
-        map.add("options[ids][0]", courseId);
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-        MoodleCourseDTO result = null;
         ResponseEntity<MoodleCourseDTO[]> response = null;
+        MoodleCourseDTO result = null;
+        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+        String url = createURL("core_course_get_courses");
+        map.add("options[ids][0]", courseId);
+        HttpEntity<MultiValueMap<String, String>> request = createRequest(map);
+
         try {
             response = restTemplate.postForEntity(url, request, MoodleCourseDTO[].class);
-
-            List<MoodleCourseDTO> courses = Arrays.stream(response.getBody()).toList();
-            if(!courses.isEmpty()) {
-                result = courses.get(0);
-            }
+            result = getFirst(response);
         } catch (Exception ex) {
+            //TODO: Include log and Throw Exception
             String errorMessage = ex.getMessage();
-            //Habria que controlar
         }
 
         return result;
