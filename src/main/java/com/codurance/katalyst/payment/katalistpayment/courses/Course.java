@@ -4,12 +4,12 @@ public class Course {
     private int id;
     private String name;
 
-    private double prize;
+    private double price;
 
-    public Course(int id, String name, double prize) {
+    public Course(int id, String name, double price) {
         this.id = id;
         this.name = name;
-        this.prize = prize;
+        this.price = price;
     }
 
     public int getId() {
@@ -21,6 +21,6 @@ public class Course {
     }
 
     public double getPrize() {
-        return prize;
+        return price;
     }
 }
