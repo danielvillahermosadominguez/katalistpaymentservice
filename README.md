@@ -142,50 +142,60 @@ In Holded we need to follow the following steps:
     - Database and manually fill this information?
     - Moodle. I haven't found any way to find it
     - The same prize for every course. Hardcode, constant
-
+# Restrictions and Rules
+- [12.09.2023 ] We don't override data in Moodle or in Holded. 
+- [12.09.2023 ] The quantity is initially 1. One per user. We will evolute by the time
   
-# Task related with the POC
 
+# Task related with the POC
+- [ ] Refactor of the service and some test coverage after the poc
+- [ ] Resend in case of error + to be sure the mail has been sent (invoice)
+- [ ] Private Data Policy in the form - People of Paycomet will help us to cover it
+- [ ] Evaluate to use MongoDB - Deprecated. Create an ADR for the PostgreeSQL decision
+- [ ] Connection holded PRO
+- [ ] Connection moodle PRO + configuration of security
+- [ ] Repository migration to Codurance organization
+- [ ] Logs and traceability 
+- [ ] Send a email in case of error with the information 
+- [ ] To use a hash for the key in holded
+- [ ] Create in holded person and company depending on the form. Include a checkbox "Company"
+- [ ] Review the format of the invoice - review with product owner
+- [ ] Review the error messages
+- [ ] Form must have localization
+- [ ] New data in the forms: address, phone - review with product owner
+- [ ] TPV and Sandbox (Paycomet) access
+- [ ] TPV interaction - basic uses cases
+- [ ] Environments variables in HTML5. How not to harcode the url
+- [ ] Validation the correct input in the service. surely with tests
+- [ ] Send a mail with an account. The idea it could be neccesary, at least to the edge cases
+- [ ] Basic integration in azure with TPV. Test
+- [ ] Service security in the backend
+- [ ] Optional if we don't have TPV interaction - Stripe interaction. Review it in the demo
+- [ ] Improve the look and feel of the basic form - use codurance styles
+- [ ] Emulation of the TPV (temporary) - Optional and to evaluate
+- [ ] Documentation about the integrations.
+  - [ ] Integration with Moodle and user, token, etc
+  - [ ] Decisions in Holded integration
+  - [ ] Deployment in Azure and improvements
+  - [ ] Secrets in vaults and Bitlocker
+- [ ] Review the infrastructure and dockerization - use a docker container for the service
+- [ ] Transfer repositories to codurance organization in Github
+- [ ] Problem with the automatic deployment of the service. User in azure to deploy.
+- [ ] Migration to AWS
+- [ ] Restrict connection with the service, only for the static form (cookies?) or with infrastructure
 - [x] static website with a basic form in Azure (playground). Github repository + deployment
 - [x] Basic service in Java without security in the playground. Github repository + deployement
 - [x] Basic Integration between website form and service
 - [x] Access to Moodle and configuration for interaction with the API
 - [x] Moodle interaction - basic uses cases
-- [ ] TPV and Sandbox (Paycomet) access
-- [ ] TPV interaction - basic uses cases
 - [x] Access to holded
 - [x] holded interaction - basic uses cases
-- [ ] Workaround. Create a new account with other email in holded to test the api
-- [ ] Environments variables in HTML5. How not to harcode the url
-- [ ] Enviroment variables in Service
-- [ ] Refactor of the service and some test coverage after the poc
-- [ ] Validation the correct input in the service. surely with tests
-- [ ] Send a mail with an account. The idea it could be neccesary, at least to the edge cases
+- [x] Workaround. Create a new account with other email in holded to test the api
+- [x] Enviroment variables in Service
 - [x] Basic integration of in azure with Moodle. Tests
-- [ ] Basic integration in azure with Holded. Test
-- [ ] Basic integration in azure with TPV. Test
-- [ ] Service security in the backend
-- [ ] Database to persist information in the playground. Postgree? We could delay the decision with SQLite or file.
-- [ ] Optional if we don't have TPV interaction - Stripe interaction. Review it in the demo
-- [ ] Improve the look and feel of the basic form
-- [ ] Emulation of the TPV (temporary) - Optional and to evaluate
-- [ ] Documentation about the integrations.
-  - [ ] Integration with Moodle and user, token, etc
-  - [ ] Deployment in Azure and improvements
-- [ ] Review the infrastructure and dockerization. 
-- [ ] Review if the playground is the best place for it.
-- [ ] Transfer repositories to codurance organization in Github
-- [ ] Problem with the automatic deployment of the service. User in azure to deploy.
-- [ ] Migration to AWS
-- [ ] Form with token and remove the courseID (this could be a parameter)
-- [ ] Restrict connection with the service, only for the static form (cookies?)
+- [x] Basic integration in azure with Holded. Test
+- [x] Database to persist information in the playground. Postgree? We could delay the decision with SQLite or file.
+- [x] Review if the playground is the best place for it.-> Final in AWS
+- [x] Form with token and remove the courseID (this could be a parameter)
 
 # Detected BUGS
-- [ ] When an email contains "+" character. For example daniel.villahermosa+user@codurance.com. We receive an error with the following data:
-  - Course ID : 9
-  - Email: daniel.villahermosa+user@codurance.com
-  - Name: Daniel
-  - Surname: Garcia
-  - Company Name: Su empresa
-  - DNI/CIF: 339939393F
-  - Only invoice with Holded
