@@ -20,7 +20,7 @@ public class Course {
         return name;
     }
 
-    public double getPrize() {
+    public double getPrice() {
         return price;
     }
 }

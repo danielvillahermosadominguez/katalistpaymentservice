@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class MoodleCourseDTO {
-    private int id;
-    private String displayname;
+    protected int id;
+    protected String displayname;
 
-    private List<MoodleCustomField> customfields;
+    protected List<MoodleCustomField> customfields;
 
     public int getId() {
         return id;

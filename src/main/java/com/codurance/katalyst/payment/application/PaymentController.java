@@ -109,4 +109,9 @@ public class PaymentController {
         }
         return ResponseEntity.ok(HttpStatus.OK);
     }
+    @RequestMapping(value = "/subscription", method = RequestMethod.POST)
+    @ResponseBody
+    public ResponseEntity subscription(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
 }
