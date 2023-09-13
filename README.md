@@ -148,10 +148,9 @@ In Holded we need to follow the following steps:
   
 
 # Task related with the POC
-- [ ] Refactor of the service and some test coverage after the poc
+- [In progress] Refactor of the service and some test coverage after the poc
 - [ ] Resend in case of error + to be sure the mail has been sent (invoice)
 - [ ] Private Data Policy in the form - People of Paycomet will help us to cover it
-- [ ] Evaluate to use MongoDB - Deprecated. Create an ADR for the PostgreeSQL decision
 - [ ] Connection holded PRO
 - [ ] Connection moodle PRO + configuration of security
 - [ ] Repository migration to Codurance organization
@@ -159,10 +158,11 @@ In Holded we need to follow the following steps:
 - [ ] Send a email in case of error with the information 
 - [ ] To use a hash for the key in holded
 - [ ] Create in holded person and company depending on the form. Include a checkbox "Company"
-- [ ] Review the format of the invoice - review with product owner
+- [x] Review the format of the invoice - review with product owner
 - [ ] Review the error messages
-- [ ] Form must have localization
-- [ ] New data in the forms: address, phone - review with product owner
+- [x] Form must have localization
+- [ ] New data in the forms: address, phone
+- [ ] Default data in creation of contact + Uppercase in values
 - [ ] TPV and Sandbox (Paycomet) access
 - [ ] TPV interaction - basic uses cases
 - [ ] Environments variables in HTML5. How not to harcode the url
@@ -170,7 +170,6 @@ In Holded we need to follow the following steps:
 - [ ] Send a mail with an account. The idea it could be neccesary, at least to the edge cases
 - [ ] Basic integration in azure with TPV. Test
 - [ ] Service security in the backend
-- [ ] Optional if we don't have TPV interaction - Stripe interaction. Review it in the demo
 - [ ] Improve the look and feel of the basic form - use codurance styles
 - [ ] Emulation of the TPV (temporary) - Optional and to evaluate
 - [ ] Documentation about the integrations.
@@ -183,6 +182,7 @@ In Holded we need to follow the following steps:
 - [ ] Problem with the automatic deployment of the service. User in azure to deploy.
 - [ ] Migration to AWS
 - [ ] Restrict connection with the service, only for the static form (cookies?) or with infrastructure
+- [ ] Evaluate to use MongoDB - Deprecated. Create an ADR for the PostgreeSQL decision
 - [x] static website with a basic form in Azure (playground). Github repository + deployment
 - [x] Basic service in Java without security in the playground. Github repository + deployement
 - [x] Basic Integration between website form and service
