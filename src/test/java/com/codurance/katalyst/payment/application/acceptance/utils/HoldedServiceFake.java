@@ -7,15 +7,12 @@ import com.github.tomakehurst.wiremock.http.RequestListener;
 import com.github.tomakehurst.wiremock.http.RequestMethod;
 import com.github.tomakehurst.wiremock.http.Response;
 import com.google.gson.Gson;
-import org.apache.hc.core5.http.NameValuePair;
-import org.apache.hc.core5.net.URIBuilder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,6 +24,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
@@ -52,15 +50,6 @@ public class HoldedServiceFake extends ServiceFake {
         this.wireMockServer = new MockServer(options().port(this.port));
         this.wireMockServer.start();
         this.init();
-    }
-
-    private String getParamValue(String link, String paramName) throws URISyntaxException {
-        List<NameValuePair> queryParams = new URIBuilder(link).getQueryParams();
-        return queryParams.stream()
-                .filter(param -> param.getName().equalsIgnoreCase(paramName))
-                .map(NameValuePair::getValue)
-                .findFirst()
-                .orElse("");
     }
 
     private void init() {
@@ -216,13 +205,14 @@ public class HoldedServiceFake extends ServiceFake {
         Map<String, String> requestBodyMap = new LinkedHashMap<>();
         requestBodyMap.put("emails", email);
 
-        stubForPostWithStatusOKAndBodyParameters("invoicing/v1/documents/invoice/"+unicode(invoiceID)+"/send",
+        stubForPostWithStatusOKAndBodyParameters("invoicing/v1/documents/invoice/" + unicode(invoiceID) + "/send",
                 joinParameters(requestBodyMap),
                 json);
 
     }
 
-    public boolean verifySendInvoiceHasBeenCalled() {
-        return true;
+    public void verifySendInvoiceHasBeenCalled(String email, String invoiceID) throws UnsupportedEncodingException {
+        this.wireMockServer.verify(1,
+                postRequestedFor(urlEqualTo(URL_BASE + "invoicing/v1/documents/invoice/" + unicode(invoiceID) + "/send")));
     }
 }

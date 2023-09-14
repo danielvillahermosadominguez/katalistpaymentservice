@@ -140,8 +140,8 @@ public class Stepdefs {
     }
 
     @Then("the user has received an invoice")
-    public void the_user_has_received_an_invoice() {
-        assertThat(this.holdedService.verifySendInvoiceHasBeenCalled()).isTrue();
+    public void the_user_has_received_an_invoice() throws UnsupportedEncodingException {
+      this.holdedService.verifySendInvoiceHasBeenCalled(data.get("email"),"IDINVOICE");
 
     }
     @Then("the user has received the access to the platform")
