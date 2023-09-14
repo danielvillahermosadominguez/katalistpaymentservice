@@ -58,7 +58,7 @@ public class Stepdefs {
         }
         moodleService.resetAndConfigure();
         moodleService.addCourse(FIXTURE_COURSE_ID, FIXTURE_DISPLAY_NAME, FIXTURE_PRICE);
-        moodleService.configureStubs();
+        moodleService.configureGenericStubs();
     }
 
     @Given("A company who has choosen a course")
@@ -74,10 +74,11 @@ public class Stepdefs {
     }
 
     @Given("the user has filled the following data")
-    public void the_user_has_filled_the_following_data(DataTable dataTable) {
+    public void the_user_has_filled_the_following_data(DataTable dataTable) throws UnsupportedEncodingException {
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
         data = rows.get(0);
+        moodleService.configureStubsForCreateUser(data);
         code = apiClient.subscribe(this.selecteCourse, data);
         assertThat(code).isEqualTo(1);
     }

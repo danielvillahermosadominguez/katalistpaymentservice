@@ -32,7 +32,7 @@ public class MoodleAPIClient extends APIClient {
     public static final String CREATE_PASWORD_AND_SEND = "1";
     public static final String ENROLMENTS_0_ROLEID = "enrolments[0][roleid]";
     public static final String ENROLMENTS_0_USERID = "enrolments[0][userid]";
-    public static final String ENROLMENTS_0_COURSEID = "enrolments[0][courseid]=";
+    public static final String ENROLMENTS_0_COURSEID = "enrolments[0][courseid]";
     public static final String OPTIONS_IDS_0 = "options[ids][0]";
     @Value("${moodle.urlbase}")
     private String URL_BASE;

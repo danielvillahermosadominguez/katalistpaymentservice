@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.application.acceptance.utils;
 
+import com.codurance.katalyst.payment.application.utils.Mail;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.http.Request;
@@ -78,7 +79,7 @@ public class MoodleServiceFake {
         map.put("id", id);
         map.put("displayname", displayName);
         map.put("customfields", customFields.toArray());
-        
+
         this.courses.add(map);
     }
 
@@ -87,24 +88,30 @@ public class MoodleServiceFake {
         stubForPostWithStatusOK("core_course_get_courses", json);
     }
 
+    private void configureStubsForGetCoursesByEmail() {
+        String json = gson.toJson(Arrays.asList());
+        stubForPostWithStatusOK("core_user_get_users_by_field", json);
+    }
+
     private void configureStubsForGetEnroledUsers() {
         String json = gson.toJson(Arrays.asList().toArray());
         stubForPostWithStatusOK("core_enrol_get_enrolled_users", json);
     }
 
-    private void configureStubsForCreateUser() throws UnsupportedEncodingException {
+    public void configureStubsForCreateUser(Map<String, String> data) throws UnsupportedEncodingException {
+        Mail mail = new Mail(data.get("email"));
         Map<String, Object> bodyMap = new LinkedHashMap<>();
         bodyMap.put("id", 1);
-        bodyMap.put("username", "John");
-        bodyMap.put("email", "john@example.com");
+        bodyMap.put("username", mail.getUserName());
+        bodyMap.put("email", data.get("email"));
         String json = gson.toJson(Arrays.asList(bodyMap).toArray());
 
         Map<String, String> requestBodyMap = new LinkedHashMap<>();
-        requestBodyMap.put("users[0][username]", "john");
+        requestBodyMap.put("users[0][username]", mail.getUserName());
         requestBodyMap.put("users[0][createpassword]", "1");
-        requestBodyMap.put("users[0][email]", "john@example.com");
-        requestBodyMap.put("users[0][firstname]", "John");
-        requestBodyMap.put("users[0][lastname]", "Doe");
+        requestBodyMap.put("users[0][email]", data.get("email"));
+        requestBodyMap.put("users[0][firstname]", data.get("Name"));
+        requestBodyMap.put("users[0][lastname]", data.get("Surname"));
 
         stubForPostWithStatusOKAndBodyParameters("core_user_create_users",
                 joinParameters(requestBodyMap),
@@ -155,10 +162,10 @@ public class MoodleServiceFake {
         );
     }
 
-    public void configureStubs() throws UnsupportedEncodingException {
+    public void configureGenericStubs() throws UnsupportedEncodingException {
         configureStubsForGetCourses();
         configureStubsForGetEnroledUsers();
-        configureStubsForCreateUser();
+        configureStubsForGetCoursesByEmail();
         configureStubsForEnroleUser();
     }
 
