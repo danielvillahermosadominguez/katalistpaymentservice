@@ -10,6 +10,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.ResponseEntity;
 
@@ -25,12 +26,16 @@ public class Stepdefs {
     public static final int FIXTURE_PRICE = 100;
     public static final String FIXTURE_DISPLAY_NAME = "TEST_COURSE";
     public static final int FIXTURE_COURSE_ID = 9;
+
     private int selecteCourse;
     int code = -1;
-
     Map<String, String> data = null;
+
     @LocalServerPort
     int randomServerPort;
+
+    @Value("${moodle.token}")
+    private String token;
 
     @Autowired
     private TestApiClient apiClient;
@@ -43,6 +48,7 @@ public class Stepdefs {
         if(!apiClient.isInitialized()) {
             this.apiClient.setPort(randomServerPort);
             moodleService.setPort(MOODLE_PORT);
+            moodleService.setToken(token);
             moodleService.start();
         }
         ResponseEntity<String> response = this.apiClient.checkItsAlive();
