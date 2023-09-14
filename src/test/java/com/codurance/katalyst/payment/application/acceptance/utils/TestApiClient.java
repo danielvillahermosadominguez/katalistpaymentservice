@@ -99,4 +99,26 @@ public class TestApiClient {
         }
         return 1;
     }
+
+    public int payment(int courseId, Map<String, String> data) {
+        Map<String, String> potentialCustomer = new HashMap<>();
+        potentialCustomer.put("paymentMethod", "");
+        potentialCustomer.put("courseId", courseId + "");
+        potentialCustomer.put("email", data.get("email"));
+        potentialCustomer.put("name", data.get("Name"));
+        potentialCustomer.put("surname", data.get("Surname"));
+        potentialCustomer.put("company", data.get("Company"));
+        potentialCustomer.put("dnicif", data.get("Dni/CIF"));
+        String isCompany = data.get("Dni/CIF");
+        String address = data.get("Address");
+        String phone = data.get("Phone");
+        Gson gson = new Gson();
+        String body = gson.toJson(potentialCustomer);
+        ResponseEntity<String> response = post(getUrlBase() + "/invoicing", body);
+        if (response.getStatusCode() != HttpStatus.OK) {
+            Error error = gson.fromJson(response.getBody(), Error.class);
+            return error.getCode();
+        }
+        return 1;
+    }
 }

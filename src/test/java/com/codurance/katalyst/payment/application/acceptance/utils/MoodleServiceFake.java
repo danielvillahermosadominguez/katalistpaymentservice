@@ -1,7 +1,6 @@
 package com.codurance.katalyst.payment.application.acceptance.utils;
 
 import com.codurance.katalyst.payment.application.utils.Mail;
-import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.RequestListener;
@@ -22,9 +21,11 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 @Component
 public class MoodleServiceFake {
@@ -34,7 +35,7 @@ public class MoodleServiceFake {
     Gson gson = new Gson();
     public String token;
     private final static String URL_BASE = "/webservice/rest/server.php?wstoken=%s&wsfunction=%s&moodlewsrestformat=json";
-    private WireMockServer wireMockServer = null;
+    private MockServer wireMockServer = null;
     private List<Object> courses = new ArrayList<>();
 
     private Map<Integer, List<Object>> studentsPerCourse = new HashMap<>();
@@ -49,7 +50,7 @@ public class MoodleServiceFake {
     }
 
     public void start() {
-        this.wireMockServer = new WireMockServer(port);
+        this.wireMockServer = new MockServer(options().port(this.port));
         this.wireMockServer.start();
         this.init();
     }
@@ -65,7 +66,6 @@ public class MoodleServiceFake {
 
     public void resetAndConfigure() {
         this.reset();
-        WireMock.configureFor(port);
     }
 
     public void addCourse(int id, String displayName, double price) {
@@ -131,7 +131,7 @@ public class MoodleServiceFake {
     }
 
     private void stubForPostWithStatusOK(String function, String responseBody) {
-        WireMock.stubFor(
+        this.wireMockServer.stubFor(
                 post(urlEqualTo(String.format(URL_BASE, token, function)))
                         .willReturn(
                                 aResponse()
@@ -147,7 +147,7 @@ public class MoodleServiceFake {
     }
 
     private void stubForPostWithStatusOKAndBodyParameters(String function, String requestBody, String responseBody) {
-        WireMock.stubFor(
+        this.wireMockServer.stubFor(
                 post(urlEqualTo(String.format(URL_BASE, token, function)))
                         .withRequestBody(containing(requestBody))
                         .willReturn(
