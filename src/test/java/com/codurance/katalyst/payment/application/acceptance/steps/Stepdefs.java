@@ -33,7 +33,7 @@ public class Stepdefs {
     int subscritionOutputCode = -1;
     int invoiceOutputCode = -1;
     Map<String, String> data = null;
-
+    boolean newUser = true;
     @LocalServerPort
     int randomServerPort;
 
@@ -50,7 +50,7 @@ public class Stepdefs {
     private MoodleServiceFake moodleService;
 
     @Autowired
-    private HoldedServiceFake holdedServiceFake;
+    private HoldedServiceFake holdedService;
 
     @Before
     public void beforeEachScenario() throws JsonProcessingException, UnsupportedEncodingException {
@@ -59,9 +59,9 @@ public class Stepdefs {
             moodleService.setPort(WIREMOCK_MOODLE_PORT);
             moodleService.setToken(moodleToken);
             moodleService.start();
-            holdedServiceFake.setPort(WIREMOCK_HOLDED_PORT);
-            holdedServiceFake.setToken(holdedApiKey);
-            holdedServiceFake.start();
+            holdedService.setPort(WIREMOCK_HOLDED_PORT);
+            holdedService.setToken(holdedApiKey);
+            holdedService.start();
 
         }
         ResponseEntity<String> response = this.apiClient.checkItsAlive();
@@ -71,11 +71,11 @@ public class Stepdefs {
         }
 
         moodleService.resetAndConfigure();
-        holdedServiceFake.resetAndConfigure();
+        holdedService.resetAndConfigure();
 
         moodleService.addCourse(FIXTURE_COURSE_ID, FIXTURE_DISPLAY_NAME, FIXTURE_PRICE);
         moodleService.configureGenericStubs();
-        holdedServiceFake.configureGenericStubs();
+        holdedService.configureGenericStubs();
     }
 
     @Given("A company who has choosen a course")
@@ -95,38 +95,58 @@ public class Stepdefs {
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
         data = rows.get(0);
-        moodleService.configureStubsForCreateUser(data);
+        if (newUser) {
+            moodleService.configureStubsForCreateUser(data);
+        }
         subscritionOutputCode = apiClient.subscribe(this.selecteCourse, data);
         assertThat(subscritionOutputCode).isEqualTo(1);
+    }
+
+    @Given("he\\/she has been subscribed to other courses in the past with the following data")
+    public void he_she_has_been_subscribed_to_other_courses_in_the_past_with_the_following_data(io.cucumber.datatable.DataTable dataTable) throws UnsupportedEncodingException {
+        List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
+        assertThat(rows.size()).isEqualTo(1);
+        data = rows.get(0);
+        moodleService.configureStubsForCreateUser(data);
+        holdedService.addContact(data);
+        newUser = false;
     }
 
     @When("the user request the subscription")
     public void the_user_request_the_subscription() {
         subscritionOutputCode = apiClient.subscribe(this.selecteCourse, data);
     }
+
     @Then("the user is informed he\\/she is already subscribed to this course")
     public void the_user_is_informed_he_she_is_already_subscribed_to_this_course() {
 
     }
 
     @When("the user pay the subscription")
-    public void the_user_pay_the_subscription() {
-        int invoiceOutputCode = this.apiClient.payment(this.selecteCourse,data);
+    public void the_user_pay_the_subscription() throws UnsupportedEncodingException {
+        this.holdedService.configureStubsForGetContactByCustomId(data);
+        if (newUser) {
+            this.holdedService.configureStubsForCreateContact(data);
+        }
+        this.holdedService.configureStubsForCreateInvoice("IDINVOICE");
+        this.holdedService.configureStubsForSendInvoice(data.get("email"),"IDINVOICE");
+        this.invoiceOutputCode = this.apiClient.payment(this.selecteCourse, data);
     }
+
     @Then("the subscription is successful")
-    public void the_subscription_is_successful() {
+    public void the_subscription_is_successful() throws UnsupportedEncodingException {
         assertThat(subscritionOutputCode).isEqualTo(1);
-        //assertThat(invoiceOutputCode).isEqualTo(1);
+        assertThat(invoiceOutputCode).isEqualTo(1);
     }
+
     @Then("the user has received an invoice")
     public void the_user_has_received_an_invoice() {
-        // Write code here that turns the phrase above into concrete actions
+        assertThat(this.holdedService.verifySendInvoiceHasBeenCalled()).isTrue();
 
     }
     @Then("the user has received the access to the platform")
     public void the_user_has_received_the_access_to_the_platform() {
-        // Write code here that turns the phrase above into concrete actions
-
+        assertThat(subscritionOutputCode).isEqualTo(1);
     }
 
     @When("the user request the subscription to the course")

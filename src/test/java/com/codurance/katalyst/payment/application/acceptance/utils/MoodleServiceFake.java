@@ -1,7 +1,6 @@
 package com.codurance.katalyst.payment.application.acceptance.utils;
 
 import com.codurance.katalyst.payment.application.utils.Mail;
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.http.Request;
 import com.github.tomakehurst.wiremock.http.RequestListener;
 import com.github.tomakehurst.wiremock.http.Response;
@@ -12,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,16 +19,13 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.configureFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 @Component
-public class MoodleServiceFake {
-    public static final String EQUAL_SYMBOL = "=";
-    public static final String JOIN_SYMBOL = "&";
+public class MoodleServiceFake extends ServiceFake {
     public static final String STUDENT_ROL_ID = "5";
     Gson gson = new Gson();
     public String token;
@@ -167,22 +162,6 @@ public class MoodleServiceFake {
         configureStubsForGetEnroledUsers();
         configureStubsForGetCoursesByEmail();
         configureStubsForEnroleUser();
-    }
-
-    private String joinParameters(Map<String, String> requestBodyMap) throws UnsupportedEncodingException {
-        String requestBody = "";
-
-        for (Map.Entry<String, String> parameter : requestBodyMap.entrySet()) {
-            requestBody += unicode(parameter.getKey()) + EQUAL_SYMBOL + unicode(parameter.getValue()) + JOIN_SYMBOL;
-        }
-        if (!requestBody.isEmpty()) {
-            requestBody = requestBody.substring(0, requestBody.length() - 1);
-        }
-        return requestBody;
-    }
-
-    private String unicode(String s) throws UnsupportedEncodingException {
-        return URLEncoder.encode(s, "UTF-8");
     }
 
     public void reset() {

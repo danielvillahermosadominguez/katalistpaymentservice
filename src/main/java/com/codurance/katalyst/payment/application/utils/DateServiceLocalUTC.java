@@ -8,7 +8,7 @@ import java.time.ZoneOffset;
 import java.util.Date;
 
 @Component
-public class DateService {
+public class DateServiceLocalUTC implements DateService{
     public Instant getInstant() {
         OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
         Date date = Date.from(utc.toInstant());

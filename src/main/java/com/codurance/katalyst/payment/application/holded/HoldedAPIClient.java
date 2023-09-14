@@ -1,8 +1,11 @@
 package com.codurance.katalyst.payment.application.holded;
 
 import com.codurance.katalyst.payment.application.utils.APIClient;
+import com.codurance.katalyst.payment.application.utils.DateService;
+import com.codurance.katalyst.payment.application.utils.DateServiceLocalUTC;
 import com.codurance.katalyst.payment.application.utils.Mail;
 import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -10,10 +13,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.io.UnsupportedEncodingException;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -42,6 +43,9 @@ public class HoldedAPIClient extends APIClient {
 
     @Value("${holded.apikey}")
     private String apyKey;
+
+    @Autowired
+    DateService dateService;
 
     @Override
     protected void getHeaderParameter(HttpHeaders headers) {
@@ -104,9 +108,8 @@ public class HoldedAPIClient extends APIClient {
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add(CONTACT_ID, contact.getId());
         map.add(DESC,description);
-        OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
-        Date date = Date.from(utc.toInstant());
-        map.add(DATE, date.toInstant().getEpochSecond()+"");
+        Instant instant = dateService.getInstant();
+        map.add(DATE, instant.getEpochSecond()+"");
         HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO(concept, amount, price);
         List<HoldedInvoiceItemDTO> items = Arrays.asList(item);
         Gson gson = new Gson();

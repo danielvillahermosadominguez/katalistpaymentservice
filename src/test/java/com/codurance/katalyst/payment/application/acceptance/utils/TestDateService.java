@@ -1,2 +1,15 @@
-package com.codurance.katalyst.payment.application.acceptance.utils;public class TestDateService {
+package com.codurance.katalyst.payment.application.acceptance.utils;
+
+import com.codurance.katalyst.payment.application.utils.DateService;
+
+import java.time.Instant;
+import java.util.Date;
+
+public class TestDateService implements DateService {
+
+    @Override
+    public Instant getInstant() {
+        Date date = new Date(2323223232L);
+        return date.toInstant();
+    }
 }

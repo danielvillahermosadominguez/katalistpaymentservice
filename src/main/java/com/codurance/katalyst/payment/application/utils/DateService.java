@@ -1,2 +1,7 @@
-package com.codurance.katalyst.payment.application.utils;public interface DateServiceInterface {
+package com.codurance.katalyst.payment.application.utils;
+
+import java.time.Instant;
+
+public interface DateService {
+    Instant getInstant();
 }
