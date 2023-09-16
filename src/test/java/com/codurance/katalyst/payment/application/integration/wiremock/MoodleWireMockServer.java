@@ -70,7 +70,7 @@ public class MoodleWireMockServer extends WireMockServerExtension {
 
     private void stubForPostWithStatusOk(String function, String responseBody) {
         this.wireMockServer.stubFor(
-                post(urlEqualTo(String.format(URL_BASE, token, function)))
+                post(urlEqualTo(generateURL(function)))
                         .willReturn(
                                 aResponse()
                                         .withStatus(HttpStatus.OK.value())
@@ -85,7 +85,7 @@ public class MoodleWireMockServer extends WireMockServerExtension {
 
     private void stubForPostWithStatusOkAndBodyParameters(String function, String requestBody, String responseBody) {
         this.wireMockServer.stubFor(
-                post(urlEqualTo(String.format(URL_BASE, token, function)))
+                post(urlEqualTo(generateURL(function)))
                         .withRequestBody(containing(requestBody))
                         .willReturn(
                                 aResponse()
@@ -97,6 +97,10 @@ public class MoodleWireMockServer extends WireMockServerExtension {
                                         )
                         )
         );
+    }
+
+    public String generateURL(String function) {
+        return String.format(URL_BASE, token, function);
     }
 
     public void stubForEnrollUsersWithStatusOk(Map<String, String> requestBodyMap, List<Map<String, Object>> responseBody) throws UnsupportedEncodingException {
@@ -134,7 +138,7 @@ public class MoodleWireMockServer extends WireMockServerExtension {
         this.wireMockServer.verify(quantity,
                 postRequestedFor(
                         urlEqualTo(
-                                String.format(URL_BASE, token, function)
+                                generateURL(function)
                         )
                 ).withRequestBody(containing(requestBody))
         );

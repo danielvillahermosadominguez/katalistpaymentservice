@@ -4,8 +4,10 @@ import com.codurance.katalyst.payment.application.integration.wiremock.MoodleWir
 import com.codurance.katalyst.payment.application.moodle.MoodleAPIClientAdapter;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
@@ -48,7 +50,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_a_course_by_id_when_the_course_exists() {
+    public void get_a_course_by_id_when_the_course_exists() throws MoodleNotRespond {
         Integer courseId = 1;
         var responseBody = wireMock.createResponseBodyGetCoursesOk(
                 courseId,
@@ -59,6 +61,31 @@ public class MoodleAPIClientShould {
         var course = apiClient.getCourse(courseId.toString());
 
         assertThat(course).isNotNull();
+    }
+
+    @Test
+    public void get_course_by_id_when_the_course_not_exists() throws MoodleNotRespond {
+        Integer courseId = 1;
+        wireMock.stubForGetCoursesWithStatusOk(Arrays.asList());
+
+        var course = apiClient.getCourse(courseId.toString());
+
+        assertThat(course).isNull();
+    }
+
+    @Test
+    public void throw_an_moodle_exception_when_the_get_courses_endpoint_not_exist() {
+        Integer courseId = 1;
+        var thrown = Assertions.assertThrows(MoodleNotRespond.class, ()-> {
+            apiClient.getCourse(courseId.toString());
+        });
+
+        assertThat(thrown).isNotNull();
+        assertThat(thrown.getRequestBody()).isEqualTo("{options[ids][0]=[1]}");
+        assertThat(thrown.getFunction()).isEqualTo( "core_course_get_courses");
+        assertThat(thrown.getEndPoint()).isEqualTo(
+                apiClient.generateEndPoint("core_course_get_courses")
+        );
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.moodle;
 
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.EMail;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
@@ -56,7 +58,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
         this.restTemplate = restTemplate;
     }
 
-    private String generateEndPoint(String moodleWsFunction) {
+    public String generateEndPoint(String moodleWsFunction) {
         return URL_BASE + WSTOKEN + token + WSFUNCTION + moodleWsFunction + MOODLEWSRESTFORMAT + format;
     }
     private List<MoodleUser> getUsersForCourse(String courseId) {
@@ -154,22 +156,28 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
         }
     }
 
-    public MoodleCourse getCourse(String courseId) {
+    public MoodleCourse getCourse(String courseId) throws MoodleNotRespond {
+        var function = "core_course_get_courses";
+        var endPoint = generateEndPoint(function);
         ResponseEntity<MoodleCourse[]> response = null;
         MoodleCourse result = null;
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
-        map.add(OPTIONS_IDS_0, courseId);
-        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add(OPTIONS_IDS_0, courseId);
+        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             response = restTemplate.postForEntity(
-                    generateEndPoint("core_course_get_courses"),
+                    endPoint,
                     request,
                     MoodleCourse[].class);
             result = getFirst(response);
-        } catch (Exception ex) {
-            //TODO: Include log and Throw Exception
-            String errorMessage = ex.getMessage();
+        } catch (HttpStatusCodeException httpException) {
+            throw new MoodleNotRespond(
+                    function,
+                    endPoint,
+                    requestBody.toString(),
+                    httpException.getMessage()
+            );
         }
 
         return result;

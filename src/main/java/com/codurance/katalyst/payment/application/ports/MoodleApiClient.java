@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.ports;
 
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 
 public interface MoodleApiClient {
     boolean existsAnUserinThisCourse(String courseId, String email);
@@ -12,6 +13,6 @@ public interface MoodleApiClient {
 
     void enroleToTheCourse(MoodleCourse course, MoodleUser user);
 
-    MoodleCourse getCourse(String courseId);
+    MoodleCourse getCourse(String courseId) throws MoodleNotRespond;
 
 }
