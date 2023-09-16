@@ -1,12 +1,12 @@
 package com.codurance.katalyst.payment.application.acceptance.steps;
 
-import com.codurance.katalyst.payment.application.acceptance.utils.HoldedApiClientFake;
-import com.codurance.katalyst.payment.application.acceptance.utils.MoodleApiClientFake;
+import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiClientFake;
+import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
-import com.codurance.katalyst.payment.application.courses.Course;
-import com.codurance.katalyst.payment.application.holded.HoldedInvoiceDTO;
-import com.codurance.katalyst.payment.application.moodle.MoodleCourseDTO;
-import com.codurance.katalyst.payment.application.moodle.MoodleUserDTO;
+import com.codurance.katalyst.payment.application.api.Course;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -27,9 +27,9 @@ public class Stepdefs {
     public static final int FIXTURE_PRICE = 100;
     public static final String FIXTURE_DISPLAY_NAME = "TEST_COURSE";
     public static final int NO_ANSWER = -10;
-    public static MoodleCourseDTO FIXTURE_COURSE = null;
+    public static MoodleCourse FIXTURE_COURSE = null;
 
-    public static MoodleUserDTO FIXTURE_USER = null;
+    public static MoodleUser FIXTURE_USER = null;
 
     private int selectedCourse;
     int subscriptionOutputCode = -1;
@@ -123,7 +123,7 @@ public class Stepdefs {
     @Then("the user has received an invoice")
     public void the_user_has_received_an_invoice() throws UnsupportedEncodingException {
         String email = data.get("email");
-        List<HoldedInvoiceDTO> sentInvoices = holdedApiClient.getSentInvoices(email);
+        List<HoldedInvoice> sentInvoices = holdedApiClient.getSentInvoices(email);
         assertThat(sentInvoices.isEmpty()).isFalse();
     }
     @Then("the user has received the access to the platform")

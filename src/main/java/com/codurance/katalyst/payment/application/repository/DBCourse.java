@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.courses;
+package com.codurance.katalyst.payment.application.repository;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

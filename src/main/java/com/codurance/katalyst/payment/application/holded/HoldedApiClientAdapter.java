@@ -1,6 +1,10 @@
 package com.codurance.katalyst.payment.application.holded;
 
-import com.codurance.katalyst.payment.application.HoldedApiClient;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoiceItem;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedResponse;
+import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
 import com.codurance.katalyst.payment.application.utils.EMail;
@@ -26,7 +30,7 @@ import java.util.Map;
 
 
 @Component
-public class HoldedApiClientImpl extends APIClient implements HoldedApiClient {
+public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient {
 
     public static final String CUSTOM_ID = "customId";
     public static final String NAME = "name";
@@ -52,7 +56,7 @@ public class HoldedApiClientImpl extends APIClient implements HoldedApiClient {
     @Autowired
     DateService dateService;
 
-    public HoldedApiClientImpl(RestTemplate restTemplate) {
+    public HoldedApiClientAdapter(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
@@ -75,16 +79,16 @@ public class HoldedApiClientImpl extends APIClient implements HoldedApiClient {
     private String generateEndPoint(String function) {
         return URL_BASE + function;
     }
-    public HoldedContactDTO getContactByCustomId(String customId) {
-        HoldedContactDTO result = null;
+    public HoldedContact getContactByCustomId(String customId) {
+        HoldedContact result = null;
         String url = generateEndPoint("invoicing/v1/contacts?customId={customId}");
         Map<String, String> vars = new HashMap<>();
         vars.put(CUSTOM_ID, customId);
 
         HttpEntity<MultiValueMap<String, String>> request = createRequest(null, MediaType.APPLICATION_JSON_VALUE);
-        ResponseEntity<HoldedContactDTO[]> response = null;
+        ResponseEntity<HoldedContact[]> response = null;
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, request, HoldedContactDTO[].class, vars);
+            response = restTemplate.exchange(url, HttpMethod.GET, request, HoldedContact[].class, vars);
 
             result = getFirst(response);
         } catch (Exception ex) {
@@ -95,8 +99,8 @@ public class HoldedApiClientImpl extends APIClient implements HoldedApiClient {
         return result;
     }
 
-    public HoldedContactDTO createContact(String name, String surname, String email, String company, String dnicif) throws UnsupportedEncodingException {
-        HoldedContactDTO result = null;
+    public HoldedContact createContact(String name, String surname, String email, String company, String dnicif) throws UnsupportedEncodingException {
+        HoldedContact result = null;
         String url = generateEndPoint("invoicing/v1/contacts");
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add(NAME, name + " " + surname + "(" + company + ")");
@@ -122,8 +126,8 @@ public class HoldedApiClientImpl extends APIClient implements HoldedApiClient {
         return result;
     }
 
-    public HoldedInvoiceDTO createInvoice(HoldedContactDTO contact, String concept, String description, int amount, double price) {
-        HoldedInvoiceDTO result = null;
+    public HoldedInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) {
+        HoldedInvoice result = null;
         String url = generateEndPoint("invoicing/v1/documents/invoice");
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
@@ -138,9 +142,9 @@ public class HoldedApiClientImpl extends APIClient implements HoldedApiClient {
         map.add(ITEMS,jsonArray);
 
         HttpEntity<MultiValueMap<String, Object>> request = createRequest(map,MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        ResponseEntity<HoldedInvoiceDTO> response = null;
+        ResponseEntity<HoldedInvoice> response = null;
         try {
-            response = restTemplate.postForEntity(url, request, HoldedInvoiceDTO.class);
+            response = restTemplate.postForEntity(url, request, HoldedInvoice.class);
             result = response.getBody();
         } catch (Exception ex) {
             // Use log and throw exception
@@ -150,7 +154,7 @@ public class HoldedApiClientImpl extends APIClient implements HoldedApiClient {
         return result;
     }
 
-    public void sendInvoice(HoldedInvoiceDTO invoice, String emails) {
+    public void sendInvoice(HoldedInvoice invoice, String emails) {
         String url = generateEndPoint("invoicing/v1/documents/invoice/"+invoice.getId()+"/send");
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();

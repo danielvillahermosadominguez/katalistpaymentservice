@@ -1,6 +1,8 @@
 package com.codurance.katalyst.payment.application.moodle;
 
-import com.codurance.katalyst.payment.application.MoodleApiClient;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.EMail;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
+public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient {
     public static final String WSTOKEN = "wstoken=";
     public static final String WSFUNCTION = "&wsfunction=";
     public static final String MOODLEWSRESTFORMAT = "&moodlewsrestformat=";
@@ -51,29 +53,29 @@ public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
 
     private String format = "json";
 
-    public MoodleAPIClientImpl(RestTemplate restTemplate) {
+    public MoodleAPIClientAdapter(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
     private String generateEndPoint(String moodleWsFunction) {
         return URL_BASE+ WSTOKEN + token + WSFUNCTION +moodleWsFunction+ MOODLEWSRESTFORMAT +format;
     }
-    private List<MoodleUserDTO> getUsersForCourse(String courseId) {
+    private List<MoodleUser> getUsersForCourse(String courseId) {
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add(COURSEID, courseId);
         HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        ResponseEntity<MoodleUserDTO[]> response = restTemplate.postForEntity(
+        ResponseEntity<MoodleUser[]> response = restTemplate.postForEntity(
                 generateEndPoint("core_enrol_get_enrolled_users"),
                 request,
-                MoodleUserDTO[].class);
+                MoodleUser[].class);
         return Arrays.stream(response.getBody()).toList();
     }
 
     public boolean existsAnUserinThisCourse(String courseId, String email) {
         //TODO: We need to review this function - performance issue
         String lowerCaseEmailInput = email.toLowerCase();
-        List<MoodleUserDTO> users = getUsersForCourse(courseId);
-        List<MoodleUserDTO> filtered = users
+        List<MoodleUser> users = getUsersForCourse(courseId);
+        List<MoodleUser> filtered = users
                 .stream()
                 .filter(user -> {
                     String userEmail = user.getEmail();
@@ -84,9 +86,9 @@ public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
         return !filtered.isEmpty();
     }
 
-    public MoodleUserDTO getUserByMail(String email) {
-        ResponseEntity<MoodleUserDTO[]> response = null;
-        MoodleUserDTO result = null;
+    public MoodleUser getUserByMail(String email) {
+        ResponseEntity<MoodleUser[]> response = null;
+        MoodleUser result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add(FIELD, "email");
         map.add(VALUES_ARRAY_0,  email);
@@ -96,7 +98,7 @@ public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
             response = restTemplate.postForEntity(
                     generateEndPoint("core_user_get_users_by_field"),
                     request,
-                    MoodleUserDTO[].class);
+                    MoodleUser[].class);
             result = getFirst(response);
         } catch (Exception ex) {
             //TODO: Include log and Throw Exception
@@ -106,9 +108,9 @@ public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
         return result;
     }
 
-    public MoodleUserDTO createUser(String name, String surname, String email) {
-        ResponseEntity<MoodleUserDTO[]> response = null;
-        MoodleUserDTO result = null;
+    public MoodleUser createUser(String name, String surname, String email) {
+        ResponseEntity<MoodleUser[]> response = null;
+        MoodleUser result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         EMail mail = new EMail(email);
         map.add(USERS_0_USERNAME, mail.getUserName());
@@ -122,7 +124,7 @@ public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
             response = restTemplate.postForEntity(
                     generateEndPoint("core_user_create_users"),
                     request,
-                    MoodleUserDTO[].class);
+                    MoodleUser[].class);
             result = getFirst(response);
         } catch (Exception ex) {
             //TODO: Include log and Throw Exception
@@ -132,8 +134,8 @@ public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
         return result;
     }
 
-    public void enroleToTheCourse(MoodleCourseDTO course, MoodleUserDTO user) {
-        MoodleUserDTO result = null;
+    public void enroleToTheCourse(MoodleCourse course, MoodleUser user) {
+        MoodleUser result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         String roleId = STUDENT_ROLE_ID;
         String userId = user.getId();
@@ -153,9 +155,9 @@ public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
         }
     }
 
-    public MoodleCourseDTO getCourse(String courseId) {
-        ResponseEntity<MoodleCourseDTO[]> response = null;
-        MoodleCourseDTO result = null;
+    public MoodleCourse getCourse(String courseId) {
+        ResponseEntity<MoodleCourse[]> response = null;
+        MoodleCourse result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add(OPTIONS_IDS_0, courseId);
         HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
@@ -164,7 +166,7 @@ public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
             response = restTemplate.postForEntity(
                     generateEndPoint("core_course_get_courses"),
                     request,
-                    MoodleCourseDTO[].class);
+                    MoodleCourse[].class);
             result = getFirst(response);
         } catch (Exception ex) {
             //TODO: Include log and Throw Exception

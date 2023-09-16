@@ -1,12 +1,38 @@
 package com.codurance.katalyst.payment.application.integration.wiremock;
 
+import com.google.gson.Gson;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+
 public class WireMockServerExtension {
-    public static final String EQUAL_SYMBOL = "=";
-    public static final String JOIN_SYMBOL = "&";
+    private static final String EQUAL_SYMBOL = "=";
+    private static final String JOIN_SYMBOL = "&";
+
+    protected MockServer wireMockServer = null;
+
+    protected Gson gson = new Gson();
+    private int port;
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public void reset() {
+        this.wireMockServer.getClient().resetRequests();
+    }
+
+    public void stop() {
+        this.wireMockServer.stop();
+    }
+
+    public void start() {
+        this.wireMockServer = new MockServer(options().port(this.port));
+        this.wireMockServer.start();
+    }
 
     protected String joinParameters(Map<String, String> requestBodyMap) throws UnsupportedEncodingException {
         String requestBody = "";

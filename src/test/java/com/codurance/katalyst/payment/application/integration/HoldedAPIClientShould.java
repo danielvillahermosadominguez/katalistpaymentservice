@@ -1,10 +1,10 @@
 package com.codurance.katalyst.payment.application.integration;
 
-import com.codurance.katalyst.payment.application.acceptance.utils.TestDateService;
-import com.codurance.katalyst.payment.application.holded.HoldedApiClientImpl;
-import com.codurance.katalyst.payment.application.holded.HoldedContactDTO;
-import com.codurance.katalyst.payment.application.holded.HoldedInvoiceDTO;
-import com.codurance.katalyst.payment.application.holded.HoldedInvoiceItem;
+import com.codurance.katalyst.payment.application.acceptance.doubles.TestDateService;
+import com.codurance.katalyst.payment.application.holded.HoldedApiClientAdapter;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoiceItem;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
 import com.codurance.katalyst.payment.application.utils.EMail;
 import com.google.gson.Gson;
@@ -28,7 +28,7 @@ public class HoldedAPIClientShould {
     private Gson gson = new Gson();
     private String holdedApiKey = "RANDOM_API_KEY";
     private HoldedWireMockServer wireMock = null;
-    private HoldedApiClientImpl apiClient = new HoldedApiClientImpl(new RestTemplate());
+    private HoldedApiClientAdapter apiClient = new HoldedApiClientAdapter(new RestTemplate());
 
 
     @BeforeEach
@@ -80,7 +80,7 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void create_contact_when_the_contact_exits() throws UnsupportedEncodingException {
+    public void create_contact_when_the_contact_not_exists() throws UnsupportedEncodingException {
         var email = new EMail("RANDOM_USER@email.com");
         var nifCif = "46842041C";
         var customId = nifCif + email.getInUnicodeFormat();
@@ -137,7 +137,7 @@ public class HoldedAPIClientShould {
 
         wireMock.stubForCreateInvoiceWithStatusOk(requestBodyParameters, responseBody);
 
-        var contact = mock(HoldedContactDTO.class);
+        var contact = mock(HoldedContact.class);
         when(contact.getId()).thenReturn(contactId + "");
 
         var invoice = apiClient.createInvoice(
@@ -161,7 +161,7 @@ public class HoldedAPIClientShould {
 
         wireMock.stubForCreateInvoiceWithStatusOK(invoiceID, requestBodyParameters, responseBody);
 
-        var invoice = mock(HoldedInvoiceDTO.class);
+        var invoice = mock(HoldedInvoice.class);
         when(invoice.getId()).thenReturn(invoiceID);
 
         apiClient.sendInvoice(invoice, emails);

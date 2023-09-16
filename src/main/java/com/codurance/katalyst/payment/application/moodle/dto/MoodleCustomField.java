@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.moodle;
+package com.codurance.katalyst.payment.application.moodle.dto;
 
 public class MoodleCustomField {
     protected String name;

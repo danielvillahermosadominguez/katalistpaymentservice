@@ -1,6 +1,6 @@
-package com.codurance.katalyst.payment.application.moodle;
+package com.codurance.katalyst.payment.application.moodle.dto;
 
-public class MoodleUserDTO {
+public class MoodleUser {
     protected String id;
     protected String username;
     protected String email;

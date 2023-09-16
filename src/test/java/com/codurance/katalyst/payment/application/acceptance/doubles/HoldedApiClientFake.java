@@ -1,8 +1,8 @@
-package com.codurance.katalyst.payment.application.acceptance.utils;
+package com.codurance.katalyst.payment.application.acceptance.doubles;
 
-import com.codurance.katalyst.payment.application.HoldedApiClient;
-import com.codurance.katalyst.payment.application.holded.HoldedContactDTO;
-import com.codurance.katalyst.payment.application.holded.HoldedInvoiceDTO;
+import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
 import com.codurance.katalyst.payment.application.utils.EMail;
 
 import java.io.UnsupportedEncodingException;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class HoldedApiClientFake implements HoldedApiClient {
 
-    class HoldedContactDTOFake extends HoldedContactDTO {
+    class HoldedContactDTOFake extends HoldedContact {
         public static int idCounter = 0;
 
         public HoldedContactDTOFake(String customId, String name, String surname, String email, String company, String nifCif) throws UnsupportedEncodingException {
@@ -27,7 +27,7 @@ public class HoldedApiClientFake implements HoldedApiClient {
         }
     }
 
-    class HoldedInvoiceDTOFake extends HoldedInvoiceDTO {
+    class HoldedInvoiceDTOFake extends HoldedInvoice {
         public static int idCounter = 0;
 
         public HoldedInvoiceDTOFake() {
@@ -36,20 +36,20 @@ public class HoldedApiClientFake implements HoldedApiClient {
         }
     }
 
-    private Map<String, HoldedContactDTO> contacts = new HashMap<>();
+    private Map<String, HoldedContact> contacts = new HashMap<>();
 
-    private Map<String, List<HoldedInvoiceDTO>> sentInvoices = new HashMap<>();
+    private Map<String, List<HoldedInvoice>> sentInvoices = new HashMap<>();
 
     @Override
-    public HoldedContactDTO createContact(String name, String surname, String email, String company, String dnicif) throws UnsupportedEncodingException {
+    public HoldedContact createContact(String name, String surname, String email, String company, String dnicif) throws UnsupportedEncodingException {
         String customId = createCustomId(dnicif, email);
-        HoldedContactDTO holdedContact = new HoldedContactDTOFake(customId, name, surname, email, company, dnicif);
+        HoldedContact holdedContact = new HoldedContactDTOFake(customId, name, surname, email, company, dnicif);
         this.contacts.put(customId, holdedContact);
         return holdedContact;
     }
 
     @Override
-    public HoldedContactDTO getContactByCustomId(String customId) {
+    public HoldedContact getContactByCustomId(String customId) {
         if (!contacts.containsKey(customId)) {
             return null;
         }
@@ -57,13 +57,13 @@ public class HoldedApiClientFake implements HoldedApiClient {
     }
 
     @Override
-    public HoldedInvoiceDTO createInvoice(HoldedContactDTO contact, String concept, String description, int amount, double price) {
+    public HoldedInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) {
         return new HoldedInvoiceDTOFake();
     }
 
     @Override
-    public void sendInvoice(HoldedInvoiceDTO invoice, String emails) {
-        List<HoldedInvoiceDTO> sentList;
+    public void sendInvoice(HoldedInvoice invoice, String emails) {
+        List<HoldedInvoice> sentList;
         if (!sentInvoices.containsKey(emails)) {
             sentList = new ArrayList<>();
             sentInvoices.put(emails, sentList);
@@ -83,8 +83,8 @@ public class HoldedApiClientFake implements HoldedApiClient {
         this.contacts.clear();
     }
 
-    public List<HoldedInvoiceDTO> getSentInvoices(String emails) {
-        List<HoldedInvoiceDTO> sentList;
+    public List<HoldedInvoice> getSentInvoices(String emails) {
+        List<HoldedInvoice> sentList;
         if (!sentInvoices.containsKey(emails)) {
             return Arrays.asList();
         }

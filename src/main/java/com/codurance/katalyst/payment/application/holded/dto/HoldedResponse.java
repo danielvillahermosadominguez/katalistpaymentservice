@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.holded;
+package com.codurance.katalyst.payment.application.holded.dto;
 
 public class HoldedResponse {
     private int status;

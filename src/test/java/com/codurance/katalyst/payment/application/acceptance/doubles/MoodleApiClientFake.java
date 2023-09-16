@@ -1,9 +1,9 @@
-package com.codurance.katalyst.payment.application.acceptance.utils;
+package com.codurance.katalyst.payment.application.acceptance.doubles;
 
-import com.codurance.katalyst.payment.application.MoodleApiClient;
-import com.codurance.katalyst.payment.application.moodle.MoodleCourseDTO;
-import com.codurance.katalyst.payment.application.moodle.MoodleCustomField;
-import com.codurance.katalyst.payment.application.moodle.MoodleUserDTO;
+import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleCustomField;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.utils.EMail;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
             this.value = value;
         }
     }
-    private class MoodleCourseDTOFake extends MoodleCourseDTO {
+    private class MoodleCourseDTOFake extends MoodleCourse {
         public static int idCounter = 0;
         public MoodleCourseDTOFake(String displayName, double price) {
             super();
@@ -35,7 +35,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
         }
     }
 
-    private class MoodleUserDTOFake extends MoodleUserDTO {
+    private class MoodleUserDTOFake extends MoodleUser {
         public static int idCounter = 0;
 
         public MoodleUserDTOFake(String name, String surname, String email) {
@@ -47,11 +47,11 @@ public class MoodleApiClientFake implements MoodleApiClient {
         }
     }
 
-    private Map<Integer, MoodleCourseDTO> courses = new HashMap<>();
+    private Map<Integer, MoodleCourse> courses = new HashMap<>();
 
-    private List<MoodleUserDTO> users = new ArrayList<>();
+    private List<MoodleUser> users = new ArrayList<>();
 
-    private Map<Integer, List<MoodleUserDTO>> studentsPerCourse = new HashMap<>();
+    private Map<Integer, List<MoodleUser>> studentsPerCourse = new HashMap<>();
 
     public void reset() {
         courses.clear();
@@ -59,8 +59,8 @@ public class MoodleApiClientFake implements MoodleApiClient {
         studentsPerCourse.clear();
     }
 
-    public MoodleCourseDTO addCourse(String fixtureDisplayName, double fixturePrice) {
-        MoodleCourseDTO course = new MoodleCourseDTOFake(fixtureDisplayName, fixturePrice);
+    public MoodleCourse addCourse(String fixtureDisplayName, double fixturePrice) {
+        MoodleCourse course = new MoodleCourseDTOFake(fixtureDisplayName, fixturePrice);
         this.courses.put(course.getId(),course);
         this.studentsPerCourse.put(course.getId(), new ArrayList<>());
         return course;
@@ -71,14 +71,14 @@ public class MoodleApiClientFake implements MoodleApiClient {
         if(!studentsPerCourse.containsKey(courseId)) {
             return false;
         }
-        List<MoodleUserDTO> userList = studentsPerCourse.get(courseId);
+        List<MoodleUser> userList = studentsPerCourse.get(courseId);
         return !userList.stream().filter(enroledUser-> enroledUser.getId().equals(enroledUser.getEmail())).toList().isEmpty();
 
     }
 
     @Override
-    public MoodleUserDTO getUserByMail(String email) {
-        List<MoodleUserDTO> filteredUserList = users.stream().filter(user -> user.getEmail().equals(email)).toList();
+    public MoodleUser getUserByMail(String email) {
+        List<MoodleUser> filteredUserList = users.stream().filter(user -> user.getEmail().equals(email)).toList();
         if (filteredUserList.isEmpty()) {
             return null;
         }
@@ -86,25 +86,25 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     @Override
-    public MoodleUserDTO createUser(String name, String surname, String email) {
+    public MoodleUser createUser(String name, String surname, String email) {
         MoodleUserDTOFake user = new MoodleUserDTOFake(name, surname, email);
         users.add(user);
         return user;
     }
 
     @Override
-    public void enroleToTheCourse(MoodleCourseDTO course, MoodleUserDTO user) {
+    public void enroleToTheCourse(MoodleCourse course, MoodleUser user) {
         if(!studentsPerCourse.containsKey(course.getId())) {
             return;
         }
-        List<MoodleUserDTO> userList = studentsPerCourse.get(course.getId());
+        List<MoodleUser> userList = studentsPerCourse.get(course.getId());
         if(userList.stream().filter(enroledUser-> enroledUser.getId().equals(user.getId())).toList().isEmpty()) {
             userList.add(user);
         }
     }
 
     @Override
-    public MoodleCourseDTO getCourse(String courseId) {
+    public MoodleCourse getCourse(String courseId) {
         int courseIdInteger = Integer.parseInt(courseId);
         if (!courses.containsKey(courseIdInteger)) {
             return null;

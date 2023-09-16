@@ -1,11 +1,12 @@
-package com.codurance.katalyst.payment.application.moodle;
+package com.codurance.katalyst.payment.application.moodle.dto;
 
+import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.utils.StringToDouble;
 
 import java.util.List;
 import java.util.Optional;
 
-public class MoodleCourseDTO {
+public class MoodleCourse {
     protected int id;
     protected String displayname;
 

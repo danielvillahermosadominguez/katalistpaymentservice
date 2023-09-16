@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.responses;
+package com.codurance.katalyst.payment.application.api;
 
 public class Error {
     private int code;

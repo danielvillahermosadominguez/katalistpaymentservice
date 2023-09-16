@@ -1,7 +1,6 @@
 package com.codurance.katalyst.payment.application.integration.wiremock;
 
 import com.codurance.katalyst.payment.application.utils.EMail;
-import com.google.gson.Gson;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,37 +18,16 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 @Component
 public class HoldedWireMockServer extends WireMockServerExtension {
-    public String token;
+    public String apiKey;
     private String URL_BASE = "/api/";
-    private MockServer wireMockServer = null;
 
-    private Gson gson = new Gson();
-    private int port;
-
-    public void setPort(int port) {
-        this.port = port;
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 
-    public void setApiKey(String token) {
-        this.token = token;
-    }
-
-    public void start() {
-        this.wireMockServer = new MockServer(options().port(this.port));
-        this.wireMockServer.start();
-    }
-
-    public void reset() {
-        this.wireMockServer.getClient().resetRequests();
-    }
-
-    public void stop() {
-        this.wireMockServer.stop();
-    }
 
     public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif) throws UnsupportedEncodingException {
         Map<String, Object> bodyMap = new LinkedHashMap<>();

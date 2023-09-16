@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.courses;
+package com.codurance.katalyst.payment.application.repository;
 
 import org.springframework.data.repository.CrudRepository;
 

@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.acceptance.utils;
+package com.codurance.katalyst.payment.application.acceptance.doubles;
 
 import com.codurance.katalyst.payment.application.utils.DateService;
 

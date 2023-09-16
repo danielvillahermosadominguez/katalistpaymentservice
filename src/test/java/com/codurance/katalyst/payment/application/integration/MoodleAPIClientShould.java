@@ -1,9 +1,9 @@
 package com.codurance.katalyst.payment.application.integration;
 
 import com.codurance.katalyst.payment.application.integration.wiremock.MoodleWireMockServer;
-import com.codurance.katalyst.payment.application.moodle.MoodleAPIClientImpl;
-import com.codurance.katalyst.payment.application.moodle.MoodleCourseDTO;
-import com.codurance.katalyst.payment.application.moodle.MoodleUserDTO;
+import com.codurance.katalyst.payment.application.moodle.MoodleAPIClientAdapter;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -25,7 +25,7 @@ public class MoodleAPIClientShould {
     private Gson gson = new Gson();
     private String token = "RANDOM_TOKEN";
     private MoodleWireMockServer wireMock = null;
-    public MoodleAPIClientImpl apiClient = new MoodleAPIClientImpl(new RestTemplate());
+    public MoodleAPIClientAdapter apiClient = new MoodleAPIClientAdapter(new RestTemplate());
     public static final String STUDENT_ROL_ID = "5";
 
 
@@ -50,12 +50,11 @@ public class MoodleAPIClientShould {
     @Test
     public void get_a_course_by_id_when_the_course_exists() {
         Integer courseId = 1;
-        var courseBody = wireMock.createCourse(
+        var responseBody = wireMock.createResponseBodyGetCoursesOk(
                 courseId,
                 "RANDOM_DISPLAY_NAME",
                 90.5);
-        var json = gson.toJson(Arrays.asList(courseBody).toArray());
-        wireMock.stubForGetCoursesWithStatusOk(json);
+        wireMock.stubForGetCoursesWithStatusOk(Arrays.asList(responseBody));
 
         var course = apiClient.getCourse(courseId.toString());
 
@@ -64,9 +63,7 @@ public class MoodleAPIClientShould {
 
     @Test
     public void get_users_by_field_when_the_user_not_exist() {
-        var json = gson.toJson(Arrays.asList());
-
-        wireMock.stubForGetUsersByFieldWithStatusOk(json);
+        wireMock.stubForGetUsersByFieldWithStatusOk(Arrays.asList());
 
         var user = apiClient.getUserByMail("random@example.com");
 
@@ -76,25 +73,31 @@ public class MoodleAPIClientShould {
     @Test
     public void create_user_when_the_user_not_exists() throws UnsupportedEncodingException {
         Integer userId = 1;
-        var bodyMap = new LinkedHashMap<>();
-        bodyMap.put("id", userId);
-        bodyMap.put("username", "RANDOM_USERNAME");
-        bodyMap.put("email", "RANDOM_USERNAME@email.com");
-        var json = gson.toJson(Arrays.asList(bodyMap).toArray());
+        String userName = "RANDOM_USERNAME";
+        String email = "RANDOM_USERNAME@email.com";
+        String firstName = "RANDOM_FIRST_NAME";
+        String lastName = "RANDOM_LAST_NAME";
+        String createPassword = "1";
+        Map<String, Object> responseBody = wireMock.createResponseBodyCreateUserOk(
+                userId,
+                userName,
+                email
+        );
 
-        Map<String, String> requestBodyMap = new LinkedHashMap<>();
-        requestBodyMap.put("users[0][username]", "RANDOM_USERNAME");
-        requestBodyMap.put("users[0][createpassword]", "1");
-        requestBodyMap.put("users[0][email]", "RANDOM_USERNAME@email.com");
-        requestBodyMap.put("users[0][firstname]", "RANDOM_FIRST_NAME");
-        requestBodyMap.put("users[0][lastname]", "RANDOM_LAST_NAME");
+        Map<String, String> requestBodyParameters = wireMock.createRequestBodyParametersCreateUser(
+                userName,
+                email,
+                firstName,
+                lastName,
+                createPassword
+        );
 
-        wireMock.stubForCreateUsersWithStatusOK(json, requestBodyMap);
+        wireMock.stubForCreateUsersWithStatusOk(requestBodyParameters, responseBody);
 
         var user = apiClient.createUser(
-                "RANDOM_FIRST_NAME",
-                "RANDOM_LAST_NAME",
-                "RANDOM_USERNAME@email.com"
+                firstName,
+                lastName,
+                email
         );
 
         assertThat(user.getId()).isEqualTo(userId + "");
@@ -104,27 +107,29 @@ public class MoodleAPIClientShould {
     public void enrole_an_user_to_a_course() throws UnsupportedEncodingException {
         var userId = "1";
         var courseId = 9;
-        var json = gson.toJson(Arrays.asList().toArray());
-        Map<String, String> requestBodyMap = new LinkedHashMap<>();
-        requestBodyMap.put("enrolments[0][roleid]", STUDENT_ROL_ID);
-        requestBodyMap.put("enrolments[0][userid]", userId);
-        requestBodyMap.put("enrolments[0][courseid]", courseId + "");
-        wireMock.stubForEnroleUsersWithStatusOK(json, requestBodyMap);
+        List<Map<String, Object>> responseBody = Arrays.asList();
+        var requestBody = wireMock.createRequestBodyParametersEnroleAnUserToCourse(
+                userId,
+                courseId,
+                STUDENT_ROL_ID
+        );
+        wireMock.stubForEnrollUsersWithStatusOk(requestBody, responseBody);
 
-        var course = mock(MoodleCourseDTO.class);
+        var course = mock(MoodleCourse.class);
         when(course.getId()).thenReturn(courseId);
-        var user = mock(MoodleUserDTO.class);
+        var user = mock(MoodleUser.class);
         when(user.getId()).thenReturn(userId);
 
         apiClient.enroleToTheCourse(course, user);
 
-        wireMock.verifyEnrolUsersIsCalled(1, requestBodyMap);
+        wireMock.verifyEnrolUsersIsCalled(1, requestBody);
     }
 
     @Test
     public void get_enrolled_users_when_are_not_users_enrolled() {
-        var json = gson.toJson(Arrays.asList().toArray());
-        wireMock.stubForGetEnrolledUsersWithStatusOK(json);
+
+        List<Map<String, Object>> responseBody = Arrays.asList();
+        wireMock.stubForGetEnrolledUsersWithStatusOK(responseBody);
 
         var exists = apiClient.existsAnUserinThisCourse(
                 "RANDOM_COURSE_ID",

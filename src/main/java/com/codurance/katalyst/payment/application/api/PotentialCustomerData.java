@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.inputform;
+package com.codurance.katalyst.payment.application.api;
 
 public class PotentialCustomerData {
     private String courseId;
