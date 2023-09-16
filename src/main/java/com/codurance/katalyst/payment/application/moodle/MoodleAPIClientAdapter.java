@@ -6,7 +6,6 @@ import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.EMail;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -58,13 +57,13 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
     }
 
     private String generateEndPoint(String moodleWsFunction) {
-        return URL_BASE+ WSTOKEN + token + WSFUNCTION +moodleWsFunction+ MOODLEWSRESTFORMAT +format;
+        return URL_BASE + WSTOKEN + token + WSFUNCTION + moodleWsFunction + MOODLEWSRESTFORMAT + format;
     }
     private List<MoodleUser> getUsersForCourse(String courseId) {
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add(COURSEID, courseId);
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        ResponseEntity<MoodleUser[]> response = restTemplate.postForEntity(
+        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        var response = restTemplate.postForEntity(
                 generateEndPoint("core_enrol_get_enrolled_users"),
                 request,
                 MoodleUser[].class);
@@ -74,12 +73,12 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
     public boolean existsAnUserinThisCourse(String courseId, String email) {
         //TODO: We need to review this function - performance issue
         String lowerCaseEmailInput = email.toLowerCase();
-        List<MoodleUser> users = getUsersForCourse(courseId);
-        List<MoodleUser> filtered = users
+        var users = getUsersForCourse(courseId);
+        var filtered = users
                 .stream()
                 .filter(user -> {
-                    String userEmail = user.getEmail();
-                    String lowerCaseEmail = userEmail.toLowerCase();
+                    var userEmail = user.getEmail();
+                    var lowerCaseEmail = userEmail.toLowerCase();
                     return lowerCaseEmail.equals(lowerCaseEmailInput);
                 })
                 .collect(Collectors.toList());
@@ -92,7 +91,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add(FIELD, "email");
         map.add(VALUES_ARRAY_0,  email);
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             response = restTemplate.postForEntity(
@@ -111,14 +110,14 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
     public MoodleUser createUser(String name, String surname, String email) {
         ResponseEntity<MoodleUser[]> response = null;
         MoodleUser result = null;
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
-        EMail mail = new EMail(email);
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        var mail = new EMail(email);
         map.add(USERS_0_USERNAME, mail.getUserName());
         map.add(USERS_0_CREATEPASSWORD, CREATE_PASWORD_AND_SEND);
         map.add(USERS_0_EMAIL,  email);
         map.add(USERS_0_FIRSTNAME,name);
         map.add(USERS_0_LASTNAME, surname);
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             response = restTemplate.postForEntity(
@@ -136,13 +135,13 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
 
     public void enroleToTheCourse(MoodleCourse course, MoodleUser user) {
         MoodleUser result = null;
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
-        String roleId = STUDENT_ROLE_ID;
-        String userId = user.getId();
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        var roleId = STUDENT_ROLE_ID;
+        var userId = user.getId();
         map.add(ENROLMENTS_0_ROLEID, roleId);
         map.add(ENROLMENTS_0_USERID, userId);
-        map.add(ENROLMENTS_0_COURSEID, course.getId()+"");
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        map.add(ENROLMENTS_0_COURSEID, course.getId() + "");
+        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             restTemplate.postForEntity(
@@ -160,7 +159,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
         MoodleCourse result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
         map.add(OPTIONS_IDS_0, courseId);
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             response = restTemplate.postForEntity(

@@ -11,12 +11,11 @@ public class StringToDouble {
     }
 
     public double convert() {
-        Pattern pattern = Pattern.compile("[-+]?[0-9]*\\.?[0-9]*");
-        Matcher matcher = pattern.matcher(value);
+        var pattern = Pattern.compile("[-+]?[0-9]*\\.?[0-9]*");
+        var matcher = pattern.matcher(value);
         if(!matcher.matches()) {
             return 0.0;
         }
-        double result = Double.parseDouble(value);
-        return result;
+        return Double.parseDouble(value);
     }
 }

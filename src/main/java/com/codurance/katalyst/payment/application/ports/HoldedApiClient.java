@@ -6,7 +6,7 @@ import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
 import java.io.UnsupportedEncodingException;
 
 public interface HoldedApiClient {
-    HoldedContact createContact(String name, String surname, String email, String company, String dnicif) throws UnsupportedEncodingException;
+    HoldedContact createContact(String name, String surname, String email, String company, String nifCif) throws UnsupportedEncodingException;
 
     HoldedContact getContactByCustomId(String customId);
 

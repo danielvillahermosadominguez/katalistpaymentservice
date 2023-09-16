@@ -21,7 +21,7 @@ public class APIClient {
     private Map<String, String> headersParams = new HashMap<>();
 
     protected <T> HttpEntity<MultiValueMap<String, T>> createRequest(MultiValueMap<String, T> map, String mediaType) {
-        HttpHeaders headers = new HttpHeaders();
+        var headers = new HttpHeaders();
         getHeaderParameter(headers);
         headers.setContentType(MediaType.valueOf(mediaType));
         HttpEntity<MultiValueMap<String, T>> request = map == null? new HttpEntity<>(headers) : new HttpEntity<>(map, headers);

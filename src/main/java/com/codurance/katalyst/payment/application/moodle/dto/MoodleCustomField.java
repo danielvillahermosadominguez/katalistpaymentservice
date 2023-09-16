@@ -5,6 +5,7 @@ public class MoodleCustomField {
     protected String shortname;
     protected String type;
     protected String valueraw;
+
     protected String value;
 
     public String getName() {

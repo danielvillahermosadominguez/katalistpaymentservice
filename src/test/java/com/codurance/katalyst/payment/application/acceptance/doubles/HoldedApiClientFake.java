@@ -41,9 +41,9 @@ public class HoldedApiClientFake implements HoldedApiClient {
     private Map<String, List<HoldedInvoice>> sentInvoices = new HashMap<>();
 
     @Override
-    public HoldedContact createContact(String name, String surname, String email, String company, String dnicif) throws UnsupportedEncodingException {
-        String customId = createCustomId(dnicif, email);
-        HoldedContact holdedContact = new HoldedContactDTOFake(customId, name, surname, email, company, dnicif);
+    public HoldedContact createContact(String name, String surname, String email, String company, String nifCif) throws UnsupportedEncodingException {
+        String customId = createCustomId(nifCif, email);
+        HoldedContact holdedContact = new HoldedContactDTOFake(customId, name, surname, email, company, nifCif);
         this.contacts.put(customId, holdedContact);
         return holdedContact;
     }

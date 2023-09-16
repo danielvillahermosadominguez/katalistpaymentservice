@@ -11,7 +11,6 @@ import com.codurance.katalyst.payment.application.utils.EMail;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -22,7 +21,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -82,13 +80,18 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
     public HoldedContact getContactByCustomId(String customId) {
         HoldedContact result = null;
         String url = generateEndPoint("invoicing/v1/contacts?customId={customId}");
-        Map<String, String> vars = new HashMap<>();
-        vars.put(CUSTOM_ID, customId);
+        Map<String, String> uriVariables = new HashMap<>();
+        uriVariables.put(CUSTOM_ID, customId);
 
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(null, MediaType.APPLICATION_JSON_VALUE);
+        var requestEntity = createRequest(null, MediaType.APPLICATION_JSON_VALUE);
         ResponseEntity<HoldedContact[]> response = null;
         try {
-            response = restTemplate.exchange(url, HttpMethod.GET, request, HoldedContact[].class, vars);
+            response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    requestEntity,
+                    HoldedContact[].class,
+                    uriVariables);
 
             result = getFirst(response);
         } catch (Exception ex) {
@@ -99,23 +102,23 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
-    public HoldedContact createContact(String name, String surname, String email, String company, String dnicif) throws UnsupportedEncodingException {
+    public HoldedContact createContact(String name, String surname, String email, String company, String nifCif) throws UnsupportedEncodingException {
         HoldedContact result = null;
-        String url = generateEndPoint("invoicing/v1/contacts");
+        var url = generateEndPoint("invoicing/v1/contacts");
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add(NAME, name + " " + surname + "(" + company + ")");
         map.add(EMAIL, email);
         map.add(TYPE, CLIENT_VALUE);
-        map.add(CODE, dnicif);
-        map.add(CUSTOM_ID1, createCustomId(dnicif, email));
+        map.add(CODE, nifCif);
+        map.add(CUSTOM_ID1, createCustomId(nifCif, email));
         map.add(ISPERSON, "true");
 
-        HttpEntity<MultiValueMap<String, String>> request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         ResponseEntity<HoldedResponse> response = null;
         try {
             response = restTemplate.postForEntity(url, request, HoldedResponse.class);
             if (response.getBody().getStatus() == OK) {
-                String customId = createCustomId(dnicif, email);
+                var customId = createCustomId(nifCif, email);
                 result = getContactByCustomId(customId);
             }
         } catch (Exception ex) {
@@ -128,20 +131,20 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
 
     public HoldedInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) {
         HoldedInvoice result = null;
-        String url = generateEndPoint("invoicing/v1/documents/invoice");
+        var url = generateEndPoint("invoicing/v1/documents/invoice");
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add(CONTACT_ID, contact.getId());
         map.add(DESC,description);
-        Instant instant = dateService.getInstant();
+        var instant = dateService.getInstant();
         map.add(DATE, instant.getEpochSecond()+"");
-        HoldedInvoiceItem item = new HoldedInvoiceItem(concept, amount, price);
+        var item = new HoldedInvoiceItem(concept, amount, price);
         List<HoldedInvoiceItem> items = Arrays.asList(item);
-        Gson gson = new Gson();
+        var gson = new Gson();
         String jsonArray = gson.toJson(items);
         map.add(ITEMS,jsonArray);
 
-        HttpEntity<MultiValueMap<String, Object>> request = createRequest(map,MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         ResponseEntity<HoldedInvoice> response = null;
         try {
             response = restTemplate.postForEntity(url, request, HoldedInvoice.class);
@@ -155,12 +158,12 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
     }
 
     public void sendInvoice(HoldedInvoice invoice, String emails) {
-        String url = generateEndPoint("invoicing/v1/documents/invoice/"+invoice.getId()+"/send");
+        var url = generateEndPoint("invoicing/v1/documents/invoice/" + invoice.getId() + "/send");
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
         map.add(EMAILS, emails);
 
-        HttpEntity<MultiValueMap<String, Object>> request = createRequest(map,MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         ResponseEntity<HoldedResponse> response = null;
         try {
             response = restTemplate.postForEntity(url, request, HoldedResponse.class);
@@ -176,7 +179,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
     }
 
     public String createCustomId(String nifCif, String email) throws UnsupportedEncodingException {
-        EMail mail = new EMail(email);
+        var mail = new EMail(email);
         return nifCif + mail.getInUnicodeFormat();
     }
 }

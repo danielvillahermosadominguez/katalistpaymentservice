@@ -10,8 +10,8 @@ import java.util.Date;
 @Component
 public class DateServiceLocalUTC implements DateService{
     public Instant getInstant() {
-        OffsetDateTime utc = OffsetDateTime.now(ZoneOffset.UTC);
-        Date date = Date.from(utc.toInstant());
+        var utc = OffsetDateTime.now(ZoneOffset.UTC);
+        var date = Date.from(utc.toInstant());
         return date.toInstant();
     }
 }

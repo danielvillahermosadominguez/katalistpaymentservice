@@ -4,20 +4,18 @@ import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNo
 import com.codurance.katalyst.payment.application.utils.StringToDouble;
 
 import java.util.List;
-import java.util.Optional;
 
 public class MoodleCourse {
+    public static final String THE_CUSTOM_FIELD_PRICE_NOT_EXIST = "The custom field 'price' must be created for a Course in your Moodle application";
     protected int id;
     protected String displayname;
-
     protected List<MoodleCustomField> customfields;
-
 
     public int getId() {
         return id;
     }
 
-    public String getDisplayname() {
+    public String getDisplayName() {
         return displayname;
     }
 
@@ -27,12 +25,12 @@ public class MoodleCourse {
 
     public double getPrice() throws CustomFieldNotExists {
         if(customfields == null || customfields.isEmpty()) {
-           throw new CustomFieldNotExists("The custom field 'price' must be created for a Course in your Moodle application");
+           throw new CustomFieldNotExists(THE_CUSTOM_FIELD_PRICE_NOT_EXIST);
         }
 
-        Optional<MoodleCustomField> customField = customfields.stream().filter(cf-> cf.getShortname().equals("price")).findFirst();
+        var customField = customfields.stream().filter(cf-> cf.getShortname().equals("price")).findFirst();
         if(!customField.isPresent()) {
-            throw new CustomFieldNotExists("The custom field 'price' must be created for a Course in your Moodle application");
+            throw new CustomFieldNotExists(THE_CUSTOM_FIELD_PRICE_NOT_EXIST);
         }
 
       return new StringToDouble(customField.get().getValue()).convert();

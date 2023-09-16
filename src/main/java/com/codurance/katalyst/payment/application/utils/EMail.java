@@ -13,7 +13,7 @@ public class EMail {
     }
 
     public String getUserName() {
-        String finalOutput = "";
+        var finalOutput = "";
         String arrayOfStr[] = value.split(AT);
         if (arrayOfStr.length == 2) {
             finalOutput = arrayOfStr[0];

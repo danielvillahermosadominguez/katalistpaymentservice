@@ -1,10 +1,7 @@
 package com.codurance.katalyst.payment.application.api;
 
-import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
-import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +16,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.UnsupportedEncodingException;
-
 @RestController
 public class PaymentController {
-
-    public static final int ERROR_CODE_COURSE_DOESNT_EXIST = 1;
-    public static final int CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE = 2;
-    public static final int CODE_ERROR_PROBLEM_WITH_MOODLE = 3;
-    public static final int CODE_ERROR_PRICE_NOT_FOUND = 4;
     @Autowired
     private MoodleApiClient moodleAPIClient;
 
@@ -41,34 +31,67 @@ public class PaymentController {
 
     @GetMapping(value = "/courses/{id}")
     @ResponseBody
-    public ResponseEntity<?> getCourse(@PathVariable("id") String id) throws CustomFieldNotExists {
+    public ResponseEntity<?> getCourse(@PathVariable("id") String id) {
         try {
-            MoodleCourse course = moodleAPIClient.getCourse(id);
+            var course = moodleAPIClient.getCourse(id);
             if (course == null) {
-                return new ResponseEntity<>(new Error(ERROR_CODE_COURSE_DOESNT_EXIST,"The course with the id " + id+ " doesn't exists"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(
+                        new Error(
+                                Error.ERROR_CODE_COURSE_DOESNT_EXIST,
+                                "The course with the id " + id + " doesn't exists"
+                        ),
+                        HttpStatus.BAD_REQUEST
+                );
             }
 
-            return new ResponseEntity<>(new Course(course.getId(), course.getDisplayname(), course.getPrice()), HttpStatus.OK);
+            return new ResponseEntity<>(
+                    new Course(
+                            course.getId(),
+                            course.getDisplayName(),
+                            course.getPrice()),
+                    HttpStatus.OK
+            );
         } catch (CustomFieldNotExists exception) {
-            return new ResponseEntity<>(new Error(CODE_ERROR_PRICE_NOT_FOUND,"Price custom field not found in Moodle. Please, contact with the administrator to create this custom field"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(
+                    new Error(
+                            Error.CODE_ERROR_PRICE_NOT_FOUND,
+                            "Price custom field not found in Moodle. Please, contact with the administrator to create this custom field"
+                    ),
+                    HttpStatus.BAD_REQUEST
+            );
         } catch (Exception exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "It has been not possible to get the course. Please try to connect later");
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "It has been not possible to get the course. Please try to connect later"
+            );
         }
     }
 
     @RequestMapping(value = "/freesubscription", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity freeSubscription(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
-        MoodleCourse course = moodleAPIClient.getCourse(customer.getCourseId());
-        if(course == null) {
-            return new ResponseEntity<>(new Error(ERROR_CODE_COURSE_DOESNT_EXIST,"The course with the id " + customer.getCourseId() + " doesn't exists"), HttpStatus.BAD_REQUEST);
+    public ResponseEntity freeSubscription(@RequestBody PotentialCustomerData customer) {
+        var course = moodleAPIClient.getCourse(customer.getCourseId());
+        if (course == null) {
+            return new ResponseEntity<>(
+                    new Error(
+                            Error.ERROR_CODE_COURSE_DOESNT_EXIST,
+                            "The course with the id " + customer.getCourseId() + " doesn't exists"
+                    ),
+                    HttpStatus.BAD_REQUEST
+            );
         }
 
         if (moodleAPIClient.existsAnUserinThisCourse(customer.getCourseId(), customer.getEmail())) {
-            return new ResponseEntity<>(new Error(CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE,"The user has a subscription for this course"), HttpStatus.UNPROCESSABLE_ENTITY);
+            return new ResponseEntity<>(
+                    new Error(
+                            Error.CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE,
+                            "The user has a subscription for this course"
+                    ),
+                    HttpStatus.UNPROCESSABLE_ENTITY
+            );
         }
 
-        MoodleUser user = moodleAPIClient.getUserByMail(customer.getEmail());
+        var user = moodleAPIClient.getUserByMail(customer.getEmail());
         if(user == null) {
             user = moodleAPIClient.createUser(customer.getName(), customer.getSurname(), customer.getEmail());
         }
@@ -80,13 +103,18 @@ public class PaymentController {
     @ResponseBody
     public ResponseEntity onlyHoldedTest(@RequestBody PotentialCustomerData customer) {
         try {
-            MoodleCourse course = moodleAPIClient.getCourse(customer.getCourseId());
+            var course = moodleAPIClient.getCourse(customer.getCourseId());
             if (course == null) {
-                return new ResponseEntity<>(new Error(ERROR_CODE_COURSE_DOESNT_EXIST, "The course with the id " + customer.getCourseId() + " doesn't exists"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(
+                        new Error(
+                                Error.ERROR_CODE_COURSE_DOESNT_EXIST,
+                                "The course with the id " + customer.getCourseId() + " doesn't exists"),
+                        HttpStatus.BAD_REQUEST
+                );
             }
 
-            String customId = holdedAPIClient.createCustomId(customer.getDnicif(), customer.getEmail());
-            HoldedContact contact = holdedAPIClient.getContactByCustomId(customId);
+            var customId = holdedAPIClient.createCustomId(customer.getDnicif(), customer.getEmail());
+            var contact = holdedAPIClient.getContactByCustomId(customId);
             if (contact == null) {
                 contact = holdedAPIClient.createContact(customer.getName(),
                         customer.getSurname(),
@@ -95,10 +123,10 @@ public class PaymentController {
                         customer.getDnicif());
             }
 
-            String concept = course.getDisplayname();
-            String description = "";
-            int amount = ERROR_CODE_COURSE_DOESNT_EXIST;
-            double price = course.getPrice();
+            var concept = course.getDisplayName();
+            var description = "";
+            var amount = Error.ERROR_CODE_COURSE_DOESNT_EXIST;
+            var price = course.getPrice();
             HoldedInvoice invoice = holdedAPIClient.createInvoice(contact,
                     concept,
                     description,
@@ -106,15 +134,29 @@ public class PaymentController {
                     price);
             holdedAPIClient.sendInvoice(invoice, contact.getEmail());
         } catch (Exception ex) {
-            return new ResponseEntity<>(new Error(CODE_ERROR_PROBLEM_WITH_MOODLE, "We have had a problem with the creation of the contact and the invoicing"), HttpStatus.BAD_REQUEST);
-        } catch (CustomFieldNotExists e) {
-            throw new RuntimeException(e);
+            return new ResponseEntity<>(
+                    new Error(
+                            Error.CODE_ERROR_PROBLEM_WITH_MOODLE,
+                            "We have had a problem with the creation of the contact and the invoicing"
+                    ),
+                    HttpStatus.BAD_REQUEST
+            );
+        } catch (CustomFieldNotExists exception) {
+            return new ResponseEntity<>(
+                    new Error(
+                            Error.CODE_ERROR_PRICE_NOT_FOUND,
+                            "Price custom field not found in Moodle. Please, contact with the administrator to create this custom field"
+                    ),
+                    HttpStatus.BAD_REQUEST
+            );
         }
+
         return ResponseEntity.ok(HttpStatus.OK);
     }
+
     @RequestMapping(value = "/subscription", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity subscription(@RequestBody PotentialCustomerData customer) throws UnsupportedEncodingException {
+    public ResponseEntity subscription(@RequestBody PotentialCustomerData customer) {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }
