@@ -1,19 +1,23 @@
 package com.codurance.katalyst.payment.application;
 
 import com.codurance.katalyst.payment.application.courses.Course;
-import com.codurance.katalyst.payment.application.holded.HoldedAPIClient;
 import com.codurance.katalyst.payment.application.holded.HoldedContactDTO;
 import com.codurance.katalyst.payment.application.holded.HoldedInvoiceDTO;
 import com.codurance.katalyst.payment.application.inputform.PotentialCustomerData;
 import com.codurance.katalyst.payment.application.moodle.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.moodle.MoodleAPIClientImpl;
 import com.codurance.katalyst.payment.application.moodle.MoodleCourseDTO;
 import com.codurance.katalyst.payment.application.moodle.MoodleUserDTO;
 import com.codurance.katalyst.payment.application.responses.Error;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.UnsupportedEncodingException;
@@ -29,7 +33,7 @@ public class PaymentController {
     private MoodleApiClient moodleAPIClient;
 
     @Autowired
-    private HoldedAPIClient holdedAPIClient;
+    private HoldedApiClient holdedAPIClient;
 
     @GetMapping("/healthcheck")
     public String heatlhCheck() {

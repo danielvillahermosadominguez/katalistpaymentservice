@@ -1,7 +1,7 @@
 package com.codurance.katalyst.payment.application.integration;
 
 import com.codurance.katalyst.payment.application.acceptance.utils.TestDateService;
-import com.codurance.katalyst.payment.application.holded.HoldedAPIClient;
+import com.codurance.katalyst.payment.application.holded.HoldedAPIClientImpl;
 import com.codurance.katalyst.payment.application.holded.HoldedContactDTO;
 import com.codurance.katalyst.payment.application.holded.HoldedInvoiceDTO;
 import com.codurance.katalyst.payment.application.holded.HoldedInvoiceItemDTO;
@@ -35,7 +35,7 @@ public class HoldedAPIClientShould {
 
     private String urlBase = "http://localhost:9001/api/";
 
-    HoldedAPIClient holdedAPIClient = new HoldedAPIClient(new RestTemplate());
+    HoldedAPIClientImpl holdedAPIClient = new HoldedAPIClientImpl(new RestTemplate());
 
 
     @BeforeEach

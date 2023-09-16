@@ -2,7 +2,7 @@ package com.codurance.katalyst.payment.application.holded;
 
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
-import com.codurance.katalyst.payment.application.utils.DateServiceLocalUTC;
+import com.codurance.katalyst.payment.application.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.Mail;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ import java.util.List;
 
 
 @Component
-public class HoldedAPIClient extends APIClient {
+public class HoldedAPIClientImpl extends APIClient implements HoldedApiClient {
 
     public static final String CUSTOM_ID = "customId";
     public static final String NAME = "name";
@@ -48,7 +48,7 @@ public class HoldedAPIClient extends APIClient {
     @Autowired
     DateService dateService;
 
-    public HoldedAPIClient(RestTemplate restTemplate) {
+    public HoldedAPIClientImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
