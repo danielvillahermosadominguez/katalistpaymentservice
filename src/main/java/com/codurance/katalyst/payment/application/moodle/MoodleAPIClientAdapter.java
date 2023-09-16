@@ -21,9 +21,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient {
-    public static final String WSTOKEN = "wstoken=";
-    public static final String WSFUNCTION = "&wsfunction=";
-    public static final String MOODLEWSRESTFORMAT = "&moodlewsrestformat=";
     public static final String STUDENT_ROLE_ID = "5";
     public static final String COURSEID = "courseid";
     public static final String FIELD = "field";
@@ -40,6 +37,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
     public static final String OPTIONS_IDS_0 = "options[ids][0]";
     @Value("${moodle.urlbase}")
     private String URL_BASE;
+    private MultiValueMap<String, String> requestBody;
 
     public void setURLBase(String urlBase){
         this.URL_BASE = urlBase;
@@ -52,27 +50,38 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
         this.token = token;
     }
 
-    private String format = "json";
-
     public MoodleAPIClientAdapter(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
     public String generateEndPoint(String moodleWsFunction) {
-        return URL_BASE + WSTOKEN + token + WSFUNCTION + moodleWsFunction + MOODLEWSRESTFORMAT + format;
+        return URL_BASE + "wstoken=" + token + "&wsfunction=" + moodleWsFunction + "&moodlewsrestformat=" + "json";
     }
-    private List<MoodleUser> getUsersForCourse(String courseId) {
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add(COURSEID, courseId);
-        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        var response = restTemplate.postForEntity(
-                generateEndPoint("core_enrol_get_enrolled_users"),
-                request,
-                MoodleUser[].class);
-        return Arrays.stream(response.getBody()).toList();
+    private List<MoodleUser> getUsersForCourse(String courseId) throws MoodleNotRespond {
+        var function = "core_enrol_get_enrolled_users";
+        var endPoint = generateEndPoint(function);
+        requestBody = new LinkedMultiValueMap<>();
+        requestBody.add(COURSEID, courseId);
+        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+
+        try {
+            var response = restTemplate.postForEntity(
+                    endPoint,
+                    request,
+                    MoodleUser[].class);
+            return Arrays.stream(response.getBody()).toList();
+
+        } catch (HttpStatusCodeException httpException) {
+            throw new MoodleNotRespond(
+                    function,
+                    endPoint,
+                    requestBody.toString(),
+                    httpException.getMessage()
+            );
+        }
     }
 
-    public boolean existsAnUserinThisCourse(String courseId, String email) {
+    public boolean existsAnUserinThisCourse(String courseId, String email) throws MoodleNotRespond {
         //TODO: We need to review this function - performance issue
         String lowerCaseEmailInput = email.toLowerCase();
         var users = getUsersForCourse(courseId);
@@ -87,72 +96,90 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
         return !filtered.isEmpty();
     }
 
-    public MoodleUser getUserByMail(String email) {
+    public MoodleUser getUserByMail(String email) throws MoodleNotRespond {
+        var function = "core_user_get_users_by_field";
+        var endPoint = generateEndPoint(function);
         ResponseEntity<MoodleUser[]> response = null;
         MoodleUser result = null;
-        MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
-        map.add(FIELD, "email");
-        map.add(VALUES_ARRAY_0,  email);
-        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        MultiValueMap<String, String> requestBody= new LinkedMultiValueMap<>();
+        requestBody.add(FIELD, "email");
+        requestBody.add(VALUES_ARRAY_0,  email);
+        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             response = restTemplate.postForEntity(
-                    generateEndPoint("core_user_get_users_by_field"),
+                    endPoint,
                     request,
                     MoodleUser[].class);
             result = getFirst(response);
-        } catch (Exception ex) {
-            //TODO: Include log and Throw Exception
-            String errorMessage = ex.getMessage();
+        } catch (HttpStatusCodeException httpException) {
+            throw new MoodleNotRespond(
+                    function,
+                    endPoint,
+                    requestBody.toString(),
+                    httpException.getMessage()
+            );
         }
 
         return result;
     }
 
-    public MoodleUser createUser(String name, String surname, String email) {
+    public MoodleUser createUser(String name, String surname, String email) throws MoodleNotRespond {
+        var function = "core_user_create_users";
+        var endPoint = generateEndPoint(function);
         ResponseEntity<MoodleUser[]> response = null;
         MoodleUser result = null;
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
         var mail = new EMail(email);
-        map.add(USERS_0_USERNAME, mail.getUserName());
-        map.add(USERS_0_CREATEPASSWORD, CREATE_PASWORD_AND_SEND);
-        map.add(USERS_0_EMAIL,  email);
-        map.add(USERS_0_FIRSTNAME,name);
-        map.add(USERS_0_LASTNAME, surname);
-        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        requestBody.add(USERS_0_USERNAME, mail.getUserName());
+        requestBody.add(USERS_0_CREATEPASSWORD, CREATE_PASWORD_AND_SEND);
+        requestBody.add(USERS_0_EMAIL,  email);
+        requestBody.add(USERS_0_FIRSTNAME,name);
+        requestBody.add(USERS_0_LASTNAME, surname);
+        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             response = restTemplate.postForEntity(
-                    generateEndPoint("core_user_create_users"),
+                    endPoint,
                     request,
                     MoodleUser[].class);
             result = getFirst(response);
-        } catch (Exception ex) {
-            //TODO: Include log and Throw Exception
-            String errorMessage = ex.getMessage();
+        } catch (HttpStatusCodeException httpException) {
+            throw new MoodleNotRespond(
+                    function,
+                    endPoint,
+                    requestBody.toString(),
+                    httpException.getMessage()
+            );
         }
 
         return result;
     }
 
-    public void enroleToTheCourse(MoodleCourse course, MoodleUser user) {
+    public void enrolToTheCourse(MoodleCourse course, MoodleUser user) throws MoodleNotRespond {
+        var function = "enrol_manual_enrol_users";
+        var endPoint = generateEndPoint(function);
         MoodleUser result = null;
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
         var roleId = STUDENT_ROLE_ID;
         var userId = user.getId();
-        map.add(ENROLMENTS_0_ROLEID, roleId);
-        map.add(ENROLMENTS_0_USERID, userId);
-        map.add(ENROLMENTS_0_COURSEID, course.getId() + "");
-        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        requestBody.add(ENROLMENTS_0_ROLEID, roleId);
+        requestBody.add(ENROLMENTS_0_USERID, userId);
+        requestBody.add(ENROLMENTS_0_COURSEID, course.getId() + "");
+        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
             restTemplate.postForEntity(
-                    generateEndPoint("enrol_manual_enrol_users"),
+                    endPoint,
                     request,
                     String.class);
-        } catch (Exception ex) {
-            //TODO: Include log and Throw Exception
-            String errorMessage = ex.getMessage();
+        } catch (HttpStatusCodeException httpException) {
+            throw new MoodleNotRespond(
+                    function,
+                    endPoint,
+                    requestBody.toString(),
+                    httpException.getMessage()
+            );
         }
     }
 

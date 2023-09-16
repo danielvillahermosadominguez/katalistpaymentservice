@@ -74,22 +74,22 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void throw_an_moodle_exception_when_the_get_courses_endpoint_not_exist() {
+    public void throw_an_moodle_exception_when_get_courses_not_respond() {
         Integer courseId = 1;
-        var thrown = Assertions.assertThrows(MoodleNotRespond.class, ()-> {
+        var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
             apiClient.getCourse(courseId.toString());
         });
 
         assertThat(thrown).isNotNull();
         assertThat(thrown.getRequestBody()).isEqualTo("{options[ids][0]=[1]}");
-        assertThat(thrown.getFunction()).isEqualTo( "core_course_get_courses");
+        assertThat(thrown.getFunction()).isEqualTo("core_course_get_courses");
         assertThat(thrown.getEndPoint()).isEqualTo(
                 apiClient.generateEndPoint("core_course_get_courses")
         );
     }
 
     @Test
-    public void get_users_by_field_when_the_user_not_exist() {
+    public void get_users_by_field_when_the_user_not_exist() throws MoodleNotRespond {
         wireMock.stubForGetUsersByFieldWithStatusOk(Arrays.asList());
 
         var user = apiClient.getUserByMail("random@example.com");
@@ -98,7 +98,37 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void create_user_when_the_user_not_exists() throws UnsupportedEncodingException {
+    public void get_users_by_field_when_the_user_exist() throws MoodleNotRespond {
+        var email = "random@example.com";
+        var responseBody = wireMock.createResponseBodyGetUserByFieldOk(
+                1,
+                "RANDOM_USER_NAME",
+                email
+        );
+        wireMock.stubForGetUsersByFieldWithStatusOk(Arrays.asList(responseBody));
+
+        var user = apiClient.getUserByMail(email);
+
+        assertThat(user).isNotNull();
+    }
+
+    @Test
+    public void throw_an_moodle_exception_when_the_get_user_by_field_not_respond() {
+        Integer courseId = 1;
+        var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
+            apiClient.getUserByMail("random@example.com");
+        });
+
+        assertThat(thrown).isNotNull();
+        assertThat(thrown.getRequestBody()).isEqualTo("{field=[email], values[0]=[random@example.com]}");
+        assertThat(thrown.getFunction()).isEqualTo("core_user_get_users_by_field");
+        assertThat(thrown.getEndPoint()).isEqualTo(
+                apiClient.generateEndPoint("core_user_get_users_by_field")
+        );
+    }
+
+    @Test
+    public void create_user_when_the_user_not_exists() throws UnsupportedEncodingException, MoodleNotRespond {
         Integer userId = 1;
         String userName = "RANDOM_USERNAME";
         String email = "RANDOM_USERNAME@email.com";
@@ -131,7 +161,28 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void enrole_an_user_to_a_course() throws UnsupportedEncodingException {
+    public void throw_an_moodle_exception_when_the_create_user_not_respond() {
+        Integer courseId = 1;
+        var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
+            apiClient.createUser(
+                    "RANDOM_NAME",
+                    "RANDOM_LAST_NAME",
+                    "RANDOM_EMAIL@EMAIL.COM"
+            );
+        });
+
+        assertThat(thrown).isNotNull();
+        assertThat(thrown.getRequestBody()).isEqualTo(
+                "{users[0][username]=[RANDOM_EMAIL], users[0][createpassword]=[1], users[0][email]=[RANDOM_EMAIL@EMAIL.COM], users[0][firstname]=[RANDOM_NAME], users[0][lastname]=[RANDOM_LAST_NAME]}"
+        );
+        assertThat(thrown.getFunction()).isEqualTo("core_user_create_users");
+        assertThat(thrown.getEndPoint()).isEqualTo(
+                apiClient.generateEndPoint("core_user_create_users")
+        );
+    }
+
+    @Test
+    public void enrole_an_user_to_a_course() throws UnsupportedEncodingException, MoodleNotRespond {
         var userId = "1";
         var courseId = 9;
         List<Map<String, Object>> responseBody = Arrays.asList();
@@ -147,13 +198,35 @@ public class MoodleAPIClientShould {
         var user = mock(MoodleUser.class);
         when(user.getId()).thenReturn(userId);
 
-        apiClient.enroleToTheCourse(course, user);
+        apiClient.enrolToTheCourse(course, user);
 
         wireMock.verifyEnrolUsersIsCalled(1, requestBody);
     }
 
     @Test
-    public void get_enrolled_users_when_are_not_users_enrolled() {
+    public void throw_an_moodle_exception_when_enrol_an_user_not_respond() {
+        var courseId = 1;
+        var userId = "1";
+        var course = mock(MoodleCourse.class);
+        when(course.getId()).thenReturn(courseId);
+        var user = mock(MoodleUser.class);
+        when(user.getId()).thenReturn(userId);
+        var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
+            apiClient.enrolToTheCourse(course, user);
+        });
+
+        assertThat(thrown).isNotNull();
+        assertThat(thrown.getRequestBody()).isEqualTo(
+                "{enrolments[0][roleid]=[5], enrolments[0][userid]=[1], enrolments[0][courseid]=[1]}"
+        );
+        assertThat(thrown.getFunction()).isEqualTo("enrol_manual_enrol_users");
+        assertThat(thrown.getEndPoint()).isEqualTo(
+                apiClient.generateEndPoint("enrol_manual_enrol_users")
+        );
+    }
+
+    @Test
+    public void get_enrolled_users_when_are_not_users_enrolled() throws MoodleNotRespond {
 
         List<Map<String, Object>> responseBody = Arrays.asList();
         wireMock.stubForGetEnrolledUsersWithStatusOK(responseBody);
@@ -164,5 +237,42 @@ public class MoodleAPIClientShould {
         );
 
         assertThat(exists).isFalse();
+    }
+
+    @Test
+    public void get_enrolled_users_when_are_users_enrolled() throws MoodleNotRespond {
+        var email = "random@example.com";
+        var responseBody = wireMock.createResponseBodyGetUserByFieldOk(
+                1,
+                "RANDOM_USER_NAME",
+                email
+        );
+
+        wireMock.stubForGetEnrolledUsersWithStatusOK(Arrays.asList(responseBody));
+
+        var exists = apiClient.existsAnUserinThisCourse(
+                "RANDOM_COURSE_ID",
+                email
+        );
+
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    public void throw_an_moodle_exception_when_get_enrolled_users_not_respond() {
+        Integer courseId = 1;
+        var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
+            apiClient.existsAnUserinThisCourse(
+                    "RANDOM_COURSE_ID",
+                    "RANDOM_EMAIL@EMAIL.COM"
+            );
+        });
+
+        assertThat(thrown).isNotNull();
+        assertThat(thrown.getRequestBody()).isEqualTo("{courseid=[RANDOM_COURSE_ID]}");
+        assertThat(thrown.getFunction()).isEqualTo("core_enrol_get_enrolled_users");
+        assertThat(thrown.getEndPoint()).isEqualTo(
+                apiClient.generateEndPoint("core_enrol_get_enrolled_users")
+        );
     }
 }

@@ -101,7 +101,7 @@ public class Stepdefs {
     @Given("he\\/she has been subscribed to the same course in the past with the following data")
     public void he_she_has_been_subscribed_to_the_same_course_in_the_past_with_the_following_data(DataTable dataTable) throws UnsupportedEncodingException {
         he_she_has_been_subscribed_to_other_courses_in_the_past_with_the_following_data(dataTable);
-        moodleApiClient.enroleToTheCourse(FIXTURE_COURSE, FIXTURE_USER);
+        moodleApiClient.enrolToTheCourse(FIXTURE_COURSE, FIXTURE_USER);
     }
 
     @Then("the user is informed he\\/she is already subscribed to this course")

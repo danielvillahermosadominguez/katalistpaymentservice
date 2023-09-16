@@ -93,7 +93,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     @Override
-    public void enroleToTheCourse(MoodleCourse course, MoodleUser user) {
+    public void enrolToTheCourse(MoodleCourse course, MoodleUser user) {
         if(!studentsPerCourse.containsKey(course.getId())) {
             return;
         }

@@ -42,10 +42,19 @@ public class MoodleWireMockServer extends WireMockServerExtension {
         return map;
     }
 
-    public Map<String, Object> createResponseBodyCreateUserOk(Integer userId, String username, String email) {
+    public Map<String, Object> createResponseBodyGetUserByFieldOk(int userId, String userName, String email) {
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put("id", userId);
-        responseBody.put("username", username);
+        responseBody.put("username", userName);
+        responseBody.put("email", email);
+
+        return responseBody;
+    }
+
+    public Map<String, Object> createResponseBodyCreateUserOk(Integer userId, String userName, String email) {
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put("id", userId);
+        responseBody.put("username", userName);
         responseBody.put("email", email);
         return responseBody;
     }
@@ -120,7 +129,7 @@ public class MoodleWireMockServer extends WireMockServerExtension {
     }
 
     public void stubForGetUsersByFieldWithStatusOk(List<Map<String, Object>> responseBody) {
-        var json = gson.toJson(responseBody);
+        var json = gson.toJson(responseBody.toArray());
         stubForPostWithStatusOk("core_user_get_users_by_field", json);
     }
 

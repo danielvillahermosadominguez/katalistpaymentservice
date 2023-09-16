@@ -102,7 +102,7 @@ public class PaymentController {
             if (user == null) {
                 user = moodleAPIClient.createUser(customer.getName(), customer.getSurname(), customer.getEmail());
             }
-            moodleAPIClient.enroleToTheCourse(course, user);
+            moodleAPIClient.enrolToTheCourse(course, user);
             return ResponseEntity.ok(HttpStatus.OK);
         } catch (MoodleNotRespond e) {
             throw new ResponseStatusException(
