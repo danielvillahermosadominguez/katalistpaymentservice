@@ -102,7 +102,7 @@ public class TestApiClient {
             Error error = gson.fromJson(response.getBody(), Error.class);
             return error.getCode();
         }
-        return 1;
+        return 0;
     }
 
     public int payment(int courseId, Map<String, String> data) {

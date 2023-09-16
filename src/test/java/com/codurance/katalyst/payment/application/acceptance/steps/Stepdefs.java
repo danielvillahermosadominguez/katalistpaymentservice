@@ -26,12 +26,13 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class Stepdefs {
     public static final int FIXTURE_PRICE = 100;
     public static final String FIXTURE_DISPLAY_NAME = "TEST_COURSE";
+    public static final int NO_ANSWER = -10;
     public static MoodleCourseDTO FIXTURE_COURSE = null;
 
     public static MoodleUserDTO FIXTURE_USER = null;
 
-    private int selecteCourse;
-    int subscritionOutputCode = -1;
+    private int selectedCourse;
+    int subscriptionOutputCode = -1;
     int invoiceOutputCode = -1;
     Map<String, String> data = null;
     @LocalServerPort
@@ -44,6 +45,7 @@ public class Stepdefs {
     MoodleApiClientFake moodleApiClient;
     @Autowired
     HoldedApiClientFake holdedApiClient;
+    private int subscriptionResult = NO_ANSWER;
 
     @Before
     public void beforeEachScenario() {
@@ -60,17 +62,16 @@ public class Stepdefs {
         holdedApiClient.reset();
 
         FIXTURE_COURSE = moodleApiClient.addCourse(FIXTURE_DISPLAY_NAME, FIXTURE_PRICE);
+        subscriptionResult = NO_ANSWER;
+        FIXTURE_USER = null;
+        invoiceOutputCode = NO_ANSWER;
     }
 
-    @Given("A company who has choosen a course")
-    public void a_company_who_has_choosen_a_course() {
 
-    }
-
-    @Given("An customer who has choosen a course")
-    public void an_customer_who_has_choosen_a_course() {
-        this.selecteCourse = FIXTURE_COURSE.getId();
-        Course course = this.apiClient.getCourse(this.selecteCourse);
+    @Given("An customer who has chosen a course")
+    public void an_customer_who_has_chosen_a_course() {
+        this.selectedCourse = FIXTURE_COURSE.getId();
+        Course course = this.apiClient.getCourse(this.selectedCourse);
         assertThat(course).isNotNull();
     }
 
@@ -79,8 +80,8 @@ public class Stepdefs {
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
         data = rows.get(0);
-        subscritionOutputCode = apiClient.subscribe(this.selecteCourse, data);
-        assertThat(subscritionOutputCode).isEqualTo(1);
+        subscriptionOutputCode = apiClient.subscribe(this.selectedCourse, data);
+        assertThat(subscriptionOutputCode).isGreaterThanOrEqualTo(0);
     }
 
     @Given("he\\/she has been subscribed to other courses in the past with the following data")
@@ -95,27 +96,27 @@ public class Stepdefs {
         String nifcif = data.get("Dni/CIF");
         holdedApiClient.createContact(name, surname, email, company, nifcif);
         FIXTURE_USER = moodleApiClient.createUser(name, surname, email);
-        moodleApiClient.enroleToTheCourse(FIXTURE_COURSE, FIXTURE_USER);
     }
 
-    @When("the user request the subscription")
-    public void the_user_request_the_subscription() {
-        subscritionOutputCode = apiClient.subscribe(this.selecteCourse, data);
+    @Given("he\\/she has been subscribed to the same course in the past with the following data")
+    public void he_she_has_been_subscribed_to_the_same_course_in_the_past_with_the_following_data(DataTable dataTable) throws UnsupportedEncodingException {
+        he_she_has_been_subscribed_to_other_courses_in_the_past_with_the_following_data(dataTable);
+        moodleApiClient.enroleToTheCourse(FIXTURE_COURSE, FIXTURE_USER);
     }
 
     @Then("the user is informed he\\/she is already subscribed to this course")
     public void the_user_is_informed_he_she_is_already_subscribed_to_this_course() {
-
+        assertThat(subscriptionOutputCode).isEqualTo(2);
     }
 
     @When("the user pay the subscription")
     public void the_user_pay_the_subscription() throws UnsupportedEncodingException {
-        this.invoiceOutputCode = this.apiClient.payment(this.selecteCourse, data);
+        this.invoiceOutputCode = this.apiClient.payment(this.selectedCourse, data);
     }
 
     @Then("the subscription is successful")
     public void the_subscription_is_successful() {
-        assertThat(subscritionOutputCode).isEqualTo(1);
+        assertThat(subscriptionOutputCode).isEqualTo(0);
         assertThat(invoiceOutputCode).isEqualTo(1);
     }
 
@@ -127,12 +128,22 @@ public class Stepdefs {
     }
     @Then("the user has received the access to the platform")
     public void the_user_has_received_the_access_to_the_platform() {
-        assertThat(subscritionOutputCode).isEqualTo(1);
+        assertThat(subscriptionOutputCode).isEqualTo(0);
     }
 
     @When("the user request the subscription to the course")
     public void the_user_request_the_subscription_to_the_course() {
-        // Write code here that turns the phrase above into concrete actions
+        subscriptionOutputCode = apiClient.subscribe(this.selectedCourse, data);
+    }
 
+    @Given("An customer who has chosen a course which is not in the catalog")
+    public void an_customer_who_has_chosen_a_course_which_is_not_in_the_catalog() {
+        this.selectedCourse = 10;
+        Course course = this.apiClient.getCourse(this.selectedCourse);
+        assertThat(course).isNull();
+    }
+    @Then("the subscription is not successful because the course is not in the catalog")
+    public void the_subscription_is_not_successful_because_the_course_is_not_in_the_catalog() {
+      assertThat(this.subscriptionOutputCode).isEqualTo(1);
     }
 }
