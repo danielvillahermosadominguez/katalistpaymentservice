@@ -1,10 +1,10 @@
-package com.codurance.katalyst.payment.application.integration;
+package com.codurance.katalyst.payment.application.integration.wiremock;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.Map;
 
-public class WireMockHelper {
+public class WireMockServerExtension {
     public static final String EQUAL_SYMBOL = "=";
     public static final String JOIN_SYMBOL = "&";
 

@@ -3,18 +3,18 @@ package com.codurance.katalyst.payment.application.utils;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-public class Mail {
+public class EMail {
     public static final String AT = "@";
     public static final String SPECIAL_CHARACTERS = "[!#$%&'*+-/=?]";
-    private final String email;
+    private final String value;
 
-    public Mail(String email) {
-        this.email = email;
+    public EMail(String email) {
+        this.value = email;
     }
 
     public String getUserName() {
         String finalOutput = "";
-        String arrayOfStr[] = email.split(AT);
+        String arrayOfStr[] = value.split(AT);
         if (arrayOfStr.length == 2) {
             finalOutput = arrayOfStr[0];
         } else {
@@ -26,6 +26,10 @@ public class Mail {
     }
 
     public String getInUnicodeFormat() throws UnsupportedEncodingException {
-        return URLEncoder.encode(email, "UTF-8");
+        return URLEncoder.encode(value, "UTF-8");
+    }
+
+    public String getValue() {
+        return value;
     }
 }

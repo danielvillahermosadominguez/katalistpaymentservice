@@ -3,7 +3,7 @@ package com.codurance.katalyst.payment.application.holded;
 import com.codurance.katalyst.payment.application.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
-import com.codurance.katalyst.payment.application.utils.Mail;
+import com.codurance.katalyst.payment.application.utils.EMail;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,7 +26,7 @@ import java.util.Map;
 
 
 @Component
-public class HoldedAPIClientImpl extends APIClient implements HoldedApiClient {
+public class HoldedApiClientImpl extends APIClient implements HoldedApiClient {
 
     public static final String CUSTOM_ID = "customId";
     public static final String NAME = "name";
@@ -52,7 +52,7 @@ public class HoldedAPIClientImpl extends APIClient implements HoldedApiClient {
     @Autowired
     DateService dateService;
 
-    public HoldedAPIClientImpl(RestTemplate restTemplate) {
+    public HoldedApiClientImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
@@ -131,8 +131,8 @@ public class HoldedAPIClientImpl extends APIClient implements HoldedApiClient {
         map.add(DESC,description);
         Instant instant = dateService.getInstant();
         map.add(DATE, instant.getEpochSecond()+"");
-        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO(concept, amount, price);
-        List<HoldedInvoiceItemDTO> items = Arrays.asList(item);
+        HoldedInvoiceItem item = new HoldedInvoiceItem(concept, amount, price);
+        List<HoldedInvoiceItem> items = Arrays.asList(item);
         Gson gson = new Gson();
         String jsonArray = gson.toJson(items);
         map.add(ITEMS,jsonArray);
@@ -172,7 +172,7 @@ public class HoldedAPIClientImpl extends APIClient implements HoldedApiClient {
     }
 
     public String createCustomId(String nifCif, String email) throws UnsupportedEncodingException {
-        Mail mail = new Mail(email);
+        EMail mail = new EMail(email);
         return nifCif + mail.getInUnicodeFormat();
     }
 }

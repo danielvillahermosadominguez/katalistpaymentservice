@@ -2,7 +2,7 @@ package com.codurance.katalyst.payment.application.moodle;
 
 import com.codurance.katalyst.payment.application.MoodleApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
-import com.codurance.katalyst.payment.application.utils.Mail;
+import com.codurance.katalyst.payment.application.utils.EMail;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.MediaType;
@@ -110,7 +110,7 @@ public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
         ResponseEntity<MoodleUserDTO[]> response = null;
         MoodleUserDTO result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
-        Mail mail = new Mail(email);
+        EMail mail = new EMail(email);
         map.add(USERS_0_USERNAME, mail.getUserName());
         map.add(USERS_0_CREATEPASSWORD, CREATE_PASWORD_AND_SEND);
         map.add(USERS_0_EMAIL,  email);

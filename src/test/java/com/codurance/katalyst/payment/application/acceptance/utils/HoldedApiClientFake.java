@@ -3,7 +3,7 @@ package com.codurance.katalyst.payment.application.acceptance.utils;
 import com.codurance.katalyst.payment.application.HoldedApiClient;
 import com.codurance.katalyst.payment.application.holded.HoldedContactDTO;
 import com.codurance.katalyst.payment.application.holded.HoldedInvoiceDTO;
-import com.codurance.katalyst.payment.application.utils.Mail;
+import com.codurance.katalyst.payment.application.utils.EMail;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -74,7 +74,7 @@ public class HoldedApiClientFake implements HoldedApiClient {
 
     @Override
     public String createCustomId(String nifCif, String email) throws UnsupportedEncodingException {
-        Mail mail = new Mail(email);
+        EMail mail = new EMail(email);
         String customId = nifCif + mail.getInUnicodeFormat();
         return customId;
     }

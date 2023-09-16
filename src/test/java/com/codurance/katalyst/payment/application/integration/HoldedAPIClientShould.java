@@ -1,11 +1,12 @@
 package com.codurance.katalyst.payment.application.integration;
 
 import com.codurance.katalyst.payment.application.acceptance.utils.TestDateService;
-import com.codurance.katalyst.payment.application.holded.HoldedAPIClientImpl;
+import com.codurance.katalyst.payment.application.holded.HoldedApiClientImpl;
 import com.codurance.katalyst.payment.application.holded.HoldedContactDTO;
 import com.codurance.katalyst.payment.application.holded.HoldedInvoiceDTO;
-import com.codurance.katalyst.payment.application.holded.HoldedInvoiceItemDTO;
-import com.codurance.katalyst.payment.application.utils.Mail;
+import com.codurance.katalyst.payment.application.holded.HoldedInvoiceItem;
+import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
+import com.codurance.katalyst.payment.application.utils.EMail;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,10 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -24,193 +23,149 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class HoldedAPIClientShould {
-    public static final int WIREMOCK_HOLDED_PORT = 9001;
-    Gson gson = new Gson();
-
-    public static final String EQUAL_SYMBOL = "=";
-    public static final String JOIN_SYMBOL = "&";
-
-    private String holdedApiKey = "RANDOM_API_KEY";
-    private HoldedWireMockHelper holdedService = null;
-
+    public static final int WIREMOCK_PORT = 9001;
     private String urlBase = "http://localhost:9001/api/";
-
-    HoldedAPIClientImpl holdedAPIClient = new HoldedAPIClientImpl(new RestTemplate());
+    private Gson gson = new Gson();
+    private String holdedApiKey = "RANDOM_API_KEY";
+    private HoldedWireMockServer wireMock = null;
+    private HoldedApiClientImpl apiClient = new HoldedApiClientImpl(new RestTemplate());
 
 
     @BeforeEach
-    void beforeEach() throws UnsupportedEncodingException {
-        if (this.holdedService == null) {
-            this.holdedService = new HoldedWireMockHelper();
-            this.holdedAPIClient.setApiKey(holdedApiKey);
-            this.holdedAPIClient.setURLBase(urlBase);
-            this.holdedAPIClient.setDateService(new TestDateService());
-            this.holdedService.setPort(WIREMOCK_HOLDED_PORT);
-            this.holdedService.setToken(holdedApiKey);
-            this.holdedService.start();
+    void beforeEach() {
+        if (this.wireMock == null) {
+            this.wireMock = new HoldedWireMockServer();
+            this.apiClient.setApiKey(holdedApiKey);
+            this.apiClient.setURLBase(urlBase);
+            this.apiClient.setDateService(new TestDateService());
+            this.wireMock.setPort(WIREMOCK_PORT);
+            this.wireMock.setApiKey(holdedApiKey);
+            this.wireMock.start();
         }
-        this.holdedService.resetAndConfigure();
+        this.wireMock.reset();
     }
 
     @AfterEach
     void afterEach() {
-        this.holdedService.stop();
+        this.wireMock.stop();
     }
 
     @Test
-    public void get_no_contact_by_custom_id_when_the_contact_not_exits() throws UnsupportedEncodingException {
-        String json = "[]";
-        String email = "RANDOM_USERNAME@email.com";
-        Mail mail = new Mail(email);
-        String nifCif = "46842041C";
-        String customId = URLEncoder.encode(nifCif + mail.getInUnicodeFormat(), "UTF-8");
-        String parameters = "?customId=" + customId;
+    public void get_null_contact_by_custom_id_when_the_contact_not_exits() throws UnsupportedEncodingException {
+        var email = new EMail("RANDOM_USERNAME@email.com");
+        var nifCif = "46842041C";
+        var customId = nifCif + email.getInUnicodeFormat();
 
-        holdedService.stubForGetWithStatusOKAndBodyParameters(parameters, json);
+        wireMock.stubForGetContactByCustomIdStatusOK(customId, null);
 
-        HoldedContactDTO contact = holdedAPIClient.getContactByCustomId(customId);
+        var contact = apiClient.getContactByCustomId(customId);
 
         assertThat(contact).isNull();
     }
 
     @Test
-    public void get_contact_by_custom_id_when_the_contact_exits() throws UnsupportedEncodingException {
-        String json = "";
-        String email = "RANDOM_USERNAME@email.com";
-        Mail mail = new Mail(email);
-        String nifCif = "46842041C";
-        String customId = nifCif + mail.getInUnicodeFormat();
-        String parameters = "?customId=" + URLEncoder.encode(nifCif + mail.getInUnicodeFormat(), "UTF-8");
+    public void get_a_contact_by_custom_id_when_the_contact_exists() throws UnsupportedEncodingException {
+        var email = new EMail("RANDOM_USERNAME@email.com");
+        var nifCif = "46842041C";
+        var customId = nifCif + email.getInUnicodeFormat();
+        var responseBody = wireMock.createContactResponseForGetContact(
+                "RANDOM_USERNAME@email.com",
+                "RANDOM_NAME",
+                nifCif);
+        wireMock.stubForGetContactByCustomIdStatusOK(customId, responseBody);
 
-        Map<String, Object> expectedContact = createContact(email, "RANDOM_NAME", nifCif);
-        json = gson.toJson(Arrays.asList(expectedContact).toArray());
-
-        holdedService.stubForGetWithStatusOKAndBodyParameters(parameters, json);
-
-        HoldedContactDTO contact = holdedAPIClient.getContactByCustomId(customId);
+        var contact = apiClient.getContactByCustomId(customId);
 
         assertThat(contact).isNotNull();
     }
 
     @Test
     public void create_contact_when_the_contact_exits() throws UnsupportedEncodingException {
-        String email = "RANDOM_USER@email.com";
-        Mail mail = new Mail(email);
-        Map<String, Object> bodyMap = new LinkedHashMap<>();
-        bodyMap.put("status", 1);
-        bodyMap.put("info", "RANDOM_INFO");
-        bodyMap.put("id", "1");
-        String jsonCreate = gson.toJson(bodyMap);
+        var email = new EMail("RANDOM_USER@email.com");
+        var nifCif = "46842041C";
+        var customId = nifCif + email.getInUnicodeFormat();
+        var name = "RANDOM_NAME";
+        var surname = "RANDOM_SURNAME";
+        var company = "RANDOM_COMPANY_NAME";
+        var contactId = "1";
+        var responseBodyCreate = wireMock.createResponseBodyOkCreate(contactId);
 
-        Map<String, String> requestBodyMap = new LinkedHashMap<>();
-        String nifCif = "46842041C";
-        String customId = nifCif + mail.getInUnicodeFormat();
-        String name = "RANDOM_NAME";
-        String surname = "RANDOM_SURNAME";
-        String company = "RANDOM_COMPANY_NAME";
+        var requestBodyParameters = wireMock.createContactRequestParameters(
+                name + " " + surname + "(" + company + ")",
+                email.getValue(),
+                "client",
+                nifCif,
+                customId,
+                "true"
+        );
 
+        var responseBodyGet = wireMock.createContactResponseForGetContact(
+                "RANDOM_USER@email.com",
+                "RANDOM_NAME",
+                nifCif);
+        wireMock.stubForGetContactByCustomIdStatusOK(customId, responseBodyGet);
+        wireMock.stubForCreateContactsWithStatusOK(requestBodyParameters, responseBodyCreate);
 
-        requestBodyMap.put("name", name + " " + surname + "(" + company + ")");
-        requestBodyMap.put("email", email);
-        requestBodyMap.put("type", "client");
-        requestBodyMap.put("code", nifCif);
-        requestBodyMap.put("CustomId", customId);
-        requestBodyMap.put("isperson", "true");
+        var contact = apiClient.createContact(
+                name,
+                surname,
+                email.getValue(),
+                company,
+                nifCif
+        );
 
-        Map<String, Object> expectedContact = createContact(email, "RANDOM_NAME", nifCif);
-        String jsonGet = gson.toJson(Arrays.asList(expectedContact).toArray());
-        String parameters = "?customId=" + URLEncoder.encode(nifCif + mail.getInUnicodeFormat(), "UTF-8");
-        holdedService.stubForGetWithStatusOKAndBodyParameters(parameters, jsonGet);
-
-        holdedService.stubForPostWithStatusOKAndBodyParameters("invoicing/v1/contacts",
-                joinParameters(requestBodyMap),
-                jsonCreate);
-
-        HoldedContactDTO contact =  holdedAPIClient.createContact(name,surname, email,company,nifCif);
         assertThat(contact).isNotNull();
     }
 
     @Test
     public void create_an_invoice_based_on_a_contact() throws UnsupportedEncodingException {
-        Map<String, Object> bodyMap = new LinkedHashMap<>();
-        bodyMap.put("id", 1);
-        String json = gson.toJson(bodyMap);
+        Integer contactId = 1;
+        Integer invoiceId = 1;
+        Map<String, Object> responseBody = new LinkedHashMap<>();
+        responseBody.put("id", invoiceId);
 
-        Map<String, String> requestBodyMap = new LinkedHashMap<>();
+        Map<String, String> requestBodyParameters = wireMock.createRequestBodyForCreateInvoice(
+                contactId + "",
+                "",
+                "2323223"
+        );
 
-        requestBodyMap.put("contactId", "1");
-        requestBodyMap.put("desc", "");
-        requestBodyMap.put("date", "2323223");
+        var item = new HoldedInvoiceItem("TEST_COURSE", 1, 100);
+        var items = Arrays.asList(item);
+        var jsonArray = gson.toJson(items);
+        requestBodyParameters.put("items", jsonArray);
 
-        HoldedInvoiceItemDTO item = new HoldedInvoiceItemDTO("TEST_COURSE", 1, 100);
+        wireMock.stubForCreateInvoiceWithStatusOk(requestBodyParameters, responseBody);
 
-        List<HoldedInvoiceItemDTO> items = Arrays.asList(item);
-        Gson gson = new Gson();
-        String jsonArray = gson.toJson(items);
-        requestBodyMap.put("items", jsonArray);
+        var contact = mock(HoldedContactDTO.class);
+        when(contact.getId()).thenReturn(contactId + "");
 
-        holdedService.stubForPostWithStatusOKAndBodyParameters("invoicing/v1/documents/invoice",
-                joinParameters(requestBodyMap),
-                json);
-
-        HoldedContactDTO holdedContact = mock(HoldedContactDTO.class);
-        when(holdedContact.getId()).thenReturn("1");
-        HoldedInvoiceDTO invoice = holdedAPIClient.createInvoice(holdedContact, "TEST_COURSE","",1,100);
+        var invoice = apiClient.createInvoice(
+                contact,
+                "TEST_COURSE",
+                "",
+                1,
+                100);
 
         assertThat(invoice).isNotNull();
     }
 
     @Test
     public void send_an_invoice_to_an_email() throws UnsupportedEncodingException {
-        String email = "RANDOM_USERNAME@gmail.com";
-        Map<String, Object> bodyMap = new LinkedHashMap<>();
-        bodyMap.put("status", 1);
-        bodyMap.put("info", "RANDOM_INFO");
-        bodyMap.put("id", "1");
-        String json = gson.toJson(bodyMap);
+        var emails = "RANDOM_USERNAME@gmail.com";
+        var invoiceID = "1";
+        Map<String, Object> responseBody = wireMock.createResponseBodyOkCreate(invoiceID);
 
-        Map<String, String> requestBodyMap = new LinkedHashMap<>();
-        requestBodyMap.put("emails", email);
+        Map<String, String> requestBodyParameters = new LinkedHashMap<>();
+        requestBodyParameters.put("emails", emails);
 
-        String invoiceID ="RANDOM_INVOIVCE_ID";
-        holdedService.stubForPostWithStatusOKAndBodyParameters("invoicing/v1/documents/invoice/" + unicode(invoiceID) + "/send",
-                joinParameters(requestBodyMap),
-                json);
+        wireMock.stubForCreateInvoiceWithStatusOK(invoiceID, requestBodyParameters, responseBody);
 
-        HoldedInvoiceDTO invoice = mock(HoldedInvoiceDTO.class);
+        var invoice = mock(HoldedInvoiceDTO.class);
         when(invoice.getId()).thenReturn(invoiceID);
-        holdedAPIClient.sendInvoice(invoice, email);
 
-        holdedService.verifySendInvoiceHasBeenCalled(email, invoiceID);
-    }
+        apiClient.sendInvoice(invoice, emails);
 
-    protected String joinParameters(Map<String, String> requestBodyMap) throws UnsupportedEncodingException {
-        String requestBody = "";
-
-        for (Map.Entry<String, String> parameter : requestBodyMap.entrySet()) {
-            requestBody += unicode(parameter.getKey()) + EQUAL_SYMBOL + unicode(parameter.getValue()) + JOIN_SYMBOL;
-        }
-        if (!requestBody.isEmpty()) {
-            requestBody = requestBody.substring(0, requestBody.length() - 1);
-        }
-
-        return requestBody;
-    }
-
-    protected String unicode(String text) throws UnsupportedEncodingException {
-        return URLEncoder.encode(text, "UTF-8");
-    }
-
-    private Map<String, Object> createContact(String email, String name, String nifCif) throws UnsupportedEncodingException {
-        Map<String, Object> bodyMap = new LinkedHashMap<>();
-        Mail mail = new Mail(email);
-        String customId = URLEncoder.encode(nifCif + mail.getInUnicodeFormat(), "UTF-8");
-        bodyMap.put("id", 1);
-        bodyMap.put("customId", customId);
-        bodyMap.put("email", email);
-        bodyMap.put("name", name);
-        bodyMap.put("code", nifCif);
-        bodyMap.put("type", "");
-        return bodyMap;
+        wireMock.verifySendInvoiceHasBeenCalled(emails, invoiceID);
     }
 }
