@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
@@ -37,9 +38,22 @@ public class MoodleAPIClient extends APIClient {
     @Value("${moodle.urlbase}")
     private String URL_BASE;
 
+    public void setURLBase(String urlBase){
+        this.URL_BASE = urlBase;
+    }
+
     @Value("${moodle.token}")
     private String token;
+
+    public void setToken(String token){
+        this.token = token;
+    }
+
     private String format = "json";
+
+    public MoodleAPIClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     private String generateEndPoint(String moodleWsFunction) {
         return URL_BASE+ WSTOKEN + token + WSFUNCTION +moodleWsFunction+ MOODLEWSRESTFORMAT +format;

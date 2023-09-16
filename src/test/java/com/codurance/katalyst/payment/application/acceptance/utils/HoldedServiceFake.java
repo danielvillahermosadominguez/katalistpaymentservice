@@ -35,6 +35,9 @@ public class HoldedServiceFake extends ServiceFake {
     private final static String URL_BASE = "/api/";
     private MockServer wireMockServer = null;
 
+    public static final String EQUAL_SYMBOL = "=";
+    public static final String JOIN_SYMBOL = "&";
+
     private int port;
     private Map<String, Map<String, Object>> contacts = new HashMap();
 
@@ -127,7 +130,7 @@ public class HoldedServiceFake extends ServiceFake {
                 json);
     }
 
-    private void stubForPostWithStatusOKAndBodyParameters(String function, String requestBody, String responseBody) {
+    public void stubForPostWithStatusOKAndBodyParameters(String function, String requestBody, String responseBody) {
         this.wireMockServer.stubFor(
                 post(urlEqualTo(URL_BASE + function))
                         .withRequestBody(containing(requestBody))
@@ -159,7 +162,7 @@ public class HoldedServiceFake extends ServiceFake {
         this.contacts.put(customId, bodyMap);
     }
 
-    private void stubForGetWithStatusOKAndBodyParameters(String parameters, String responseBody) {
+    public void stubForGetWithStatusOKAndBodyParameters(String parameters, String responseBody) {
         this.wireMockServer.stubFor(
                 get(urlEqualTo(String.format(URL_BASE + "invoicing/v1/contacts%s", parameters)))
                         .willReturn(
@@ -214,5 +217,9 @@ public class HoldedServiceFake extends ServiceFake {
     public void verifySendInvoiceHasBeenCalled(String email, String invoiceID) throws UnsupportedEncodingException {
         this.wireMockServer.verify(1,
                 postRequestedFor(urlEqualTo(URL_BASE + "invoicing/v1/documents/invoice/" + unicode(invoiceID) + "/send")));
+    }
+
+    public void stop() {
+        this.wireMockServer.stop();
     }
 }

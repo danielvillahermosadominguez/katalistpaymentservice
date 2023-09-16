@@ -21,6 +21,7 @@ import java.util.Map;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
@@ -125,7 +126,7 @@ public class MoodleServiceFake extends ServiceFake {
                 json);
     }
 
-    private void stubForPostWithStatusOK(String function, String responseBody) {
+    public void stubForPostWithStatusOK(String function, String responseBody) {
         this.wireMockServer.stubFor(
                 post(urlEqualTo(String.format(URL_BASE, token, function)))
                         .willReturn(
@@ -141,7 +142,7 @@ public class MoodleServiceFake extends ServiceFake {
 
     }
 
-    private void stubForPostWithStatusOKAndBodyParameters(String function, String requestBody, String responseBody) {
+    public void stubForPostWithStatusOKAndBodyParameters(String function, String requestBody, String responseBody) {
         this.wireMockServer.stubFor(
                 post(urlEqualTo(String.format(URL_BASE, token, function)))
                         .withRequestBody(containing(requestBody))
@@ -157,6 +158,17 @@ public class MoodleServiceFake extends ServiceFake {
         );
     }
 
+    public void verify(int quantity, String function, String requestBody) {
+        this.wireMockServer.verify(quantity,
+                postRequestedFor(
+                        urlEqualTo(
+                                String.format(URL_BASE, token, function
+                                )
+                        )
+                ).withRequestBody(containing(requestBody))
+        );
+    }
+
     public void configureGenericStubs() throws UnsupportedEncodingException {
         configureStubsForGetCourses();
         configureStubsForGetEnroledUsers();
@@ -167,5 +179,9 @@ public class MoodleServiceFake extends ServiceFake {
     public void reset() {
         this.wireMockServer.resetRequests();
         courses.clear();
+    }
+
+    public void stop() {
+        this.wireMockServer.stop();
     }
 }

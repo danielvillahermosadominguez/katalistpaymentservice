@@ -11,6 +11,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
 import java.time.Instant;
@@ -46,6 +47,22 @@ public class HoldedAPIClient extends APIClient {
 
     @Autowired
     DateService dateService;
+
+    public HoldedAPIClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+
+    public void setURLBase(String urlBase) {
+        this.URL_BASE = urlBase;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apyKey = apiKey;
+    }
+
+    public void setDateService(DateService dateService) {
+        this.dateService = dateService;
+    }
 
     @Override
     protected void getHeaderParameter(HttpHeaders headers) {
