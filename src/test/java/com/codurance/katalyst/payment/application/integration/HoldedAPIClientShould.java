@@ -1,12 +1,10 @@
 package com.codurance.katalyst.payment.application.integration;
 
-import com.codurance.katalyst.payment.application.acceptance.utils.HoldedServiceFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestDateService;
 import com.codurance.katalyst.payment.application.holded.HoldedAPIClient;
 import com.codurance.katalyst.payment.application.holded.HoldedContactDTO;
 import com.codurance.katalyst.payment.application.holded.HoldedInvoiceDTO;
 import com.codurance.katalyst.payment.application.holded.HoldedInvoiceItemDTO;
-import com.codurance.katalyst.payment.application.utils.DateService;
 import com.codurance.katalyst.payment.application.utils.Mail;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
@@ -21,10 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.in;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -36,7 +31,7 @@ public class HoldedAPIClientShould {
     public static final String JOIN_SYMBOL = "&";
 
     private String holdedApiKey = "RANDOM_API_KEY";
-    private HoldedServiceFake holdedService = null;
+    private HoldedWireMockHelper holdedService = null;
 
     private String urlBase = "http://localhost:9001/api/";
 
@@ -46,7 +41,7 @@ public class HoldedAPIClientShould {
     @BeforeEach
     void beforeEach() throws UnsupportedEncodingException {
         if (this.holdedService == null) {
-            this.holdedService = new HoldedServiceFake();
+            this.holdedService = new HoldedWireMockHelper();
             this.holdedAPIClient.setApiKey(holdedApiKey);
             this.holdedAPIClient.setURLBase(urlBase);
             this.holdedAPIClient.setDateService(new TestDateService());

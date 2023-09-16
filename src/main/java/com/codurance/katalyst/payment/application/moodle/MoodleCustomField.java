@@ -1,11 +1,11 @@
 package com.codurance.katalyst.payment.application.moodle;
 
 public class MoodleCustomField {
-    private String name;
-    private String shortname;
-    private String type;
-    private String valueraw;
-    private String value;
+    protected String name;
+    protected String shortname;
+    protected String type;
+    protected String valueraw;
+    protected String value;
 
     public String getName() {
         return name;

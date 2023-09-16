@@ -1,10 +1,11 @@
 package com.codurance.katalyst.payment.application.acceptance.steps;
 
-import com.codurance.katalyst.payment.application.acceptance.utils.HoldedServiceFake;
-import com.codurance.katalyst.payment.application.acceptance.utils.MoodleServiceFake;
+import com.codurance.katalyst.payment.application.acceptance.utils.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
 import com.codurance.katalyst.payment.application.courses.Course;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.codurance.katalyst.payment.application.integration.HoldedWireMockHelper;
+import com.codurance.katalyst.payment.application.moodle.MoodleCourseDTO;
+import com.codurance.katalyst.payment.application.moodle.MoodleUserDTO;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -23,11 +24,12 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class Stepdefs {
-    public static final int WIREMOCK_MOODLE_PORT = 9000;
     public static final int WIREMOCK_HOLDED_PORT = 9001;
     public static final int FIXTURE_PRICE = 100;
     public static final String FIXTURE_DISPLAY_NAME = "TEST_COURSE";
-    public static final int FIXTURE_COURSE_ID = 9;
+    public static MoodleCourseDTO FIXTURE_COURSE = null;
+
+    public static MoodleUserDTO FIXTURE_USER = null;
 
     private int selecteCourse;
     int subscritionOutputCode = -1;
@@ -37,9 +39,6 @@ public class Stepdefs {
     @LocalServerPort
     int randomServerPort;
 
-    @Value("${moodle.token}")
-    private String moodleToken;
-
     @Value("${holded.apikey}")
     private String holdedApiKey;
 
@@ -47,18 +46,15 @@ public class Stepdefs {
     private TestApiClient apiClient;
 
     @Autowired
-    private MoodleServiceFake moodleService;
+    MoodleApiClientFake moodleApiClient;
 
     @Autowired
-    private HoldedServiceFake holdedService;
+    private HoldedWireMockHelper holdedService;
 
     @Before
-    public void beforeEachScenario() throws JsonProcessingException, UnsupportedEncodingException {
-        if(!apiClient.isInitialized()) {
+    public void beforeEachScenario() {
+        if (!apiClient.isInitialized()) {
             this.apiClient.setPort(randomServerPort);
-            moodleService.setPort(WIREMOCK_MOODLE_PORT);
-            moodleService.setToken(moodleToken);
-            moodleService.start();
             holdedService.setPort(WIREMOCK_HOLDED_PORT);
             holdedService.setToken(holdedApiKey);
             holdedService.start();
@@ -66,15 +62,13 @@ public class Stepdefs {
         }
         ResponseEntity<String> response = this.apiClient.checkItsAlive();
 
-        if(!response.getBody().equals("OK! Working")) {
+        if (!response.getBody().equals("OK! Working")) {
             fail();
         }
 
-        moodleService.resetAndConfigure();
+        moodleApiClient.reset();
         holdedService.resetAndConfigure();
-
-        moodleService.addCourse(FIXTURE_COURSE_ID, FIXTURE_DISPLAY_NAME, FIXTURE_PRICE);
-        moodleService.configureGenericStubs();
+        FIXTURE_COURSE = moodleApiClient.addCourse(FIXTURE_DISPLAY_NAME, FIXTURE_PRICE);
         holdedService.configureGenericStubs();
     }
 
@@ -85,31 +79,31 @@ public class Stepdefs {
 
     @Given("An customer who has choosen a course")
     public void an_customer_who_has_choosen_a_course() {
-        this.selecteCourse = FIXTURE_COURSE_ID;
+        this.selecteCourse = FIXTURE_COURSE.getId();
         Course course = this.apiClient.getCourse(this.selecteCourse);
         assertThat(course).isNotNull();
     }
 
     @Given("the user has filled the following data")
-    public void the_user_has_filled_the_following_data(DataTable dataTable) throws UnsupportedEncodingException {
+    public void the_user_has_filled_the_following_data(DataTable dataTable) {
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
         data = rows.get(0);
-        if (newUser) {
-            moodleService.configureStubsForCreateUser(data);
-        }
         subscritionOutputCode = apiClient.subscribe(this.selecteCourse, data);
         assertThat(subscritionOutputCode).isEqualTo(1);
     }
 
     @Given("he\\/she has been subscribed to other courses in the past with the following data")
-    public void he_she_has_been_subscribed_to_other_courses_in_the_past_with_the_following_data(io.cucumber.datatable.DataTable dataTable) throws UnsupportedEncodingException {
+    public void he_she_has_been_subscribed_to_other_courses_in_the_past_with_the_following_data(DataTable dataTable) throws UnsupportedEncodingException {
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
         data = rows.get(0);
-        moodleService.configureStubsForCreateUser(data);
         holdedService.addContact(data);
-        newUser = false;
+        String name = data.get("Name");
+        String surname = data.get("Surname");
+        String email = data.get("email");
+        FIXTURE_USER = moodleApiClient.createUser(name, surname, email);
+        moodleApiClient.enroleToTheCourse(FIXTURE_COURSE, FIXTURE_USER);
     }
 
     @When("the user request the subscription")
@@ -134,7 +128,7 @@ public class Stepdefs {
     }
 
     @Then("the subscription is successful")
-    public void the_subscription_is_successful() throws UnsupportedEncodingException {
+    public void the_subscription_is_successful() {
         assertThat(subscritionOutputCode).isEqualTo(1);
         assertThat(invoiceOutputCode).isEqualTo(1);
     }

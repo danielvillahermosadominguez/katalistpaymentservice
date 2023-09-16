@@ -6,7 +6,7 @@ import com.codurance.katalyst.payment.application.holded.HoldedContactDTO;
 import com.codurance.katalyst.payment.application.holded.HoldedInvoiceDTO;
 import com.codurance.katalyst.payment.application.inputform.PotentialCustomerData;
 import com.codurance.katalyst.payment.application.moodle.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.moodle.MoodleAPIClient;
+import com.codurance.katalyst.payment.application.moodle.MoodleAPIClientImpl;
 import com.codurance.katalyst.payment.application.moodle.MoodleCourseDTO;
 import com.codurance.katalyst.payment.application.moodle.MoodleUserDTO;
 import com.codurance.katalyst.payment.application.responses.Error;
@@ -26,7 +26,7 @@ public class PaymentController {
     public static final int CODE_ERROR_PROBLEM_WITH_MOODLE = 3;
     public static final int CODE_ERROR_PRICE_NOT_FOUND = 4;
     @Autowired
-    private MoodleAPIClient moodleAPIClient;
+    private MoodleApiClient moodleAPIClient;
 
     @Autowired
     private HoldedAPIClient holdedAPIClient;

@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.acceptance.utils;
+package com.codurance.katalyst.payment.application.integration;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;

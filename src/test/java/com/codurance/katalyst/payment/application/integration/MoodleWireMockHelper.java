@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.acceptance.utils;
+package com.codurance.katalyst.payment.application.integration;
 
 import com.codurance.katalyst.payment.application.utils.Mail;
 import com.github.tomakehurst.wiremock.http.Request;
@@ -26,7 +26,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 @Component
-public class MoodleServiceFake extends ServiceFake {
+public class MoodleWireMockHelper extends WireMockHelper {
     public static final String STUDENT_ROL_ID = "5";
     Gson gson = new Gson();
     public String token;

@@ -11,6 +11,7 @@ public class MoodleCourseDTO {
 
     protected List<MoodleCustomField> customfields;
 
+
     public int getId() {
         return id;
     }

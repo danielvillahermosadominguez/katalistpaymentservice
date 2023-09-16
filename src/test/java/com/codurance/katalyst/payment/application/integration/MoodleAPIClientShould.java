@@ -1,7 +1,6 @@
 package com.codurance.katalyst.payment.application.integration;
 
-import com.codurance.katalyst.payment.application.acceptance.utils.MoodleServiceFake;
-import com.codurance.katalyst.payment.application.moodle.MoodleAPIClient;
+import com.codurance.katalyst.payment.application.moodle.MoodleAPIClientImpl;
 import com.codurance.katalyst.payment.application.moodle.MoodleCourseDTO;
 import com.codurance.katalyst.payment.application.moodle.MoodleUserDTO;
 import com.google.gson.Gson;
@@ -27,8 +26,8 @@ public class MoodleAPIClientShould {
     public static final String EQUAL_SYMBOL = "=";
     public static final String JOIN_SYMBOL = "&";
 
-    private MoodleServiceFake moodleService = null;
-    public MoodleAPIClient moodleClient = new MoodleAPIClient(new RestTemplate());
+    private MoodleWireMockHelper moodleService = null;
+    public MoodleAPIClientImpl moodleClient = new MoodleAPIClientImpl(new RestTemplate());
     public static final int WIREMOCK_MOODLE_PORT = 9000;
 
     private String moodleToken = "RANDOM_TOKEN";
@@ -39,9 +38,9 @@ public class MoodleAPIClientShould {
 
 
     @BeforeEach
-    void beforeEach() throws UnsupportedEncodingException {
+    void beforeEach() {
         if (this.moodleService == null) {
-            this.moodleService = new MoodleServiceFake();
+            this.moodleService = new MoodleWireMockHelper();
             this.moodleClient.setURLBase(urlBase);
             this.moodleClient.setToken(moodleToken);
             this.moodleService.setPort(WIREMOCK_MOODLE_PORT);

@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.acceptance.utils;
+package com.codurance.katalyst.payment.application.integration;
 
 import com.codurance.katalyst.payment.application.holded.HoldedInvoiceItemDTO;
 import com.codurance.katalyst.payment.application.utils.Mail;
@@ -29,7 +29,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 
 @Component
-public class HoldedServiceFake extends ServiceFake {
+public class HoldedWireMockHelper extends WireMockHelper {
     Gson gson = new Gson();
     public String token;
     private final static String URL_BASE = "/api/";

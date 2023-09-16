@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.application.moodle;
 
+import com.codurance.katalyst.payment.application.MoodleApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.Mail;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +18,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class MoodleAPIClient extends APIClient {
+public class MoodleAPIClientImpl extends APIClient implements MoodleApiClient {
     public static final String WSTOKEN = "wstoken=";
     public static final String WSFUNCTION = "&wsfunction=";
     public static final String MOODLEWSRESTFORMAT = "&moodlewsrestformat=";
@@ -51,7 +52,7 @@ public class MoodleAPIClient extends APIClient {
 
     private String format = "json";
 
-    public MoodleAPIClient(RestTemplate restTemplate) {
+    public MoodleAPIClientImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
@@ -84,7 +85,7 @@ public class MoodleAPIClient extends APIClient {
         return !filtered.isEmpty();
     }
 
-    public MoodleUserDTO getUserByMail(String email) throws UnsupportedEncodingException {
+    public MoodleUserDTO getUserByMail(String email) {
         ResponseEntity<MoodleUserDTO[]> response = null;
         MoodleUserDTO result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
@@ -106,7 +107,7 @@ public class MoodleAPIClient extends APIClient {
         return result;
     }
 
-    public MoodleUserDTO createUser(String name, String surname, String email) throws UnsupportedEncodingException {
+    public MoodleUserDTO createUser(String name, String surname, String email) {
         ResponseEntity<MoodleUserDTO[]> response = null;
         MoodleUserDTO result = null;
         MultiValueMap<String, String> map= new LinkedMultiValueMap<>();
