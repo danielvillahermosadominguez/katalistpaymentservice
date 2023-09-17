@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
+import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
@@ -36,6 +37,14 @@ public class HoldedApiClientFake implements HoldedApiClient {
         }
     }
 
+    class HoldedStatusDTOFake extends HoldedStatus {
+        public HoldedStatusDTOFake(int status, String info, String id) {
+            this.status = status;
+            this.info = info;
+            this.id = id;
+        }
+    }
+
     private Map<String, HoldedContact> contacts = new HashMap<>();
 
     private Map<String, List<HoldedInvoice>> sentInvoices = new HashMap<>();
@@ -62,7 +71,7 @@ public class HoldedApiClientFake implements HoldedApiClient {
     }
 
     @Override
-    public void sendInvoice(HoldedInvoice invoice, String emails) {
+    public HoldedStatus sendInvoice(HoldedInvoice invoice, String emails) {
         List<HoldedInvoice> sentList;
         if (!sentInvoices.containsKey(emails)) {
             sentList = new ArrayList<>();
@@ -70,6 +79,7 @@ public class HoldedApiClientFake implements HoldedApiClient {
         }
         sentList = sentInvoices.get(emails);
         sentList.add(invoice);
+        return new HoldedStatusDTOFake(HoldedStatus.OK, "RANDOM_INFO",invoice.getId());
     }
 
     @Override

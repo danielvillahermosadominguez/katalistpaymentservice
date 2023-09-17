@@ -1,16 +1,20 @@
 package com.codurance.katalyst.payment.application.utils;
 
-import java.util.regex.Matcher;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
+import com.google.gson.Gson;
+
+import java.util.Map;
 import java.util.regex.Pattern;
 
-public class StringToDouble {
+public class StringUtil {
     private final String value;
 
-    public StringToDouble(String value) {
+    public StringUtil(String value) {
         this.value = value;
     }
 
-    public double convert() {
+    public double tryToConvertToDouble() {
         var pattern = Pattern.compile("[-+]?[0-9]*\\.?[0-9]*");
         var matcher = pattern.matcher(value);
         if(!matcher.matches()) {

@@ -30,6 +30,16 @@ public class APIClient {
         return request;
     }
 
+    protected <T> HttpEntity<Map<String, T>> createRequest(Map<String, T> requestBody, String mediaType) {
+        var headers = new HttpHeaders();
+        getHeaderParameter(headers);
+        headers.setContentType(MediaType.valueOf(mediaType));
+        HttpEntity<Map<String, T>> request = requestBody == null
+                ? new HttpEntity<>(headers)
+                : new HttpEntity<>(requestBody, headers);
+        return request;
+    }
+
 
     protected void getHeaderParameter(HttpHeaders headers) {
 

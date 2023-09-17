@@ -61,6 +61,14 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         return responseBodyCreate;
     }
 
+    public Map<String, Object> createResponseBodyNotOK(String id) {
+        Map<String, Object> responseBodyCreate = new LinkedHashMap<>();
+        responseBodyCreate.put("status", 0);
+        responseBodyCreate.put("info", "RANDOM_INFO");
+        responseBodyCreate.put("id", id);
+        return responseBodyCreate;
+    }
+
     public Map<String, String> createRequestBodyForCreateInvoice(String contactId, String desc, String date) {
         Map<String, String> requestBodyParameters = new LinkedHashMap<>();
         requestBodyParameters.put("contactId", contactId + "");

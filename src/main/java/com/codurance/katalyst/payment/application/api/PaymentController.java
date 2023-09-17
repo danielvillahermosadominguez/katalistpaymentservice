@@ -1,6 +1,7 @@
 package com.codurance.katalyst.payment.application.api;
 
 import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
+import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
@@ -166,6 +167,14 @@ public class PaymentController {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "It has been not possible to get the course. Please try to connect later"
+            );
+        } catch (HoldedNotRespond exception) {
+            return new ResponseEntity<>(
+                    new Error(
+                            Error.CODE_ERROR_PROBLEM_WITH_MOODLE,
+                            "We have had a problem with the creation of the contact and the invoicing"
+                    ),
+                    HttpStatus.BAD_REQUEST
             );
         }
 

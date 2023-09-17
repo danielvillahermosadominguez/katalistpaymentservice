@@ -3,7 +3,8 @@ package com.codurance.katalyst.payment.application.holded;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoiceItem;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedResponse;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
+import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
@@ -37,7 +39,6 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
     public static final String CODE = "code";
     public static final String CUSTOM_ID1 = "CustomId";
     public static final String ISPERSON = "isperson";
-    public static final int OK = 1;
     public static final String CLIENT_VALUE = "client";
     public static final String CONTACT_ID = "contactId";
     public static final String DESC = "desc";
@@ -74,10 +75,10 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
     protected void getHeaderParameter(HttpHeaders headers) {
         headers.add(API_KEY_PARAM_NAME, apyKey);
     }
-    private String generateEndPoint(String function) {
+    public String generateEndPoint(String function) {
         return URL_BASE + function;
     }
-    public HoldedContact getContactByCustomId(String customId) {
+    public HoldedContact getContactByCustomId(String customId) throws HoldedNotRespond {
         HoldedContact result = null;
         String url = generateEndPoint("invoicing/v1/contacts?customId={customId}");
         Map<String, String> uriVariables = new HashMap<>();
@@ -94,88 +95,100 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
                     uriVariables);
 
             result = getFirst(response);
-        } catch (Exception ex) {
-            // Use log and throw exception
-            String errorMessage = ex.getMessage();
+        }  catch (HttpStatusCodeException httpException) {
+            throw new HoldedNotRespond(
+                    url,
+                    uriVariables.toString(),
+                    "",
+                    httpException.getMessage()
+            );
         }
 
         return result;
     }
 
-    public HoldedContact createContact(String name, String surname, String email, String company, String nifCif) throws UnsupportedEncodingException {
+    public HoldedContact createContact(String name, String surname, String email, String company, String nifCif) throws UnsupportedEncodingException, HoldedNotRespond {
         HoldedContact result = null;
         var url = generateEndPoint("invoicing/v1/contacts");
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add(NAME, name + " " + surname + "(" + company + ")");
-        map.add(EMAIL, email);
-        map.add(TYPE, CLIENT_VALUE);
-        map.add(CODE, nifCif);
-        map.add(CUSTOM_ID1, createCustomId(nifCif, email));
-        map.add(ISPERSON, "true");
+        MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add(NAME, name + " " + surname + "(" + company + ")");
+        requestBody.add(EMAIL, email);
+        requestBody.add(TYPE, CLIENT_VALUE);
+        requestBody.add(CODE, nifCif);
+        requestBody.add(CUSTOM_ID1, createCustomId(nifCif, email));
+        requestBody.add(ISPERSON, "true");
 
-        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        ResponseEntity<HoldedResponse> response = null;
+        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        ResponseEntity<HoldedStatus> response = null;
         try {
-            response = restTemplate.postForEntity(url, request, HoldedResponse.class);
-            if (response.getBody().getStatus() == OK) {
+            response = restTemplate.postForEntity(url, request, HoldedStatus.class);
+            if (response.getBody().getStatus() == HoldedStatus.OK) {
                 var customId = createCustomId(nifCif, email);
                 result = getContactByCustomId(customId);
             }
-        } catch (Exception ex) {
-            // Use log and throw exception
-            String errorMessage = ex.getMessage();
+        }  catch (HttpStatusCodeException httpException) {
+            throw new HoldedNotRespond(
+                    url,
+                    "",
+                    requestBody.toString(),
+                    httpException.getMessage()
+            );
         }
 
         return result;
     }
 
-    public HoldedInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) {
+    public HoldedInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond {
         HoldedInvoice result = null;
         var url = generateEndPoint("invoicing/v1/documents/invoice");
 
-        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-        map.add(CONTACT_ID, contact.getId());
-        map.add(DESC,description);
+        MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add(CONTACT_ID, contact.getId());
+        requestBody.add(DESC,description);
         var instant = dateService.getInstant();
-        map.add(DATE, instant.getEpochSecond()+"");
+        requestBody.add(DATE, instant.getEpochSecond()+"");
         var item = new HoldedInvoiceItem(concept, amount, price);
         List<HoldedInvoiceItem> items = Arrays.asList(item);
         var gson = new Gson();
         String jsonArray = gson.toJson(items);
-        map.add(ITEMS,jsonArray);
+        requestBody.add(ITEMS,jsonArray);
 
-        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         ResponseEntity<HoldedInvoice> response = null;
         try {
             response = restTemplate.postForEntity(url, request, HoldedInvoice.class);
             result = response.getBody();
-        } catch (Exception ex) {
-            // Use log and throw exception
-            String errorMessage = ex.getMessage();
+        } catch (HttpStatusCodeException httpException) {
+            throw new HoldedNotRespond(
+                    url,
+                    "",
+                    requestBody.toString(),
+                    httpException.getMessage()
+            );
         }
 
         return result;
     }
 
-    public void sendInvoice(HoldedInvoice invoice, String emails) {
+    public HoldedStatus sendInvoice(HoldedInvoice invoice, String emails) throws HoldedNotRespond {
         var url = generateEndPoint("invoicing/v1/documents/invoice/" + invoice.getId() + "/send");
 
-        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
-        map.add(EMAILS, emails);
+        MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add(EMAILS, emails);
 
-        var request = createRequest(map, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        ResponseEntity<HoldedResponse> response = null;
+        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        ResponseEntity<HoldedStatus> response = null;
         try {
-            response = restTemplate.postForEntity(url, request, HoldedResponse.class);
-            if (response.getBody().getStatus() != OK) {
-                // Use log and throw exception
-                String errorMessage = "";
-            }
-        } catch (Exception ex) {
-            // Use log and throw exception
-            String errorMessage = ex.getMessage();
+            response = restTemplate.postForEntity(url, request, HoldedStatus.class);
+            return response.getBody();
+        } catch (HttpStatusCodeException httpException) {
+            throw new HoldedNotRespond(
+                    url,
+                    "",
+                    requestBody.toString(),
+                    httpException.getMessage()
+            );
         }
-
     }
 
     public String createCustomId(String nifCif, String email) throws UnsupportedEncodingException {
