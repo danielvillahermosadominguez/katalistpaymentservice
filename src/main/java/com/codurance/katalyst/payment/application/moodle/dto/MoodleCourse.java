@@ -15,7 +15,7 @@ public class MoodleCourse {
         return id;
     }
 
-    public String getDisplayName() {
+    public String getDisplayname() {
         return displayname;
     }
 

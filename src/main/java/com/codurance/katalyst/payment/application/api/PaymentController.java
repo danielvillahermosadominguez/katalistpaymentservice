@@ -49,7 +49,7 @@ public class PaymentController {
             return new ResponseEntity<>(
                     new Course(
                             course.getId(),
-                            course.getDisplayName(),
+                            course.getDisplayname(),
                             course.getPrice()),
                     HttpStatus.OK
             );
@@ -137,7 +137,7 @@ public class PaymentController {
                         customer.getDnicif());
             }
 
-            var concept = course.getDisplayName();
+            var concept = course.getDisplayname();
             var description = "";
             var amount = Error.ERROR_CODE_COURSE_DOESNT_EXIST;
             var price = course.getPrice();
