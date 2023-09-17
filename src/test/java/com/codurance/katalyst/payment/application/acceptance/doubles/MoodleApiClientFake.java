@@ -4,7 +4,8 @@ import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCustomField;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
-import com.codurance.katalyst.payment.application.utils.EMail;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,9 +39,9 @@ public class MoodleApiClientFake implements MoodleApiClient {
     private class MoodleUserDTOFake extends MoodleUser {
         public static int idCounter = 0;
 
-        public MoodleUserDTOFake(String name, String surname, String email) {
+        public MoodleUserDTOFake(String name, String surname, String email) throws NotValidEMailFormat {
             super();
-            EMail mail = new EMail(email);
+            HoldedEmail mail = new HoldedEmail(email);
             this.id = ++idCounter + "";
             this.username = mail.getUserName();
             this.email = email;
@@ -86,7 +87,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     @Override
-    public MoodleUser createUser(String name, String surname, String email) {
+    public MoodleUser createUser(String name, String surname, String email) throws NotValidEMailFormat {
         MoodleUserDTOFake user = new MoodleUserDTOFake(name, surname, email);
         users.add(user);
         return user;

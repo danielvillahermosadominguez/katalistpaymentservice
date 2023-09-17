@@ -1,6 +1,7 @@
 package com.codurance.katalyst.payment.application.integration.wiremock;
 
-import com.codurance.katalyst.payment.application.utils.EMail;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,9 +30,9 @@ public class HoldedWireMockServer extends WireMockServerExtension {
     }
 
 
-    public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif) throws UnsupportedEncodingException {
+    public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif) throws UnsupportedEncodingException, NotValidEMailFormat {
         Map<String, Object> bodyMap = new LinkedHashMap<>();
-        var mail = new EMail(email);
+        var mail = new HoldedEmail(email);
         var customId = URLEncoder.encode(nifCif + mail.getInUnicodeFormat(), "UTF-8");
         bodyMap.put("id", 1);
         bodyMap.put("customId", customId);

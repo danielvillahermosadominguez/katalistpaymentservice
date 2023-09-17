@@ -8,7 +8,8 @@ import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoiceItem;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
-import com.codurance.katalyst.payment.application.utils.EMail;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -57,8 +58,8 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void get_null_contact_by_custom_id_when_the_contact_not_exits() throws UnsupportedEncodingException, HoldedNotRespond {
-        var email = new EMail("RANDOM_USERNAME@email.com");
+    public void get_null_contact_by_custom_id_when_the_contact_not_exits() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+        var email = new HoldedEmail("RANDOM_USERNAME@email.com");
         var nifCif = "46842041C";
         var customId = nifCif + email.getInUnicodeFormat();
 
@@ -70,8 +71,8 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void get_a_contact_by_custom_id_when_the_contact_exists() throws UnsupportedEncodingException, HoldedNotRespond {
-        var email = new EMail("RANDOM_USERNAME@email.com");
+    public void get_a_contact_by_custom_id_when_the_contact_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+        var email = new HoldedEmail("RANDOM_USERNAME@email.com");
         var nifCif = "46842041C";
         var customId = nifCif + email.getInUnicodeFormat();
         var responseBody = wireMock.createContactResponseForGetContact(
@@ -100,8 +101,8 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void create_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond {
-        var email = new EMail("RANDOM_USER@email.com");
+    public void create_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+        var email = new HoldedEmail("RANDOM_USER@email.com");
         var nifCif = "46842041C";
         var customId = nifCif + email.getInUnicodeFormat();
         var name = "RANDOM_NAME";
@@ -129,7 +130,7 @@ public class HoldedAPIClientShould {
         var contact = apiAdapter.createContact(
                 name,
                 surname,
-                email.getValue(),
+                email,
                 company,
                 nifCif
         );
@@ -143,7 +144,7 @@ public class HoldedAPIClientShould {
             apiAdapter.createContact(
                     "RANDOM_NAME",
                     "RANDOM_SURNAME",
-                    "RANDOM_EMAIL@EMAIL.COM",
+                    new HoldedEmail("RANDOM_EMAIL@EMAIL.COM"),
                     "RANDOM_COMPANY_NAME",
                     "RANDOM_NIF_CIF"
             );
@@ -213,13 +214,14 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void send_an_invoice_to_an_email_with_ok_status() throws UnsupportedEncodingException, HoldedNotRespond {
-        var emails = "RANDOM_USERNAME@gmail.com";
+    public void send_an_invoice_to_an_email_with_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+        var emails = Arrays.asList(new HoldedEmail("RANDOM_USERNAME@gmail.com"));
+        var recipient = HoldedEmail.getRecipients(emails);
         var invoiceID = "1";
         Map<String, Object> responseBody = wireMock.createResponseBodyOkCreate(invoiceID);
 
         Map<String, String> requestBodyParameters = new LinkedHashMap<>();
-        requestBodyParameters.put("emails", emails);
+        requestBodyParameters.put("emails",recipient);
 
         wireMock.stubForCreateInvoiceWithStatusOK(invoiceID, requestBodyParameters, responseBody);
 
@@ -229,17 +231,18 @@ public class HoldedAPIClientShould {
         var status = apiAdapter.sendInvoice(invoice, emails);
         assertThat(status).isNotNull();
         assertThat(status.getStatus()).isEqualTo(HoldedStatus.OK);
-        wireMock.verifySendInvoiceHasBeenCalled(emails, invoiceID);
+        wireMock.verifySendInvoiceHasBeenCalled(recipient, invoiceID);
     }
 
     @Test
-    public void send_an_invoice_to_an_email_with_not_ok_status() throws UnsupportedEncodingException, HoldedNotRespond {
-        var emails = "RANDOM_USERNAME@gmail.com";
+    public void send_an_invoice_to_an_email_with_not_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+        var emails = Arrays.asList(new HoldedEmail("RANDOM_USERNAME@gmail.com"));
+        var recipient = HoldedEmail.getRecipients(emails);
         var invoiceID = "1";
         Map<String, Object> responseBody = wireMock.createResponseBodyNotOK(invoiceID);
 
         Map<String, String> requestBodyParameters = new LinkedHashMap<>();
-        requestBodyParameters.put("emails", emails);
+        requestBodyParameters.put("emails", recipient);
 
         wireMock.stubForCreateInvoiceWithStatusOK(invoiceID, requestBodyParameters, responseBody);
 
@@ -250,16 +253,17 @@ public class HoldedAPIClientShould {
         assertThat(status).isNotNull();
         assertThat(status.getStatus()).isNotEqualTo(HoldedStatus.OK);
 
-        wireMock.verifySendInvoiceHasBeenCalled(emails, invoiceID);
+        wireMock.verifySendInvoiceHasBeenCalled(recipient, invoiceID);
     }
 
     @Test
-    public void throw_an_holded_exception_when_send_an_invoice_not_respond() {
+    public void throw_an_holded_exception_when_send_an_invoice_not_respond() throws NotValidEMailFormat {
+        var emails = Arrays.asList(new HoldedEmail("RANDOM_EMAIL@EMAIL.COM"));
         var invoice = mock(HoldedInvoice.class);
         when(invoice.getId()).thenReturn("1");
 
         var thrown = Assertions.assertThrows(HoldedNotRespond.class, () -> {
-            apiAdapter.sendInvoice(invoice, "RANDOM_EMAIL@EMAIL.COM");
+            apiAdapter.sendInvoice(invoice, emails);
         });
 
         assertThat(thrown).isNotNull();

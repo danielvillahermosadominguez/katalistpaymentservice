@@ -1,7 +1,6 @@
 package com.codurance.katalyst.payment.application.moodle.dto;
 
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.utils.StringUtil;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ public class MoodleCourse {
         return customfields;
     }
 
-    public double getPrice() throws CustomFieldNotExists {
+    public MoodlePrice getPrice() throws CustomFieldNotExists {
         if(customfields == null || customfields.isEmpty()) {
            throw new CustomFieldNotExists(THE_CUSTOM_FIELD_PRICE_NOT_EXIST);
         }
@@ -33,7 +32,7 @@ public class MoodleCourse {
             throw new CustomFieldNotExists(THE_CUSTOM_FIELD_PRICE_NOT_EXIST);
         }
 
-      return new StringUtil(customField.get().getValue()).tryToConvertToDouble();
+      return new MoodlePrice(customField.get().getValue());
     }
 
 }

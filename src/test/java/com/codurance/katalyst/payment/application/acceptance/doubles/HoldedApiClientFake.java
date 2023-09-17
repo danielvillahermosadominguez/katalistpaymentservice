@@ -1,10 +1,11 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
+import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
-import com.codurance.katalyst.payment.application.utils.EMail;
+import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -50,9 +51,9 @@ public class HoldedApiClientFake implements HoldedApiClient {
     private Map<String, List<HoldedInvoice>> sentInvoices = new HashMap<>();
 
     @Override
-    public HoldedContact createContact(String name, String surname, String email, String company, String nifCif) throws UnsupportedEncodingException {
+    public HoldedContact createContact(String name, String surname, HoldedEmail email, String company, String nifCif) throws UnsupportedEncodingException, NotValidEMailFormat {
         String customId = createCustomId(nifCif, email);
-        HoldedContact holdedContact = new HoldedContactDTOFake(customId, name, surname, email, company, nifCif);
+        HoldedContact holdedContact = new HoldedContactDTOFake(customId, name, surname, email.getValue(), company, nifCif);
         this.contacts.put(customId, holdedContact);
         return holdedContact;
     }
@@ -71,21 +72,22 @@ public class HoldedApiClientFake implements HoldedApiClient {
     }
 
     @Override
-    public HoldedStatus sendInvoice(HoldedInvoice invoice, String emails) {
+    public HoldedStatus sendInvoice(HoldedInvoice invoice, List<HoldedEmail> emails) {
+        String strEmails = HoldedEmail.getRecipients(emails);
+
         List<HoldedInvoice> sentList;
-        if (!sentInvoices.containsKey(emails)) {
+        if (!sentInvoices.containsKey(strEmails)) {
             sentList = new ArrayList<>();
-            sentInvoices.put(emails, sentList);
+            sentInvoices.put(strEmails, sentList);
         }
-        sentList = sentInvoices.get(emails);
+        sentList = sentInvoices.get(strEmails);
         sentList.add(invoice);
-        return new HoldedStatusDTOFake(HoldedStatus.OK, "RANDOM_INFO",invoice.getId());
+        return new HoldedStatusDTOFake(HoldedStatus.OK, "RANDOM_INFO", invoice.getId());
     }
 
     @Override
-    public String createCustomId(String nifCif, String email) throws UnsupportedEncodingException {
-        EMail mail = new EMail(email);
-        String customId = nifCif + mail.getInUnicodeFormat();
+    public String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException, NotValidEMailFormat {
+        String customId = nifCif + email.getInUnicodeFormat();
         return customId;
     }
 

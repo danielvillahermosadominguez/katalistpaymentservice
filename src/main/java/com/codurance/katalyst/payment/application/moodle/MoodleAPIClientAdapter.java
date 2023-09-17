@@ -5,7 +5,8 @@ import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
-import com.codurance.katalyst.payment.application.utils.EMail;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,6 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
     public static final String OPTIONS_IDS_0 = "options[ids][0]";
     @Value("${moodle.urlbase}")
     private String URL_BASE;
-    private MultiValueMap<String, String> requestBody;
 
     public void setURLBase(String urlBase){
         this.URL_BASE = urlBase;
@@ -60,7 +60,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
     private List<MoodleUser> getUsersForCourse(String courseId) throws MoodleNotRespond {
         var function = "core_enrol_get_enrolled_users";
         var endPoint = generateEndPoint(function);
-        requestBody = new LinkedMultiValueMap<>();
+        MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
         requestBody.add(COURSEID, courseId);
         var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
@@ -124,13 +124,13 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
         return result;
     }
 
-    public MoodleUser createUser(String name, String surname, String email) throws MoodleNotRespond {
+    public MoodleUser createUser(String name, String surname, String email) throws MoodleNotRespond, NotValidEMailFormat {
         var function = "core_user_create_users";
         var endPoint = generateEndPoint(function);
         ResponseEntity<MoodleUser[]> response = null;
         MoodleUser result = null;
         MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
-        var mail = new EMail(email);
+        var mail = new HoldedEmail(email);
         requestBody.add(USERS_0_USERNAME, mail.getUserName());
         requestBody.add(USERS_0_CREATEPASSWORD, CREATE_PASWORD_AND_SEND);
         requestBody.add(USERS_0_EMAIL,  email);

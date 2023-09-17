@@ -8,7 +8,8 @@ import com.codurance.katalyst.payment.application.holded.exception.HoldedNotResp
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
-import com.codurance.katalyst.payment.application.utils.EMail;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -107,12 +108,12 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
-    public HoldedContact createContact(String name, String surname, String email, String company, String nifCif) throws UnsupportedEncodingException, HoldedNotRespond {
+    public HoldedContact createContact(String name, String surname, HoldedEmail email, String company, String nifCif) throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
         HoldedContact result = null;
         var url = generateEndPoint("invoicing/v1/contacts");
         MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
         requestBody.add(NAME, name + " " + surname + "(" + company + ")");
-        requestBody.add(EMAIL, email);
+        requestBody.add(EMAIL, email.getValue());
         requestBody.add(TYPE, CLIENT_VALUE);
         requestBody.add(CODE, nifCif);
         requestBody.add(CUSTOM_ID1, createCustomId(nifCif, email));
@@ -170,11 +171,12 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
-    public HoldedStatus sendInvoice(HoldedInvoice invoice, String emails) throws HoldedNotRespond {
+    public HoldedStatus sendInvoice(HoldedInvoice invoice, List<HoldedEmail> emails) throws HoldedNotRespond {
+        String strEmails = HoldedEmail.getRecipients(emails);
         var url = generateEndPoint("invoicing/v1/documents/invoice/" + invoice.getId() + "/send");
 
         MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
-        requestBody.add(EMAILS, emails);
+        requestBody.add(EMAILS, strEmails);
 
         var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
         ResponseEntity<HoldedStatus> response = null;
@@ -191,8 +193,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         }
     }
 
-    public String createCustomId(String nifCif, String email) throws UnsupportedEncodingException {
-        var mail = new EMail(email);
-        return nifCif + mail.getInUnicodeFormat();
+    public String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException, NotValidEMailFormat {
+        return nifCif + email.getInUnicodeFormat();
     }
 }

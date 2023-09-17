@@ -4,9 +4,11 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
 import com.codurance.katalyst.payment.application.api.Course;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -85,21 +87,21 @@ public class Stepdefs {
     }
 
     @Given("he\\/she has been subscribed to other courses in the past with the following data")
-    public void he_she_has_been_subscribed_to_other_courses_in_the_past_with_the_following_data(DataTable dataTable) throws UnsupportedEncodingException {
+    public void he_she_has_been_subscribed_to_other_courses_in_the_past_with_the_following_data(DataTable dataTable) throws UnsupportedEncodingException, NotValidEMailFormat {
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
         data = rows.get(0);
         String name = data.get("Name");
         String surname = data.get("Surname");
-        String email = data.get("email");
+        var email = new HoldedEmail(data.get("email"));
         String company = data.get("Company");
         String nifcif = data.get("Dni/CIF");
         holdedApiClient.createContact(name, surname, email, company, nifcif);
-        FIXTURE_USER = moodleApiClient.createUser(name, surname, email);
+        FIXTURE_USER = moodleApiClient.createUser(name, surname, email.getValue());
     }
 
     @Given("he\\/she has been subscribed to the same course in the past with the following data")
-    public void he_she_has_been_subscribed_to_the_same_course_in_the_past_with_the_following_data(DataTable dataTable) throws UnsupportedEncodingException {
+    public void he_she_has_been_subscribed_to_the_same_course_in_the_past_with_the_following_data(DataTable dataTable) throws UnsupportedEncodingException, NotValidEMailFormat {
         he_she_has_been_subscribed_to_other_courses_in_the_past_with_the_following_data(dataTable);
         moodleApiClient.enrolToTheCourse(FIXTURE_COURSE, FIXTURE_USER);
     }

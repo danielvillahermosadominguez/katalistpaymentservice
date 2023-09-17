@@ -5,6 +5,7 @@ import com.codurance.katalyst.payment.application.moodle.MoodleAPIClientAdapter;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
+import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -128,7 +129,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void create_user_when_the_user_not_exists() throws UnsupportedEncodingException, MoodleNotRespond {
+    public void create_user_when_the_user_not_exists() throws UnsupportedEncodingException, MoodleNotRespond, NotValidEMailFormat {
         Integer userId = 1;
         String userName = "RANDOM_USERNAME";
         String email = "RANDOM_USERNAME@email.com";

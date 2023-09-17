@@ -1,11 +1,13 @@
 package com.codurance.katalyst.payment.application.api;
 
+import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
 import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
+import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 @RestController
 public class PaymentController {
@@ -50,7 +55,7 @@ public class PaymentController {
                     new Course(
                             course.getId(),
                             course.getDisplayname(),
-                            course.getPrice()),
+                            course.getPrice().getValue()),
                     HttpStatus.OK
             );
         } catch (CustomFieldNotExists exception) {
@@ -110,6 +115,8 @@ public class PaymentController {
                     HttpStatus.BAD_REQUEST,
                     "It has been not possible to get the course. Please try to connect later"
             );
+        } catch (NotValidEMailFormat exception) {
+            throw new RuntimeException(exception); //TODO: Review: Not valid parameters
         }
     }
 
@@ -127,12 +134,15 @@ public class PaymentController {
                 );
             }
 
-            var customId = holdedAPIClient.createCustomId(customer.getDnicif(), customer.getEmail());
+            var customId = holdedAPIClient.createCustomId(
+                    customer.getDnicif(),
+                    new HoldedEmail(customer.getEmail())
+            );
             var contact = holdedAPIClient.getContactByCustomId(customId);
             if (contact == null) {
                 contact = holdedAPIClient.createContact(customer.getName(),
                         customer.getSurname(),
-                        customer.getEmail(),
+                        new HoldedEmail(customer.getEmail()),
                         customer.getCompany(),
                         customer.getDnicif());
             }
@@ -145,8 +155,9 @@ public class PaymentController {
                     concept,
                     description,
                     amount,
-                    price);
-            holdedAPIClient.sendInvoice(invoice, contact.getEmail());
+                    price.getValue());
+
+            holdedAPIClient.sendInvoice(invoice,Arrays.asList(new HoldedEmail(contact.getEmail())));
         } catch (Exception ex) {
             return new ResponseEntity<>(
                     new Error(
@@ -163,17 +174,10 @@ public class PaymentController {
                     ),
                     HttpStatus.BAD_REQUEST
             );
-        } catch (MoodleNotRespond exception) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "It has been not possible to get the course. Please try to connect later"
-            );
-        } catch (HoldedNotRespond exception) {
+        } catch (NotValidEMailFormat|HoldedNotRespond |MoodleNotRespond exception) {
             return new ResponseEntity<>(
-                    new Error(
-                            Error.CODE_ERROR_PROBLEM_WITH_MOODLE,
-                            "We have had a problem with the creation of the contact and the invoicing"
-                    ),
+                    new Error(Error.CODE_ERROR_PROBLEM_WITH_MOODLE,
+                            "We have had a problem with the creation of the contact and the invoicing"),
                     HttpStatus.BAD_REQUEST
             );
         }
