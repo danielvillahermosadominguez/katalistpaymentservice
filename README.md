@@ -144,11 +144,19 @@ In Holded we need to follow the following steps:
     - The same prize for every course. Hardcode, constant
 # Restrictions and Rules
 - [12.09.2023 ] We don't override data in Moodle or in Holded. 
-- [12.09.2023 ] The quantity is initially 1. One per user. We will evolute by the time
+- [12.09.2023 ] The quantity is initially 1. One per user. We will evolve by the time
   
 
 # Task related with the POC
-- [In progress] Refactor of the service and some test coverage after the poc
+- [ ] Create in holded person and company depending on the form. Include a checkbox "Company"
+- [ ] Default data in creation of contact + Uppercase in values
+- [ ] New data in the forms: address, phone
+- [ ] To use a hash for the key in holded
+- [ ] Problem with the automatic deployment of the service. User in azure to deploy.
+- [ ] TPV and Sandbox (Paycomet) access
+- [ ] TPV interaction - basic uses cases
+- [ ] Emulation of the TPV (temporary) - Optional and to evaluate
+- [ ] Basic integration in azure with TPV. Test
 - [ ] Resend in case of error + to be sure the mail has been sent (invoice)
 - [ ] Private Data Policy in the form - People of Paycomet will help us to cover it
 - [ ] Connection holded PRO
@@ -156,33 +164,25 @@ In Holded we need to follow the following steps:
 - [ ] Repository migration to Codurance organization
 - [ ] Logs and traceability 
 - [ ] Send a email in case of error with the information 
-- [ ] To use a hash for the key in holded
-- [ ] Create in holded person and company depending on the form. Include a checkbox "Company"
-- [x] Review the format of the invoice - review with product owner
-- [ ] Review the error messages
-- [x] Form must have localization
-- [ ] New data in the forms: address, phone
-- [ ] Default data in creation of contact + Uppercase in values
-- [ ] TPV and Sandbox (Paycomet) access
-- [ ] TPV interaction - basic uses cases
 - [ ] Environments variables in HTML5. How not to harcode the url
 - [ ] Validation the correct input in the service. surely with tests
 - [ ] Send a mail with an account. The idea it could be neccesary, at least to the edge cases
-- [ ] Basic integration in azure with TPV. Test
 - [ ] Service security in the backend
-- [ ] Improve the look and feel of the basic form - use codurance styles
-- [ ] Emulation of the TPV (temporary) - Optional and to evaluate
 - [ ] Documentation about the integrations.
   - [ ] Integration with Moodle and user, token, etc
-  - [ ] Decisions in Holded integration
+  - [ ] Decisions in Holded integration + configuration
   - [ ] Deployment in Azure and improvements
   - [ ] Secrets in vaults and Bitlocker
 - [ ] Review the infrastructure and dockerization - use a docker container for the service
 - [ ] Transfer repositories to codurance organization in Github
-- [ ] Problem with the automatic deployment of the service. User in azure to deploy.
 - [ ] Migration to AWS
 - [ ] Restrict connection with the service, only for the static form (cookies?) or with infrastructure
 - [ ] Evaluate to use MongoDB - Deprecated. Create an ADR for the PostgreeSQL decision
+- [x] Improve the look and feel of the basic form - use codurance styles
+- [x] Review the format of the invoice - review with product owner
+- [x] Review the error messages
+- [x] Form must have localization
+- [x] Refactor of the service and some test coverage after the poc
 - [x] static website with a basic form in Azure (playground). Github repository + deployment
 - [x] Basic service in Java without security in the playground. Github repository + deployement
 - [x] Basic Integration between website form and service

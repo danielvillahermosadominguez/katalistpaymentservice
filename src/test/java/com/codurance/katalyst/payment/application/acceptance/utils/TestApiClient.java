@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.acceptance.utils;
 
 import com.codurance.katalyst.payment.application.api.Course;
 import com.codurance.katalyst.payment.application.api.Error;
+import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -20,8 +21,10 @@ import java.util.Map;
 public class TestApiClient {
     private static final String HTTP_LOCALHOST = "http://localhost:";
     private static final String HEALTHCHECK = "/healthcheck";
+    public static final int SUCCESS_CODE = 0;
     private int port = -1;
 
+    private Gson gson = new Gson();
 
     private RestTemplate restTemplate;
     @Autowired
@@ -76,14 +79,13 @@ public class TestApiClient {
     public Course getCourse(int selectedCourse) {
         ResponseEntity<String> response = sendRequest(HttpMethod.GET, getUrlBase() + "/courses/" + selectedCourse);
         if (response.getStatusCode() == HttpStatus.OK) {
-            Gson gson = new Gson();
             return gson.fromJson(response.getBody(), Course.class);
         } else {
             return null;
         }
     }
 
-    public int subscribe(int courseId, Map<String, String> data) {
+    public int freeSubscription(int courseId, Map<String, String> data) {
         Map<String, String> potentialCustomer = new HashMap<>();
         potentialCustomer.put("paymentMethod", "");
         potentialCustomer.put("courseId", courseId + "");
@@ -92,20 +94,17 @@ public class TestApiClient {
         potentialCustomer.put("surname", data.get("Surname"));
         potentialCustomer.put("company", data.get("Company"));
         potentialCustomer.put("dnicif", data.get("Dni/CIF"));
-        String isCompany = data.get("Dni/CIF");
-        String address = data.get("Address");
-        String phone = data.get("Phone");
-        Gson gson = new Gson();
+
         String body = gson.toJson(potentialCustomer);
         ResponseEntity<String> response = post(getUrlBase() + "/freesubscription", body);
         if (response.getStatusCode() != HttpStatus.OK) {
             Error error = gson.fromJson(response.getBody(), Error.class);
             return error.getCode();
         }
-        return 0;
+        return SUCCESS_CODE;
     }
 
-    public int payment(int courseId, Map<String, String> data) {
+    public int invoicing(int courseId, Map<String, String> data) {
         Map<String, String> potentialCustomer = new HashMap<>();
         potentialCustomer.put("paymentMethod", "");
         potentialCustomer.put("courseId", courseId + "");
@@ -114,16 +113,24 @@ public class TestApiClient {
         potentialCustomer.put("surname", data.get("Surname"));
         potentialCustomer.put("company", data.get("Company"));
         potentialCustomer.put("dnicif", data.get("Dni/CIF"));
-        String isCompany = data.get("Dni/CIF");
-        String address = data.get("Address");
-        String phone = data.get("Phone");
-        Gson gson = new Gson();
-        String body = gson.toJson(potentialCustomer);
-        ResponseEntity<String> response = post(getUrlBase() + "/invoicing", body);
+
+        var body = gson.toJson(potentialCustomer);
+        var response = post(getUrlBase() + "/invoicing", body);
         if (response.getStatusCode() != HttpStatus.OK) {
             Error error = gson.fromJson(response.getBody(), Error.class);
             return error.getCode();
         }
-        return 1;
+        return SUCCESS_CODE;
+    }
+
+    public int subscription(PotentialCustomerData customData) {
+
+        var body = gson.toJson(customData);
+        var response = post(getUrlBase() + "/subscription", body);
+        if (response.getStatusCode() != HttpStatus.OK) {
+            Error error = gson.fromJson(response.getBody(), Error.class);
+            return error.getCode();
+        }
+        return SUCCESS_CODE;
     }
 }

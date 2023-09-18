@@ -1,7 +1,7 @@
 package com.codurance.katalyst.payment.application.api;
 
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 @RestController
@@ -151,7 +150,7 @@ public class PaymentController {
             var description = "";
             var amount = Error.ERROR_CODE_COURSE_DOESNT_EXIST;
             var price = course.getPrice();
-            HoldedInvoice invoice = holdedAPIClient.createInvoice(contact,
+            HoldedCreationDataInvoice invoice = holdedAPIClient.createInvoice(contact,
                     concept,
                     description,
                     amount,
@@ -188,6 +187,17 @@ public class PaymentController {
     @RequestMapping(value = "/subscription", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity subscription(@RequestBody PotentialCustomerData customer) {
+        //Temporal . Remove to do outside-in
+        ResponseEntity response = onlyHoldedTest(customer);
+        if( response.getStatusCode() != HttpStatus.OK) {
+                return response;
+        }
+
+        response = freeSubscription(customer);
+        if(response.getStatusCode() != HttpStatus.OK) {
+            return response;
+        }
+
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }

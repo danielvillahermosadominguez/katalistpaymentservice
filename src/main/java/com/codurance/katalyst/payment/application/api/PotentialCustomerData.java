@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.api;
 
-public class PotentialCustomerData {
+public class  PotentialCustomerData {
     private String courseId;
 
     private String email;
@@ -14,6 +14,16 @@ public class PotentialCustomerData {
     private String dnicif;
 
     private String paymentMethod;
+
+     private boolean isCompany;
+     private String phoneNumber;
+     private String address;
+     private String postalCode;
+     private String region;
+
+     private String payCometUserId;
+
+     private String temporalPayCometToken;
 
     public String getCourseId() {
         return courseId;
@@ -65,5 +75,61 @@ public class PotentialCustomerData {
 
     public String getPaymentMethod() {
         return paymentMethod;
+    }
+
+    public void setIsCompany(boolean isCompany) {
+        this.isCompany = isCompany;
+    }
+
+    public boolean getIsCompany() {
+        return isCompany;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    public String getPayCometUserId() {
+        return payCometUserId;
+    }
+
+    public void setPayCometUserId(String payCometUserId) {
+        this.payCometUserId = payCometUserId;
+    }
+
+    public String getTemporalPayCometToken() {
+        return temporalPayCometToken;
+    }
+
+    public void setTemporalPayCometToken(String temporalPayCometToken) {
+        this.temporalPayCometToken = temporalPayCometToken;
     }
 }

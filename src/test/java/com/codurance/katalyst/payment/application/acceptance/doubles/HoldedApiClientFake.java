@@ -1,8 +1,9 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
 import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
@@ -29,12 +30,14 @@ public class HoldedApiClientFake implements HoldedApiClient {
         }
     }
 
-    class HoldedInvoiceDTOFake extends HoldedInvoice {
+    class HoldedCreationDataInvoiceDTOFake extends HoldedCreationDataInvoice {
         public static int idCounter = 0;
 
-        public HoldedInvoiceDTOFake() {
+        public HoldedCreationDataInvoiceDTOFake(List<HoldedCreationDataInvoiceItem> items) {
             super();
             this.id = ++idCounter + "";
+            this.items = new ArrayList<>();
+            this.items = items;
         }
     }
 
@@ -48,7 +51,7 @@ public class HoldedApiClientFake implements HoldedApiClient {
 
     private Map<String, HoldedContact> contacts = new HashMap<>();
 
-    private Map<String, List<HoldedInvoice>> sentInvoices = new HashMap<>();
+    private Map<String, List<HoldedCreationDataInvoice>> sentInvoices = new HashMap<>();
 
     @Override
     public HoldedContact createContact(String name, String surname, HoldedEmail email, String company, String nifCif) throws UnsupportedEncodingException, NotValidEMailFormat {
@@ -67,15 +70,16 @@ public class HoldedApiClientFake implements HoldedApiClient {
     }
 
     @Override
-    public HoldedInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) {
-        return new HoldedInvoiceDTOFake();
+    public HoldedCreationDataInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) {
+        var item = new HoldedCreationDataInvoiceItem(concept,description,amount,price);
+        return new HoldedCreationDataInvoiceDTOFake(Arrays.asList(item));
     }
 
     @Override
-    public HoldedStatus sendInvoice(HoldedInvoice invoice, List<HoldedEmail> emails) {
+    public HoldedStatus sendInvoice(HoldedCreationDataInvoice invoice, List<HoldedEmail> emails) {
         String strEmails = HoldedEmail.getRecipients(emails);
 
-        List<HoldedInvoice> sentList;
+        List<HoldedCreationDataInvoice> sentList;
         if (!sentInvoices.containsKey(strEmails)) {
             sentList = new ArrayList<>();
             sentInvoices.put(strEmails, sentList);
@@ -95,8 +99,8 @@ public class HoldedApiClientFake implements HoldedApiClient {
         this.contacts.clear();
     }
 
-    public List<HoldedInvoice> getSentInvoices(String emails) {
-        List<HoldedInvoice> sentList;
+    public List<HoldedCreationDataInvoice> getSentInvoices(String emails) {
+        List<HoldedCreationDataInvoice> sentList;
         if (!sentInvoices.containsKey(emails)) {
             return Arrays.asList();
         }

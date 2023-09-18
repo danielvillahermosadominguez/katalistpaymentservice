@@ -3,8 +3,8 @@ package com.codurance.katalyst.payment.application.integration;
 import com.codurance.katalyst.payment.application.acceptance.doubles.TestDateService;
 import com.codurance.katalyst.payment.application.holded.HoldedApiClientAdapter;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoiceItem;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
@@ -171,7 +171,7 @@ public class HoldedAPIClientShould {
                 "2323223"
         );
 
-        var item = new HoldedInvoiceItem("TEST_COURSE", 1, 100);
+        var item = new HoldedCreationDataInvoiceItem("TEST_COURSE","", 1, 100);
         var items = Arrays.asList(item);
         var jsonArray = gson.toJson(items);
         requestBodyParameters.put("items", jsonArray);
@@ -225,7 +225,7 @@ public class HoldedAPIClientShould {
 
         wireMock.stubForCreateInvoiceWithStatusOK(invoiceID, requestBodyParameters, responseBody);
 
-        var invoice = mock(HoldedInvoice.class);
+        var invoice = mock(HoldedCreationDataInvoice.class);
         when(invoice.getId()).thenReturn(invoiceID);
 
         var status = apiAdapter.sendInvoice(invoice, emails);
@@ -246,7 +246,7 @@ public class HoldedAPIClientShould {
 
         wireMock.stubForCreateInvoiceWithStatusOK(invoiceID, requestBodyParameters, responseBody);
 
-        var invoice = mock(HoldedInvoice.class);
+        var invoice = mock(HoldedCreationDataInvoice.class);
         when(invoice.getId()).thenReturn(invoiceID);
 
          var status = apiAdapter.sendInvoice(invoice, emails);
@@ -259,7 +259,7 @@ public class HoldedAPIClientShould {
     @Test
     public void throw_an_holded_exception_when_send_an_invoice_not_respond() throws NotValidEMailFormat {
         var emails = Arrays.asList(new HoldedEmail("RANDOM_EMAIL@EMAIL.COM"));
-        var invoice = mock(HoldedInvoice.class);
+        var invoice = mock(HoldedCreationDataInvoice.class);
         when(invoice.getId()).thenReturn("1");
 
         var thrown = Assertions.assertThrows(HoldedNotRespond.class, () -> {

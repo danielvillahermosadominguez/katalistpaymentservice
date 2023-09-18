@@ -5,7 +5,7 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiCl
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
 import com.codurance.katalyst.payment.application.api.Course;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
@@ -25,7 +25,7 @@ import java.util.Map;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class Stepdefs {
+public class StepdefsSubscribeFeature {
     public static final int FIXTURE_PRICE = 100;
     public static final String FIXTURE_DISPLAY_NAME = "TEST_COURSE";
     public static final int NO_ANSWER = -10;
@@ -82,8 +82,8 @@ public class Stepdefs {
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
         data = rows.get(0);
-        subscriptionOutputCode = apiClient.subscribe(this.selectedCourse, data);
-        assertThat(subscriptionOutputCode).isGreaterThanOrEqualTo(0);
+        subscriptionOutputCode = apiClient.freeSubscription(this.selectedCourse, data);
+        assertThat(subscriptionOutputCode).isGreaterThanOrEqualTo(TestApiClient.SUCCESS_CODE);
     }
 
     @Given("he\\/she has been subscribed to other courses in the past with the following data")
@@ -113,19 +113,19 @@ public class Stepdefs {
 
     @When("the user pay the subscription")
     public void the_user_pay_the_subscription() throws UnsupportedEncodingException {
-        this.invoiceOutputCode = this.apiClient.payment(this.selectedCourse, data);
+        this.invoiceOutputCode = this.apiClient.invoicing(this.selectedCourse, data);
     }
 
     @Then("the subscription is successful")
     public void the_subscription_is_successful() {
         assertThat(subscriptionOutputCode).isEqualTo(0);
-        assertThat(invoiceOutputCode).isEqualTo(1);
+        assertThat(invoiceOutputCode).isEqualTo(TestApiClient.SUCCESS_CODE);
     }
 
     @Then("the user has received an invoice")
     public void the_user_has_received_an_invoice() throws UnsupportedEncodingException {
         String email = data.get("email");
-        List<HoldedInvoice> sentInvoices = holdedApiClient.getSentInvoices(email);
+        List<HoldedCreationDataInvoice> sentInvoices = holdedApiClient.getSentInvoices(email);
         assertThat(sentInvoices.isEmpty()).isFalse();
     }
     @Then("the user has received the access to the platform")
@@ -135,7 +135,7 @@ public class Stepdefs {
 
     @When("the user request the subscription to the course")
     public void the_user_request_the_subscription_to_the_course() {
-        subscriptionOutputCode = apiClient.subscribe(this.selectedCourse, data);
+        subscriptionOutputCode = apiClient.freeSubscription(this.selectedCourse, data);
     }
 
     @Given("An customer who has chosen a course which is not in the catalog")

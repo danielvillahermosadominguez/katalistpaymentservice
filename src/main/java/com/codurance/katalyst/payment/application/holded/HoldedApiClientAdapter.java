@@ -1,8 +1,8 @@
 package com.codurance.katalyst.payment.application.holded;
 
 import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoiceItem;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
@@ -139,8 +139,8 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
-    public HoldedInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond {
-        HoldedInvoice result = null;
+    public HoldedCreationDataInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond {
+        HoldedCreationDataInvoice result = null;
         var url = generateEndPoint("invoicing/v1/documents/invoice");
 
         MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
@@ -148,16 +148,16 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         requestBody.add(DESC,description);
         var instant = dateService.getInstant();
         requestBody.add(DATE, instant.getEpochSecond()+"");
-        var item = new HoldedInvoiceItem(concept, amount, price);
-        List<HoldedInvoiceItem> items = Arrays.asList(item);
+        var item = new HoldedCreationDataInvoiceItem(concept, "",amount, price);
+        List<HoldedCreationDataInvoiceItem> items = Arrays.asList(item);
         var gson = new Gson();
         String jsonArray = gson.toJson(items);
         requestBody.add(ITEMS,jsonArray);
 
         var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        ResponseEntity<HoldedInvoice> response = null;
+        ResponseEntity<HoldedCreationDataInvoice> response = null;
         try {
-            response = restTemplate.postForEntity(url, request, HoldedInvoice.class);
+            response = restTemplate.postForEntity(url, request, HoldedCreationDataInvoice.class);
             result = response.getBody();
         } catch (HttpStatusCodeException httpException) {
             throw new HoldedNotRespond(
@@ -171,7 +171,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
-    public HoldedStatus sendInvoice(HoldedInvoice invoice, List<HoldedEmail> emails) throws HoldedNotRespond {
+    public HoldedStatus sendInvoice(HoldedCreationDataInvoice invoice, List<HoldedEmail> emails) throws HoldedNotRespond {
         String strEmails = HoldedEmail.getRecipients(emails);
         var url = generateEndPoint("invoicing/v1/documents/invoice/" + invoice.getId() + "/send");
 

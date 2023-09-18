@@ -2,7 +2,7 @@ package com.codurance.katalyst.payment.application.ports;
 
 import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedInvoice;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
@@ -15,9 +15,9 @@ public interface HoldedApiClient {
 
     HoldedContact getContactByCustomId(String customId) throws HoldedNotRespond;
 
-    HoldedInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond;
+    HoldedCreationDataInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond;
 
-    HoldedStatus sendInvoice(HoldedInvoice invoice, List<HoldedEmail> emails) throws HoldedNotRespond;
+    HoldedStatus sendInvoice(HoldedCreationDataInvoice invoice, List<HoldedEmail> emails) throws HoldedNotRespond;
 
     String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException, NotValidEMailFormat;
 }
