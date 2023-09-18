@@ -7,7 +7,7 @@ import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNo
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
-import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -190,7 +190,7 @@ public class PaymentController {
         //Temporal . Remove to do outside-in
         ResponseEntity response = onlyHoldedTest(customer);
         if( response.getStatusCode() != HttpStatus.OK) {
-                return response;
+            return response;
         }
 
         response = freeSubscription(customer);

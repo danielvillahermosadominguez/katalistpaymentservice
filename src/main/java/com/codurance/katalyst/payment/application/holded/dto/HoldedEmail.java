@@ -1,7 +1,5 @@
 package com.codurance.katalyst.payment.application.holded.dto;
 
-import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;

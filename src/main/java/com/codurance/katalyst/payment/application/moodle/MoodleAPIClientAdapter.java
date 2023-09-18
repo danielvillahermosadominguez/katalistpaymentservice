@@ -6,7 +6,7 @@ import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotResp
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

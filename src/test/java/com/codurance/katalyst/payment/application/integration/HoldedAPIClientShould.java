@@ -9,7 +9,7 @@ import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -207,7 +207,7 @@ public class HoldedAPIClientShould {
 
         assertThat(thrown).isNotNull();
         assertThat(thrown.getRequestBody()).isEqualTo(
-                "{contactId=[1], desc=[], date=[2323223], items=[[{\"name\":\"TEST_COURSE\",\"units\":1,\"subtotal\":100.0}]]}"
+                "{contactId=[1], desc=[], date=[2323223], items=[[{\"name\":\"TEST_COURSE\",\"desc\":\"\",\"units\":1,\"subtotal\":100.0}]]}"
         );
         assertThat(thrown.getUrl()).isEqualTo(apiAdapter.generateEndPoint("invoicing/v1/documents/invoice"));
         assertThat(thrown.getUrlVariables()).isEqualTo("");

@@ -112,6 +112,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         customData.setPhoneNumber(this.userData.get("PHONE NUMBER"));
         customData.setAddress(this.userData.get("ADDRESS"));
         customData.setPostalCode(this.userData.get("POSTAL CODE"));
+        customData.setCity(this.userData.get("CITY"));
         customData.setRegion(this.userData.get("REGION"));
         customData.setPayCometUserId(this.payCometUserId);
         customData.setTemporalPayCometToken(this.temporalPayCometToken);

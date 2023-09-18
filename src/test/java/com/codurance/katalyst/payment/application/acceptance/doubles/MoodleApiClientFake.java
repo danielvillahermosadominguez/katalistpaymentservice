@@ -5,7 +5,7 @@ import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCustomField;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 
 import java.util.ArrayList;
 import java.util.HashMap;

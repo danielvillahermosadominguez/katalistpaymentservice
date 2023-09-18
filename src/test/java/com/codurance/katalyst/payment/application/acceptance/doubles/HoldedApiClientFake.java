@@ -6,7 +6,7 @@ import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
-import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;

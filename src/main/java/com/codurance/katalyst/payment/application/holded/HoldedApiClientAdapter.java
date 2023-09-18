@@ -9,7 +9,7 @@ import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

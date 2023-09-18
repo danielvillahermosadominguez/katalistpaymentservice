@@ -1,29 +1,31 @@
 package com.codurance.katalyst.payment.application.api;
 
 public class  PotentialCustomerData {
-    private String courseId;
+    private String courseId="";
 
-    private String email;
+    private String email="";
 
-    private String name;
+    private String name="";
 
-    private String surname;
+    private String surname="";
 
-    private String company;
+    private String company="";
 
-    private String dnicif;
+    private String dnicif="";
 
-    private String paymentMethod;
+    private String paymentMethod="";
 
      private boolean isCompany;
-     private String phoneNumber;
-     private String address;
-     private String postalCode;
-     private String region;
+     private String phoneNumber="";
+     private String address="";
+     private String postalCode="";
 
-     private String payCometUserId;
+     private String city="";
+     private String region="";
 
-     private String temporalPayCometToken;
+     private String payCometUserId="";
+
+     private String temporalPayCometToken="";
 
     public String getCourseId() {
         return courseId;
@@ -131,5 +133,13 @@ public class  PotentialCustomerData {
 
     public void setTemporalPayCometToken(String temporalPayCometToken) {
         this.temporalPayCometToken = temporalPayCometToken;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
     }
 }

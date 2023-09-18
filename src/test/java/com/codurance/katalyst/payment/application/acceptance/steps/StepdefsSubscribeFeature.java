@@ -8,7 +8,7 @@ import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
-import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;

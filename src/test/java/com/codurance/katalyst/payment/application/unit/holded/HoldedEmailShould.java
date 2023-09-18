@@ -1,8 +1,8 @@
-package com.codurance.katalyst.payment.application.unit;
+package com.codurance.katalyst.payment.application.unit.holded;
 
 
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.utils.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

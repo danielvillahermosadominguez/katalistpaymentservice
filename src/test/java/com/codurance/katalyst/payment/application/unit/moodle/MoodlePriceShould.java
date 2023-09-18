@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.unit;
+package com.codurance.katalyst.payment.application.unit.moodle;
 
 import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
 import org.junit.jupiter.params.ParameterizedTest;

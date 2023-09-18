@@ -6,6 +6,7 @@ import java.util.List;
 
 public class MoodleCourse {
     public static final String THE_CUSTOM_FIELD_PRICE_NOT_EXIST = "The custom field 'price' must be created for a Course in your Moodle application";
+
     protected int id;
     protected String displayname;
     protected List<MoodleCustomField> customfields;
@@ -34,5 +35,4 @@ public class MoodleCourse {
 
       return new MoodlePrice(customField.get().getValue());
     }
-
 }
