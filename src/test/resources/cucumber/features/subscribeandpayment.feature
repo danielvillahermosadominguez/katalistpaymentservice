@@ -1,7 +1,7 @@
 Feature: As an user interested in Katalyst courses
          I want to give my personal data to subscribe to the course
          so that I can access to the learning platform
-  @disable
+
   Scenario: The customer, which is not a company, subscribes to the course. He/She has not been enrolled to other courses
     in the past.
     Given An customer who has chosen the following course the course "TDD in depth" with a price of "99.9"

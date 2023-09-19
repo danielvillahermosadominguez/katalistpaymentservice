@@ -10,6 +10,7 @@ import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -68,8 +69,11 @@ public class StepdefsSubscribeFeature {
         FIXTURE_USER = null;
         invoiceOutputCode = NO_ANSWER;
     }
-
-
+    @After
+    public void afterEachScenario() {
+        moodleApiClient.reset();
+        holdedApiClient.reset();
+    }
     @Given("An customer who has chosen a course")
     public void an_customer_who_has_chosen_a_course() {
         this.selectedCourse = FIXTURE_COURSE.getId();

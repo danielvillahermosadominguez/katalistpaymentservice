@@ -90,13 +90,14 @@ public class HoldedApiClientFake implements HoldedApiClient {
     }
 
     @Override
-    public String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException, NotValidEMailFormat {
+    public String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException {
         String customId = nifCif + email.getInUnicodeFormat();
         return customId;
     }
 
     public void reset() {
         this.contacts.clear();
+        this.sentInvoices.clear();;
     }
 
     public List<HoldedCreationDataInvoice> getSentInvoices(String emails) {

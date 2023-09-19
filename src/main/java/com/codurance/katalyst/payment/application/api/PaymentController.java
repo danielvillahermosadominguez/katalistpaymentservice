@@ -8,6 +8,13 @@ import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotResp
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.usecases.CourseNotExists;
+import com.codurance.katalyst.payment.application.usecases.HoldedIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.usecases.MoodleIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.NoPriceAvailable;
+import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
+import com.codurance.katalyst.payment.application.usecases.UserIsEnroledInTheCourse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +36,9 @@ public class PaymentController {
 
     @Autowired
     private HoldedApiClient holdedAPIClient;
+
+    @Autowired
+    private SubscriptionUseCase useCase;
 
     @GetMapping("/healthcheck")
     public String heatlhCheck() {
@@ -160,7 +170,7 @@ public class PaymentController {
         } catch (Exception ex) {
             return new ResponseEntity<>(
                     new Error(
-                            Error.CODE_ERROR_PROBLEM_WITH_MOODLE,
+                            Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
                             "We have had a problem with the creation of the contact and the invoicing"
                     ),
                     HttpStatus.BAD_REQUEST
@@ -175,7 +185,7 @@ public class PaymentController {
             );
         } catch (NotValidEMailFormat|HoldedNotRespond |MoodleNotRespond exception) {
             return new ResponseEntity<>(
-                    new Error(Error.CODE_ERROR_PROBLEM_WITH_MOODLE,
+                    new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
                             "We have had a problem with the creation of the contact and the invoicing"),
                     HttpStatus.BAD_REQUEST
             );
@@ -187,17 +197,39 @@ public class PaymentController {
     @RequestMapping(value = "/subscription", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity subscription(@RequestBody PotentialCustomerData customer) {
-        //Temporal . Remove to do outside-in
-        ResponseEntity response = onlyHoldedTest(customer);
-        if( response.getStatusCode() != HttpStatus.OK) {
-            return response;
+        try {
+            this.useCase.subscribe(customer);
+        } catch (InvalidInputCustomerData|HoldedIsNotAvailable|MoodleIsNotAvailable exception) {
+            return new ResponseEntity<>(
+                    new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
+                            "We have had a problem with the creation of the contact and the invoicing"),
+                    HttpStatus.BAD_REQUEST
+            );
+        } catch (NoPriceAvailable e) {
+            return new ResponseEntity<>(
+                    new Error(
+                            Error.CODE_ERROR_PRICE_NOT_FOUND,
+                            "Price custom field not found in Moodle. Please, contact with the administrator to create this custom field"
+                    ),
+                    HttpStatus.BAD_REQUEST
+            );
+        } catch (UserIsEnroledInTheCourse e) {
+            return new ResponseEntity<>(
+                    new Error(
+                            Error.CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE,
+                            "The user has a subscription for this course"
+                    ),
+                    HttpStatus.UNPROCESSABLE_ENTITY
+            );
+        } catch (CourseNotExists e) {
+            return new ResponseEntity<>(
+                    new Error(
+                            Error.ERROR_CODE_COURSE_DOESNT_EXIST,
+                            "The course with the id " + customer.getCourseId() + " doesn't exists"
+                    ),
+                    HttpStatus.BAD_REQUEST
+            );
         }
-
-        response = freeSubscription(customer);
-        if(response.getStatusCode() != HttpStatus.OK) {
-            return response;
-        }
-
         return ResponseEntity.ok(HttpStatus.OK);
     }
 }

@@ -19,5 +19,5 @@ public interface HoldedApiClient {
 
     HoldedStatus sendInvoice(HoldedCreationDataInvoice invoice, List<HoldedEmail> emails) throws HoldedNotRespond;
 
-    String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException, NotValidEMailFormat;
+    String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException;
 }

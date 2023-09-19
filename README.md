@@ -148,9 +148,10 @@ In Holded we need to follow the following steps:
   
 
 # Task related with the POC
+- [In process ] New data in the forms: address, phone
+- [ ] Azure Web App, delay when start after a long time. Something related to the configuration surely.
 - [ ] Create in holded person and company depending on the form. Include a checkbox "Company"
 - [ ] Default data in creation of contact + Uppercase in values
-- [ ] New data in the forms: address, phone
 - [ ] To use a hash for the key in holded
 - [ ] Problem with the automatic deployment of the service. User in azure to deploy.
 - [ ] TPV and Sandbox (Paycomet) access

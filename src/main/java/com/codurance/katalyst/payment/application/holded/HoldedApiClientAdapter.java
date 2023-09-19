@@ -193,7 +193,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         }
     }
 
-    public String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException, NotValidEMailFormat {
+    public String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException {
         return nifCif + email.getInUnicodeFormat();
     }
 }
