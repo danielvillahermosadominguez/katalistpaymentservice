@@ -94,8 +94,8 @@ public class SubscriptionUseCase {
         data.setPostalCode(originalData.getPostalCode().toUpperCase());
         data.setCity(originalData.getCity().toUpperCase());
         data.setRegion(originalData.getRegion().toUpperCase());
-        data.setPayCometUserId(originalData.getPayCometUserId());
-        data.setTemporalPayCometToken(originalData.getTemporalPayCometToken());
+        data.setPaytpvToken(originalData.getPaytpvToken());
+        data.setUsername(originalData.getUsername());
         return holdedApiClient.createContact(data.getName(),
                 data.getSurname(),
                 new HoldedEmail(data.getEmail()),

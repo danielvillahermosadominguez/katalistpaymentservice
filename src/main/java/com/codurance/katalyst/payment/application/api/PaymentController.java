@@ -205,7 +205,7 @@ public class PaymentController {
                             "We have had a problem with the creation of the contact and the invoicing"),
                     HttpStatus.BAD_REQUEST
             );
-        } catch (NoPriceAvailable e) {
+        } catch (NoPriceAvailable exception) {
             return new ResponseEntity<>(
                     new Error(
                             Error.CODE_ERROR_PRICE_NOT_FOUND,
@@ -213,7 +213,7 @@ public class PaymentController {
                     ),
                     HttpStatus.BAD_REQUEST
             );
-        } catch (UserIsEnroledInTheCourse e) {
+        } catch (UserIsEnroledInTheCourse exception) {
             return new ResponseEntity<>(
                     new Error(
                             Error.CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE,
@@ -221,7 +221,7 @@ public class PaymentController {
                     ),
                     HttpStatus.UNPROCESSABLE_ENTITY
             );
-        } catch (CourseNotExists e) {
+        } catch (CourseNotExists exception) {
             return new ResponseEntity<>(
                     new Error(
                             Error.ERROR_CODE_COURSE_DOESNT_EXIST,

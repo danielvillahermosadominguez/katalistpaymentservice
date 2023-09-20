@@ -44,7 +44,7 @@ public class StepdefsSubscribeAndPaymentFeature {
     private int subscriptionResult = NO_ANSWER;
     private Map<String, String> userData = null;
     private Map<String, String> creditDebitCardData = null;
-    private String payCometUserId = null;
+    private String payCommetUserName = null;
     private String temporalPayCometToken = null;
 
     @Before
@@ -94,7 +94,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(rows.size()).isEqualTo(1);
         //Temporal: Here, we need to call to the PayComet - API or a Fake in their case
         this.creditDebitCardData = rows.get(0);
-        payCometUserId = "RANDOM_PAYCOMET_USER_ID";
+        payCommetUserName = "RANDOM_PAYCOMET_USER_ID";
         temporalPayCometToken = "RANDOM_TEMPORAL_PAYCOMET_TOKEN";
         var customData = convertToCustomData();
         subscriptionOutputCode = this.apiClient.subscription(customData);
@@ -114,8 +114,8 @@ public class StepdefsSubscribeAndPaymentFeature {
         customData.setPostalCode(this.userData.get("POSTAL CODE"));
         customData.setCity(this.userData.get("CITY"));
         customData.setRegion(this.userData.get("REGION"));
-        customData.setPayCometUserId(this.payCometUserId);
-        customData.setTemporalPayCometToken(this.temporalPayCometToken);
+        customData.setUsername(this.payCommetUserName);
+        customData.setPaytpvToken(this.temporalPayCometToken);
         return customData;
     }
 

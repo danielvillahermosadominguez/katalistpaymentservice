@@ -23,9 +23,11 @@ public class PotentialCustomerData {
     private String city = "";
     private String region = "";
 
-    private String payCometUserId = "";
+    private String country = "";
 
-    private String temporalPayCometToken = "";
+    private String amount="";
+    private String username="";
+    private String paytpvToken="";
 
     public String getCourseId() {
         return courseId;
@@ -119,27 +121,43 @@ public class PotentialCustomerData {
         this.region = region;
     }
 
-    public String getPayCometUserId() {
-        return payCometUserId;
-    }
-
-    public void setPayCometUserId(String payCometUserId) {
-        this.payCometUserId = payCometUserId;
-    }
-
-    public String getTemporalPayCometToken() {
-        return temporalPayCometToken;
-    }
-
-    public void setTemporalPayCometToken(String temporalPayCometToken) {
-        this.temporalPayCometToken = temporalPayCometToken;
-    }
-
     public String getCity() {
         return city;
     }
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getAmount() {
+        return amount;
+    }
+
+    public void setAmount(String amount) {
+        this.amount = amount;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPaytpvToken() {
+        return paytpvToken;
+    }
+
+    public void setPaytpvToken(String paytpvToken) {
+        this.paytpvToken = paytpvToken;
     }
 }
