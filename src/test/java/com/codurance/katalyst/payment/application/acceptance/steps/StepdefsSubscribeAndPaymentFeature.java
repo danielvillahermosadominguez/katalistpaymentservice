@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.acceptance.steps;
 
 import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
+import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
@@ -28,7 +29,6 @@ public class StepdefsSubscribeAndPaymentFeature {
     public static final int NO_ANSWER = -10;
     public static MoodleCourse FIXTURE_COURSE = null;
 
-    public static MoodleUser FIXTURE_USER = null;
     private int subscriptionOutputCode = -1;
     private int invoiceOutputCode = -1;
     @LocalServerPort
@@ -41,10 +41,12 @@ public class StepdefsSubscribeAndPaymentFeature {
     MoodleApiClientFake moodleApiClient;
     @Autowired
     HoldedApiClientFake holdedApiClient;
+    @Autowired
+    private PayCometApiClientFake payCometApiClient;
+
     private int subscriptionResult = NO_ANSWER;
     private Map<String, String> userData = null;
     private Map<String, String> creditDebitCardData = null;
-    private String payCommetUserName = null;
     private String temporalPayCometToken = null;
 
     @Before
@@ -88,18 +90,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(this.userData).isNotNull();
     }
 
-    @When("the customer pays the subscription with credit\\/debit card")
-    public void the_customer_pays_the_subscription_with_credit_debit_card(DataTable creditDebitCardData) {
-        var rows = creditDebitCardData.asMaps(String.class, String.class);
-        assertThat(rows.size()).isEqualTo(1);
-        //Temporal: Here, we need to call to the PayComet - API or a Fake in their case
-        this.creditDebitCardData = rows.get(0);
-        payCommetUserName = "RANDOM_PAYCOMET_USER_ID";
-        temporalPayCometToken = "RANDOM_TEMPORAL_PAYCOMET_TOKEN";
-        var customData = convertToCustomData();
-        subscriptionOutputCode = this.apiClient.subscription(customData);
-    }
-
     private PotentialCustomerData convertToCustomData() {
         var customData = new PotentialCustomerData();
         customData.setCourseId(FIXTURE_COURSE.getId() + "");
@@ -114,7 +104,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         customData.setPostalCode(this.userData.get("POSTAL CODE"));
         customData.setCity(this.userData.get("CITY"));
         customData.setRegion(this.userData.get("REGION"));
-        customData.setUsername(this.payCommetUserName);
+        customData.setUsername(this.creditDebitCardData.get("NAME"));
         customData.setPaytpvToken(this.temporalPayCometToken);
         return customData;
     }
@@ -141,6 +131,16 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(concept).isEqualTo(item.getName());
         assertThat(units).isEqualTo(item.getUnits());
         assertThat(subtotal).isEqualTo(item.getSubtotal());
+    }
+
+    @When("the customer pays the subscription with credit\\/debit card with the following result")
+    public void the_customer_pays_the_subscription_with_credit_debit_card_with_the_following_result(DataTable dataTable) {
+        var paymentData = dataTable.asMaps(String.class, String.class);
+        assertThat(paymentData).isNotEqualTo(1);
+        this.creditDebitCardData = paymentData.get(0);
+        this.temporalPayCometToken = this.payCometApiClient.generateTemporalToken();
+        var customData = convertToCustomData();
+        subscriptionOutputCode = this.apiClient.subscription(customData);
     }
 
     @Then("the customer will receive access to the platform in the email {string} with the user {string}")

@@ -9,9 +9,9 @@ Feature: As an user interested in Katalyst courses
       | FIRST NAME | SURNAME | EMAIL            | COMPANY NAME         | IS COMPANY | NIF/CIF   | PHONE NUMBER  | ADDRESS                 | POSTAL CODE | REGION | COUNTRY |
       | John       | Doe     | john@example.com | Company Business S.A | NO         | 46842041D | +34 636737337 | Avd. Yellowstone 45, 2B | 28080       | Madrid | Spain   |
     When the customer request the subscription to the course
-    And the customer pays the subscription with credit/debit card
-      | NAME     | NUMBER           |  | MONTH | YEAR | CVV |
-      | John Doe | 4273682057894021 |  | 05    | 24   | 123 |
+    And the customer pays the subscription with credit/debit card with the following result
+      | NAME     | NUMBER           |  MONTH | YEAR | CVV |RESULT|
+      | John Doe | 4273682057894021 |  05    | 24   | 123 | OK   |
     Then the customer is informed about the success of the subscription
     And the customer will receive an invoice to the recipients "john@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |

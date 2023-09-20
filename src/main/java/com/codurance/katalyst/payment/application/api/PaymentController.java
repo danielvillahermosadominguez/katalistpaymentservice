@@ -8,13 +8,14 @@ import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotResp
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
-import com.codurance.katalyst.payment.application.usecases.CourseNotExists;
-import com.codurance.katalyst.payment.application.usecases.HoldedIsNotAvailable;
-import com.codurance.katalyst.payment.application.usecases.InvalidInputCustomerData;
-import com.codurance.katalyst.payment.application.usecases.MoodleIsNotAvailable;
-import com.codurance.katalyst.payment.application.usecases.NoPriceAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
+import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
-import com.codurance.katalyst.payment.application.usecases.UserIsEnroledInTheCourse;
+import com.codurance.katalyst.payment.application.usecases.exception.TPVTokenIsRequired;
+import com.codurance.katalyst.payment.application.usecases.exception.UserIsEnroledInTheCourse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -229,6 +230,8 @@ public class PaymentController {
                     ),
                     HttpStatus.BAD_REQUEST
             );
+        } catch (TPVTokenIsRequired e) {
+            throw new RuntimeException(e);
         }
         return ResponseEntity.ok(HttpStatus.OK);
     }

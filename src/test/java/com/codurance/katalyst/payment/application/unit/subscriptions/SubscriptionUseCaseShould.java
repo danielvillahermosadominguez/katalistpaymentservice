@@ -14,17 +14,21 @@ import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNo
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
-import com.codurance.katalyst.payment.application.usecases.CourseNotExists;
-import com.codurance.katalyst.payment.application.usecases.HoldedIsNotAvailable;
-import com.codurance.katalyst.payment.application.usecases.InvalidInputCustomerData;
-import com.codurance.katalyst.payment.application.usecases.MoodleIsNotAvailable;
-import com.codurance.katalyst.payment.application.usecases.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
-import com.codurance.katalyst.payment.application.usecases.UserIsEnroledInTheCourse;
+import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
+import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.NoPriceAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.TPVTokenIsRequired;
+import com.codurance.katalyst.payment.application.usecases.exception.UserIsEnroledInTheCourse;
 import com.codurance.katalyst.payment.application.utils.DateService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 
 import java.io.UnsupportedEncodingException;
@@ -55,8 +59,25 @@ public class SubscriptionUseCaseShould {
         dateService = mock(DateService.class);
         useCase = new SubscriptionUseCase(holdedApiClient, moodleApiClient, dateService);
         customerData = new PotentialCustomerData();
+        customerData.setPaytpvToken("RANDOM_TPV_TOKEN");
     }
 
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {
+         "",
+            " "
+    })
+    void throw_an_exception_if_customer_data_dont_have_tpv_token(String token) {
+        customerData.setCourseId("1");
+        customerData.setPaytpvToken(token);
+        var thrown = Assertions.assertThrows(TPVTokenIsRequired.class, () -> {
+            useCase.subscribe(customerData);
+        });
+
+        assertThat(thrown).isNotNull();
+    }
 
     @Test
     void throw_an_exception_if_moodle_not_respond() throws MoodleNotRespond {
@@ -94,7 +115,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void check_if_the_course_exists_in_moodle() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable {
+    void check_if_the_course_exists_in_moodle() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired {
         var contact = mock(HoldedContact.class);
         when(contact.getEmail()).thenReturn("random_username@random_domain.com");
         var course = mock(MoodleCourse.class);
@@ -155,7 +176,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void not_to_create_a_contact_if_the_contact_exists_in_holded() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable {
+    void not_to_create_a_contact_if_the_contact_exists_in_holded() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired {
         var expectedCustomId = "RANDOM_CUSTOM_ID";
         var contact = mock(HoldedContact.class);
         when(contact.getEmail()).thenReturn("random_username@random_domain.com");
@@ -176,7 +197,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void create_a_contact_with_upper_case_data_when_contact_not_exists() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable {
+    void create_a_contact_with_upper_case_data_when_contact_not_exists() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired {
         //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
         var expectedCustomId = "RANDOM_CUSTOM_ID";
         var course = mock(MoodleCourse.class);
@@ -218,7 +239,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void create_an_invoice_with_the_course_data() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable {
+    void create_an_invoice_with_the_course_data() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired {
         //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
         var expectedCustomId = "RANDOM_CUSTOM_ID";
         var course = mock(MoodleCourse.class);
@@ -303,7 +324,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void send_the_invoice_to_the_customer_email() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable {
+    void send_the_invoice_to_the_customer_email() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired {
         //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
         var expectedCustomId = "RANDOM_CUSTOM_ID";
         var course = mock(MoodleCourse.class);
@@ -352,7 +373,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void enrolle_a_new_user_in_moodle() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable {
+    void enrolle_a_new_user_in_moodle() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired {
         //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
         var expectedCustomId = "RANDOM_CUSTOM_ID";
         var course = mock(MoodleCourse.class);
@@ -415,7 +436,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void enrolle_an_existent_user_in_moodle() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable {
+    void enrolle_an_existent_user_in_moodle() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired {
         //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
         var expectedCustomId = "RANDOM_CUSTOM_ID";
         var course = mock(MoodleCourse.class);

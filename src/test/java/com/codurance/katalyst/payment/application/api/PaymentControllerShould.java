@@ -2,13 +2,14 @@ package com.codurance.katalyst.payment.application.api;
 
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
-import com.codurance.katalyst.payment.application.usecases.CourseNotExists;
-import com.codurance.katalyst.payment.application.usecases.HoldedIsNotAvailable;
-import com.codurance.katalyst.payment.application.usecases.InvalidInputCustomerData;
-import com.codurance.katalyst.payment.application.usecases.MoodleIsNotAvailable;
-import com.codurance.katalyst.payment.application.usecases.NoPriceAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
+import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
-import com.codurance.katalyst.payment.application.usecases.UserIsEnroledInTheCourse;
+import com.codurance.katalyst.payment.application.usecases.exception.TPVTokenIsRequired;
+import com.codurance.katalyst.payment.application.usecases.exception.UserIsEnroledInTheCourse;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_bad_request_when_the_course_not_exist() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData {
+    void return_bad_request_when_the_course_not_exist() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired {
         var customerData = new PotentialCustomerData();
         doThrow(CourseNotExists.class).when(this.useCase).subscribe(any());
         var gson = new Gson();
@@ -86,7 +87,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_unprocesable_entity_when_the_customer_is_enroled() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData {
+    void return_unprocesable_entity_when_the_customer_is_enroled() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired {
         var customerData = new PotentialCustomerData();
         doThrow(UserIsEnroledInTheCourse.class).when(this.useCase).subscribe(any());
         var gson = new Gson();
@@ -107,7 +108,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_bad_request_when_the_price_is_not_available() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData {
+    void return_bad_request_when_the_price_is_not_available() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired {
         var customerData = new PotentialCustomerData();
         doThrow(NoPriceAvailable.class).when(this.useCase).subscribe(any());
         var gson = new Gson();
@@ -128,7 +129,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_general_error_when_the_customer_data_is_invalid() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData {
+    void return_general_error_when_the_customer_data_is_invalid() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired {
         var customerData = new PotentialCustomerData();
         doThrow(InvalidInputCustomerData.class).when(this.useCase).subscribe(any());
         var gson = new Gson();
@@ -149,7 +150,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_general_error_when_the_moodle_is_not_available() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData {
+    void return_general_error_when_the_moodle_is_not_available() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired {
         var customerData = new PotentialCustomerData();
         doThrow(MoodleIsNotAvailable.class).when(this.useCase).subscribe(any());
         var gson = new Gson();
@@ -170,7 +171,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_general_error_when_the_holded_is_not_available() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData {
+    void return_general_error_when_the_holded_is_not_available() throws Exception, CourseNotExists, HoldedIsNotAvailable, MoodleIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired {
         var customerData = new PotentialCustomerData();
         doThrow(HoldedIsNotAvailable.class).when(this.useCase).subscribe(any());
         var gson = new Gson();

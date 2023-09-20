@@ -10,6 +10,13 @@ import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNo
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
+import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
+import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.NoPriceAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.TPVTokenIsRequired;
+import com.codurance.katalyst.payment.application.usecases.exception.UserIsEnroledInTheCourse;
 import com.codurance.katalyst.payment.application.utils.DateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,8 +37,13 @@ public class SubscriptionUseCase {
         this.dataService = dateService;
     }
 
-    public void subscribe(PotentialCustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable {
+    public void subscribe(PotentialCustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired {
+        if(customerData.getPaytpvToken() == null || customerData.getPaytpvToken().trim().isEmpty()) {
+            throw new TPVTokenIsRequired();
+        }
+
         try {
+
             var course = this.moodleApiClient.getCourse(customerData.getCourseId());
             if (course == null) {
                 throw new CourseNotExists();
