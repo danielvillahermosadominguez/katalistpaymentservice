@@ -145,19 +145,37 @@ In Holded we need to follow the following steps:
 # Restrictions and Rules
 - [12.09.2023 ] We don't override data in Moodle or in Holded. 
 - [12.09.2023 ] The quantity is initially 1. One per user. We will evolve by the time
-  
+- [21.09.2023 ] Respositories must be privates. Ask to Jose H, these repositories.
+- [21.09.2023 ] MVP - First productive version. We think we could use 7-10 natural days to finish the process and payment (Basic).
+In parallel we could see the the review of the messages and text, the review of the UI, and translations
+Out of this we will need to do the migration to AWS and migration of reposistories with the help of a Platform engineer
+In parallel we will need to activation of the TPV with Paycomet.
+Tasks:
+  - Basic - Paycomet integration - finish the integration, including configuration of Paycomet and database.
+  - Basic - Save in holded new fields and change the behaviour of company/CIF or person/NIF - in the form
+  - Basic - Country and holdem. See the requirement
+  - Basic - Validation of NIF and CIF at least in a form level
+  - Basic - Logs and repeat in case of error
+  - Basic - Connect and customize Moodle pro
+  - Basic - Connect and customize Holded pro
+  - Basic - Connect and customize Paycomet pro
+  - Tests - Test in real environment with PO
+  - Documentation - Secrets, bitlocker and environment variables, documentation of integrations, etc
+  - Infrastructure - AWS migration and migration of repos. 
+  - Other people: review UI and translations.
+  - Activation of TPV with Paycomet and the bank
+  - Optional: IP request, deployment in azure and create a backlog with user stories
+NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 
 # Task related with the POC
 - [In process ] New data in the forms: address, phone
+- [In progress] TPV interaction - basic uses cases
+- [ ] In the form, we should show name and surname if it is NIF, and company name if it is CIF
 - [ ] Azure Web App, delay when start after a long time. Something related to the configuration surely.
 - [ ] Create in holded person and company depending on the form. Include a checkbox "Company"
 - [ ] Default data in creation of contact + Uppercase in values
 - [ ] To use a hash for the key in holded
 - [ ] Problem with the automatic deployment of the service. User in azure to deploy.
-- [ ] TPV and Sandbox (Paycomet) access
-- [ ] TPV interaction - basic uses cases
-- [ ] Emulation of the TPV (temporary) - Optional and to evaluate
-- [ ] Basic integration in azure with TPV. Test
 - [ ] Resend in case of error + to be sure the mail has been sent (invoice)
 - [ ] Private Data Policy in the form - People of Paycomet will help us to cover it
 - [ ] Connection holded PRO
@@ -179,6 +197,9 @@ In Holded we need to follow the following steps:
 - [ ] Migration to AWS
 - [ ] Restrict connection with the service, only for the static form (cookies?) or with infrastructure
 - [ ] Evaluate to use MongoDB - Deprecated. Create an ADR for the PostgreeSQL decision
+- [x] TPV and Sandbox (Paycomet) access
+- [x] Emulation of the TPV (temporary) - Optional and to evaluate
+- [x] Basic integration in azure with TPV. Test
 - [x] Improve the look and feel of the basic form - use codurance styles
 - [x] Review the format of the invoice - review with product owner
 - [x] Review the error messages

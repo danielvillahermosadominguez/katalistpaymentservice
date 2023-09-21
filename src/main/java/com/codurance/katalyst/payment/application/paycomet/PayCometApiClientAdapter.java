@@ -74,7 +74,17 @@ public class PayCometApiClientAdapter extends APIClient implements PayCometApiCl
         String error = "";
         PaymentStatus result = null;
         try {
+            //---------------------------------------------------------
             //CODIGO DE PRUEBA Y EXPLORACION DE LA API - FALTA REFACTOR
+            //Siguientes pasos:
+            //Revisar los parámetros que faltan y extraer logica al caso de uso
+            //Revisar el formato de la referencia y como la querria el PO
+            //Cubrir con test
+            //Reformular los DTOs que sean necesarios
+            //Eliminar de los controlles los endpoints que ya no se utilizan y eliminar
+            //Del HTML también
+            //21/09/2023 - We stop the development
+            //---------------------------------------------------------
             var strAmount = new DecimalFormat("#.00#").format(amount);
             strAmount = strAmount.replace(".","");
             strAmount = strAmount.replace(",","");
