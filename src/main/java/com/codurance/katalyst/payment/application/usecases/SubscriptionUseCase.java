@@ -8,9 +8,13 @@ import com.codurance.katalyst.payment.application.holded.exception.HoldedNotResp
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
+import com.codurance.katalyst.payment.application.paycomet.dto.CreatedUser;
+import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
+import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
 import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
+import com.codurance.katalyst.payment.application.usecases.exception.CreditCardNotValid;
 import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
 import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
@@ -28,18 +32,29 @@ import java.util.Arrays;
 public class SubscriptionUseCase {
     private final HoldedApiClient holdedApiClient;
     private final MoodleApiClient moodleApiClient;
+    private final PayCometApiClient payCometApiClient;
+
     private final DateService dataService;
 
     @Autowired
-    public SubscriptionUseCase(HoldedApiClient holdedApiClient, MoodleApiClient moodleApiClient, DateService dateService) {
+    public SubscriptionUseCase(HoldedApiClient holdedApiClient,
+                               MoodleApiClient moodleApiClient,
+                               PayCometApiClient payCometApiClient,
+                               DateService dateService) {
         this.holdedApiClient = holdedApiClient;
         this.moodleApiClient = moodleApiClient;
         this.dataService = dateService;
+        this.payCometApiClient = payCometApiClient;
     }
 
-    public void subscribe(PotentialCustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired {
+    public PaymentStatus subscribe(PotentialCustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+        PaymentStatus paymentStatus = null;
         if(customerData.getPaytpvToken() == null || customerData.getPaytpvToken().trim().isEmpty()) {
             throw new TPVTokenIsRequired();
+        }
+        var tpvUser = this.payCometApiClient.createUser(customerData.getPaytpvToken());
+        if(tpvUser == null) {
+            throw new CreditCardNotValid();
         }
 
         try {
@@ -52,6 +67,19 @@ public class SubscriptionUseCase {
             if(this.moodleApiClient.existsAnUserinThisCourse(course.getId()+"", customerData.getEmail())) {
                 throw new UserIsEnroledInTheCourse();
             }
+            paymentStatus = this.payCometApiClient.payment(
+                    course.getPrice().getValue(),
+                    "EUR",
+                    tpvUser.getIdUser(),
+                    "1",
+                    "KATALYST SUSCRIPTION",
+                    customerData.getIp(),
+                    tpvUser.getTokenUser()
+            );
+            if(paymentStatus == null) {
+                throw new CreditCardNotValid(); // habrá que mandar otra
+            }
+
             createContactAndInvoicing(customerData, course);
             var user = moodleApiClient.getUserByMail(customerData.getEmail());
             if (user == null) {
@@ -71,6 +99,7 @@ public class SubscriptionUseCase {
         } catch (HoldedNotRespond exception) {
             throw new HoldedIsNotAvailable();
         }
+        return paymentStatus;
     }
 
     private void createContactAndInvoicing(PotentialCustomerData customerData, MoodleCourse course) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond, CustomFieldNotExists {

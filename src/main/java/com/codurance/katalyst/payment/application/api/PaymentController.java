@@ -5,10 +5,12 @@ import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataI
 import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
+import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
+import com.codurance.katalyst.payment.application.usecases.exception.CreditCardNotValid;
 import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
 import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
@@ -16,6 +18,7 @@ import com.codurance.katalyst.payment.application.usecases.exception.NoPriceAvai
 import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
 import com.codurance.katalyst.payment.application.usecases.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.usecases.exception.UserIsEnroledInTheCourse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -197,9 +200,19 @@ public class PaymentController {
 
     @RequestMapping(value = "/subscription", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity subscription(@RequestBody PotentialCustomerData customer) {
+    public ResponseEntity subscription(@RequestBody PotentialCustomerData customer, HttpServletRequest request) {
+        PaymentStatus paymentStatus = null;
         try {
-            this.useCase.subscribe(customer);
+            //var ip= request.getRemoteAddr(); <-- TO REVIEW
+            //customer.setIp(clientIP);
+            paymentStatus = this.useCase.subscribe(customer);
+            if(paymentStatus == null) {
+                return new ResponseEntity<>(
+                        new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
+                                "We have had a problem with the payment"),
+                        HttpStatus.BAD_REQUEST
+                );
+            }
         } catch (InvalidInputCustomerData|HoldedIsNotAvailable|MoodleIsNotAvailable exception) {
             return new ResponseEntity<>(
                     new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
@@ -232,7 +245,12 @@ public class PaymentController {
             );
         } catch (TPVTokenIsRequired e) {
             throw new RuntimeException(e);
+        } catch (CreditCardNotValid e) {
+            throw new RuntimeException(e);
         }
-        return ResponseEntity.ok(HttpStatus.OK);
+
+        return new ResponseEntity<>(paymentStatus,
+                HttpStatus.OK
+        );
     }
 }

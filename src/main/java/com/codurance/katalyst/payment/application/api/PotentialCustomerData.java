@@ -28,6 +28,7 @@ public class PotentialCustomerData {
     private String amount="";
     private String username="";
     private String paytpvToken="";
+    private String ip;
 
     public String getCourseId() {
         return courseId;
@@ -159,5 +160,13 @@ public class PotentialCustomerData {
 
     public void setPaytpvToken(String paytpvToken) {
         this.paytpvToken = paytpvToken;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getIp() {
+        return ip;
     }
 }
