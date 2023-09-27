@@ -13,8 +13,6 @@ public class PotentialCustomerData {
 
     private String dnicif = "";
 
-    private String paymentMethod="";
-
     private boolean isCompany;
     private String phoneNumber = "";
     private String address = "";
@@ -76,10 +74,6 @@ public class PotentialCustomerData {
 
     public void setDnicif(String dnicif) {
         this.dnicif = dnicif;
-    }
-
-    public String getPaymentMethod() {
-        return paymentMethod;
     }
 
     public void setIsCompany(boolean isCompany) {

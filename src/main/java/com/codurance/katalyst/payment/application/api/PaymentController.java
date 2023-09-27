@@ -1,21 +1,17 @@
 package com.codurance.katalyst.payment.application.api;
 
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
-import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
 import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
 import com.codurance.katalyst.payment.application.usecases.exception.CreditCardNotValid;
 import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
 import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.NoPriceAvailable;
-import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
 import com.codurance.katalyst.payment.application.usecases.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.usecases.exception.UserIsEnroledInTheCourse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,8 +26,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Arrays;
 
 @RestController
 public class PaymentController {
@@ -92,119 +86,11 @@ public class PaymentController {
         }
     }
 
-    @RequestMapping(value = "/freesubscription", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity freeSubscription(@RequestBody PotentialCustomerData customer) {
-        try {
-            var course = moodleAPIClient.getCourse(customer.getCourseId());
-            if (course == null) {
-                return new ResponseEntity<>(
-                        new Error(
-                                Error.ERROR_CODE_COURSE_DOESNT_EXIST,
-                                "The course with the id " + customer.getCourseId() + " doesn't exists"
-                        ),
-                        HttpStatus.BAD_REQUEST
-                );
-            }
-
-            if (moodleAPIClient.existsAnUserinThisCourse(customer.getCourseId(), customer.getEmail())) {
-                return new ResponseEntity<>(
-                        new Error(
-                                Error.CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE,
-                                "The user has a subscription for this course"
-                        ),
-                        HttpStatus.UNPROCESSABLE_ENTITY
-                );
-            }
-
-            var user = moodleAPIClient.getUserByMail(customer.getEmail());
-            if (user == null) {
-                user = moodleAPIClient.createUser(customer.getName(), customer.getSurname(), customer.getEmail());
-            }
-            moodleAPIClient.enrolToTheCourse(course, user);
-            return ResponseEntity.ok(HttpStatus.OK);
-        } catch (MoodleNotRespond e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "It has been not possible to get the course. Please try to connect later"
-            );
-        } catch (NotValidEMailFormat exception) {
-            throw new RuntimeException(exception); //TODO: Review: Not valid parameters
-        }
-    }
-
-    @RequestMapping(value = "/invoicing", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity onlyHoldedTest(@RequestBody PotentialCustomerData customer) {
-        try {
-            var course = moodleAPIClient.getCourse(customer.getCourseId());
-            if (course == null) {
-                return new ResponseEntity<>(
-                        new Error(
-                                Error.ERROR_CODE_COURSE_DOESNT_EXIST,
-                                "The course with the id " + customer.getCourseId() + " doesn't exists"),
-                        HttpStatus.BAD_REQUEST
-                );
-            }
-
-            var customId = holdedAPIClient.createCustomId(
-                    customer.getDnicif(),
-                    new HoldedEmail(customer.getEmail())
-            );
-            var contact = holdedAPIClient.getContactByCustomId(customId);
-            if (contact == null) {
-                contact = holdedAPIClient.createContact(customer.getName(),
-                        customer.getSurname(),
-                        new HoldedEmail(customer.getEmail()),
-                        customer.getCompany(),
-                        customer.getDnicif());
-            }
-
-            var concept = course.getDisplayname();
-            var description = "";
-            var amount = Error.ERROR_CODE_COURSE_DOESNT_EXIST;
-            var price = course.getPrice();
-            HoldedCreationDataInvoice invoice = holdedAPIClient.createInvoice(contact,
-                    concept,
-                    description,
-                    amount,
-                    price.getValue());
-
-            holdedAPIClient.sendInvoice(invoice,Arrays.asList(new HoldedEmail(contact.getEmail())));
-        } catch (Exception ex) {
-            return new ResponseEntity<>(
-                    new Error(
-                            Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
-                            "We have had a problem with the creation of the contact and the invoicing"
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        } catch (CustomFieldNotExists exception) {
-            return new ResponseEntity<>(
-                    new Error(
-                            Error.CODE_ERROR_PRICE_NOT_FOUND,
-                            "Price custom field not found in Moodle. Please, contact with the administrator to create this custom field"
-                    ),
-                    HttpStatus.BAD_REQUEST
-            );
-        } catch (NotValidEMailFormat|HoldedNotRespond |MoodleNotRespond exception) {
-            return new ResponseEntity<>(
-                    new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
-                            "We have had a problem with the creation of the contact and the invoicing"),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
-
-        return ResponseEntity.ok(HttpStatus.OK);
-    }
-
     @RequestMapping(value = "/subscription", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity subscription(@RequestBody PotentialCustomerData customer, HttpServletRequest request) {
         PaymentStatus paymentStatus = null;
         try {
-            //var ip= request.getRemoteAddr(); <-- TO REVIEW
-            //customer.setIp(clientIP);
             paymentStatus = this.useCase.subscribe(customer);
             if(paymentStatus == null) {
                 return new ResponseEntity<>(
