@@ -5,6 +5,8 @@ import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataI
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.holded.requests.CreateContactRequestBody;
+import com.codurance.katalyst.payment.application.paycomet.dto.PaymentBody;
 import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
@@ -108,30 +110,26 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
-    public HoldedContact createContact(String name, String surname, HoldedEmail email, String company, String nifCif) throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+    public HoldedContact createContact(HoldedContact contact) throws HoldedNotRespond {
         HoldedContact result = null;
         var url = generateEndPoint("invoicing/v1/contacts");
-        MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
-        requestBody.add(NAME, name + " " + surname + "(" + company + ")");
-        requestBody.add(EMAIL, email.getValue());
-        requestBody.add(TYPE, CLIENT_VALUE);
-        requestBody.add(CODE, nifCif);
-        requestBody.add(CUSTOM_ID1, createCustomId(nifCif, email));
-        requestBody.add(ISPERSON, "true");
 
-        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        var requestBody = new CreateContactRequestBody(contact);
+        Gson gson = new Gson();
+        var body = gson.toJson(requestBody, CreateContactRequestBody.class);
+
+        var request = createRequestString(body, MediaType.APPLICATION_JSON_VALUE);
         ResponseEntity<HoldedStatus> response = null;
         try {
             response = restTemplate.postForEntity(url, request, HoldedStatus.class);
             if (response.getBody().getStatus() == HoldedStatus.OK) {
-                var customId = createCustomId(nifCif, email);
-                result = getContactByCustomId(customId);
+                result = getContactByCustomId(contact.getCustomId());
             }
         }  catch (HttpStatusCodeException httpException) {
             throw new HoldedNotRespond(
                     url,
                     "",
-                    requestBody.toString(),
+                    body,
                     httpException.getMessage()
             );
         }

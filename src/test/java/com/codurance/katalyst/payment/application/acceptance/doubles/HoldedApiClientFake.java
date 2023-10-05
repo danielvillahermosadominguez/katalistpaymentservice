@@ -1,12 +1,12 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
 import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
-import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -20,13 +20,15 @@ public class HoldedApiClientFake implements HoldedApiClient {
     class HoldedContactDTOFake extends HoldedContact {
         public static int idCounter = 0;
 
-        public HoldedContactDTOFake(String customId, String name, String surname, String email, String company, String nifCif) throws UnsupportedEncodingException {
-            super();
-            this.name = name + " " + surname + "(" + company + ")";
-            this.email = email;
-            this.code = nifCif;
+        public HoldedContactDTOFake(HoldedContact contact) {
+            super(contact.getName(),
+                    contact.getCode(),
+                    contact.getType(),
+                    contact.getEmail(),
+                    contact.getPhone(),
+                    contact.getBillAddress(),
+                    contact.getPurchaseAccount());
             this.id = ++idCounter + "";
-            this.customId = customId;
         }
     }
 
@@ -54,10 +56,9 @@ public class HoldedApiClientFake implements HoldedApiClient {
     private Map<String, List<HoldedCreationDataInvoice>> sentInvoices = new HashMap<>();
 
     @Override
-    public HoldedContact createContact(String name, String surname, HoldedEmail email, String company, String nifCif) throws UnsupportedEncodingException, NotValidEMailFormat {
-        String customId = createCustomId(nifCif, email);
-        HoldedContact holdedContact = new HoldedContactDTOFake(customId, name, surname, email.getValue(), company, nifCif);
-        this.contacts.put(customId, holdedContact);
+    public HoldedContact createContact(HoldedContact contact) throws UnsupportedEncodingException, NotValidEMailFormat {
+        var holdedContact = new HoldedContactDTOFake(contact);
+        this.contacts.put(contact.getCustomId(), holdedContact);
         return holdedContact;
     }
 
@@ -69,9 +70,14 @@ public class HoldedApiClientFake implements HoldedApiClient {
         return contacts.get(customId);
     }
 
+    public List<HoldedContact> getAllContacts() {
+        return new ArrayList<HoldedContact>(contacts.values());
+    }
+
+
     @Override
     public HoldedCreationDataInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) {
-        var item = new HoldedCreationDataInvoiceItem(concept,description,amount,price);
+        var item = new HoldedCreationDataInvoiceItem(concept, description, amount, price);
         return new HoldedCreationDataInvoiceDTOFake(Arrays.asList(item));
     }
 

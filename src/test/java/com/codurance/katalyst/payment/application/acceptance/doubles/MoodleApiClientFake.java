@@ -86,6 +86,10 @@ public class MoodleApiClientFake implements MoodleApiClient {
         return filteredUserList.get(0);
     }
 
+    public List<MoodleUser> getAllUsers() {
+        return users;
+    }
+
     @Override
     public MoodleUser createUser(String name, String surname, String email) throws NotValidEMailFormat {
         MoodleUserDTOFake user = new MoodleUserDTOFake(name, surname, email);

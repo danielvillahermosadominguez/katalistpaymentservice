@@ -11,7 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public interface HoldedApiClient {
-    HoldedContact createContact(String name, String surname, HoldedEmail email, String company, String nifCif) throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat;
+    HoldedContact createContact(HoldedContact contact) throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat;
 
     HoldedContact getContactByCustomId(String customId) throws HoldedNotRespond;
 
