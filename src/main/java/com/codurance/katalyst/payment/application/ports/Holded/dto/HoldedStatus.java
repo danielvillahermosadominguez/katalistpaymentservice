@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.holded.dto;
+package com.codurance.katalyst.payment.application.ports.Holded.dto;
 
 public class HoldedStatus {
     public static final int OK = 1;

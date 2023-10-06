@@ -2,14 +2,14 @@ package com.codurance.katalyst.payment.application.integration;
 
 import com.codurance.katalyst.payment.application.acceptance.doubles.TestDateService;
 import com.codurance.katalyst.payment.application.holded.HoldedApiClientAdapter;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedTypeContact;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
-import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
@@ -34,10 +34,6 @@ public class HoldedAPIClientShould {
     private String holdedApiKey = "RANDOM_API_KEY";
     private HoldedWireMockServer wireMock = null;
     private HoldedApiClientAdapter apiAdapter = new HoldedApiClientAdapter(new RestTemplate());
-
-    class HoldedInvoiceCreate {
-
-    }
 
     @BeforeEach
     void beforeEach() {

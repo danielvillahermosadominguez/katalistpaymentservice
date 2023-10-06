@@ -1,8 +1,6 @@
 package com.codurance.katalyst.payment.application.holded.requests;
 
-import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 

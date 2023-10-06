@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.holded.dto;
+package com.codurance.katalyst.payment.application.ports.Holded.dto;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

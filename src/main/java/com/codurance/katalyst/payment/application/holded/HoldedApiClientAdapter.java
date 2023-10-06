@@ -1,19 +1,15 @@
 package com.codurance.katalyst.payment.application.holded;
 
-import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
-import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.holded.requests.CreateContactRequestBody;
-import com.codurance.katalyst.payment.application.paycomet.dto.PaymentBody;
-import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
+import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,7 +23,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -38,13 +33,6 @@ import java.util.Map;
 public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient {
 
     public static final String CUSTOM_ID = "customId";
-    public static final String NAME = "name";
-    public static final String EMAIL = "email";
-    public static final String TYPE = "type";
-    public static final String CODE = "code";
-    public static final String CUSTOM_ID1 = "CustomId";
-    public static final String ISPERSON = "isperson";
-    public static final String CLIENT_VALUE = "client";
     public static final String CONTACT_ID = "contactId";
     public static final String DESC = "desc";
     public static final String DATE = "date";
@@ -84,15 +72,18 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return URL_BASE + function;
     }
     public HoldedContact getContactByCustomId(String customId) throws HoldedNotRespond {
-        HoldedContact result = null;
-        String url = generateEndPoint("invoicing/v1/contacts?customId={customId}");
+        var url = generateEndPoint("invoicing/v1/contacts?customId={customId}");
         Map<String, String> uriVariables = new HashMap<>();
         uriVariables.put(CUSTOM_ID, customId);
 
-        var requestEntity = createRequest(null, MediaType.APPLICATION_JSON_VALUE);
-        ResponseEntity<HoldedContact[]> response = null;
+        var requestEntity = createRequest(
+                null,
+                MediaType.APPLICATION_JSON_VALUE
+        );
+
+        HoldedContact result = null;
         try {
-            response = restTemplate.exchange(
+            var response = restTemplate.exchange(
                     url,
                     HttpMethod.GET,
                     requestEntity,
@@ -113,16 +104,23 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
     }
 
     public HoldedContact createContact(HoldedContact contact) throws HoldedNotRespond {
-        HoldedContact result = null;
         var url = generateEndPoint("invoicing/v1/contacts");
-
         var requestBody = new CreateContactRequestBody(contact);
+        var request = createRequestEntity(
+                requestBody,
+                MediaType.APPLICATION_JSON_VALUE
+        );
 
-        var request = createRequestEntity(requestBody, MediaType.APPLICATION_JSON_VALUE);
-        ResponseEntity<HoldedStatus> response = null;
+        HoldedContact result = null;
         try {
-            response = restTemplate.postForEntity(url, request, HoldedStatus.class);
-            if (response.getBody().getStatus() == HoldedStatus.OK) {
+            var response = restTemplate.postForEntity(
+                    url,
+                    request,
+                    HoldedStatus.class
+            );
+
+            var body = response.getBody();
+            if (body.getStatus() == HoldedStatus.OK) {
                 result = getContactByCustomId(contact.getCustomId());
             }
         }  catch (HttpStatusCodeException httpException) {
@@ -137,14 +135,6 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
-    private <T> String objectToJSON(T object) {
-        var objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
     public HoldedCreationDataInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond {
         HoldedCreationDataInvoice result = null;
         var url = generateEndPoint("invoicing/v1/documents/invoice");
@@ -197,9 +187,5 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
                     httpException.getMessage()
             );
         }
-    }
-
-    public String createCustomId(String nifCif, HoldedEmail email) throws UnsupportedEncodingException {
-        return nifCif + email.getInUnicodeFormat();
     }
 }

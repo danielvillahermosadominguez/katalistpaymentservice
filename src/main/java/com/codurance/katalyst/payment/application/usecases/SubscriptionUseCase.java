@@ -1,17 +1,17 @@
 package com.codurance.katalyst.payment.application.usecases;
 
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedBillAddress;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedTypeContact;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
-import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
-import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
+import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
 import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
@@ -105,7 +105,8 @@ public class SubscriptionUseCase {
 
     private void createContactAndInvoicing(PotentialCustomerData customerData, MoodleCourse course) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond, CustomFieldNotExists {
         var email = new HoldedEmail(customerData.getEmail());
-        var customId = this.holdedApiClient.createCustomId(customerData.getDnicif(), email);
+
+        var customId = HoldedContact.buildCustomId(customerData.getDnicif(), email);
         var contact = this.holdedApiClient.getContactByCustomId(customId);
         if (contact == null) {
             contact = this.createContactInHolded(customerData);

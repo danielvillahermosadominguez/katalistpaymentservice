@@ -77,7 +77,7 @@ public class TestApiClient {
     }
 
     public Course getCourse(int selectedCourse) {
-        ResponseEntity<String> response = sendRequest(HttpMethod.GET, getUrlBase() + "/courses/" + selectedCourse);
+        var response = sendRequest(HttpMethod.GET, getUrlBase() + "/courses/" + selectedCourse);
         if (response.getStatusCode() == HttpStatus.OK) {
             return gson.fromJson(response.getBody(), Course.class);
         } else {
@@ -85,46 +85,7 @@ public class TestApiClient {
         }
     }
 
-    public int freeSubscription(int courseId, Map<String, String> data) {
-        Map<String, String> potentialCustomer = new HashMap<>();
-        potentialCustomer.put("paymentMethod", "");
-        potentialCustomer.put("courseId", courseId + "");
-        potentialCustomer.put("email", data.get("email"));
-        potentialCustomer.put("name", data.get("Name"));
-        potentialCustomer.put("surname", data.get("Surname"));
-        potentialCustomer.put("company", data.get("Company"));
-        potentialCustomer.put("dnicif", data.get("Dni/CIF"));
-
-        String body = gson.toJson(potentialCustomer);
-        ResponseEntity<String> response = post(getUrlBase() + "/freesubscription", body);
-        if (response.getStatusCode() != HttpStatus.OK) {
-            Error error = gson.fromJson(response.getBody(), Error.class);
-            return error.getCode();
-        }
-        return SUCCESS_CODE;
-    }
-
-    public int invoicing(int courseId, Map<String, String> data) {
-        Map<String, String> potentialCustomer = new HashMap<>();
-        potentialCustomer.put("paymentMethod", "");
-        potentialCustomer.put("courseId", courseId + "");
-        potentialCustomer.put("email", data.get("email"));
-        potentialCustomer.put("name", data.get("Name"));
-        potentialCustomer.put("surname", data.get("Surname"));
-        potentialCustomer.put("company", data.get("Company"));
-        potentialCustomer.put("dnicif", data.get("Dni/CIF"));
-
-        var body = gson.toJson(potentialCustomer);
-        var response = post(getUrlBase() + "/invoicing", body);
-        if (response.getStatusCode() != HttpStatus.OK) {
-            Error error = gson.fromJson(response.getBody(), Error.class);
-            return error.getCode();
-        }
-        return SUCCESS_CODE;
-    }
-
     public int subscription(PotentialCustomerData customData) {
-
         var body = gson.toJson(customData);
         var response = post(getUrlBase() + "/subscription", body);
         if (response.getStatusCode() != HttpStatus.OK) {

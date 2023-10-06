@@ -5,14 +5,13 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedBillAddress;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedTypeContact;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -20,7 +19,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
@@ -59,7 +57,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         if (!apiClient.isInitialized()) {
             this.apiClient.setPort(randomServerPort);
         }
-        ResponseEntity<String> response = this.apiClient.checkItsAlive();
+        var response = this.apiClient.checkItsAlive();
 
         if (!response.getBody().equals("OK! Working")) {
             fail();
@@ -96,8 +94,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         var rows = userData.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
         this.userData = rows.get(0);
-        subscriptionOutputCode = apiClient.freeSubscription(FIXTURE_COURSE.getId(), this.userData);
-        assertThat(subscriptionOutputCode).isGreaterThanOrEqualTo(0);
     }
 
     @When("the customer request the subscription to the course")
@@ -117,7 +113,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         var invoiceDataList = dataTable.asMaps(String.class, String.class);
         assertThat(invoiceDataList).isNotEqualTo(1);
         var invoiceDataRow = invoiceDataList.get(0);
-        List<HoldedCreationDataInvoice> sentInvoices = holdedApiClient.getSentInvoices(emails);
+        var sentInvoices = holdedApiClient.getSentInvoices(emails);
         assertThat(sentInvoices.size()).isEqualTo(1);
         var sentInvoice = sentInvoices.get(0);
         assertThat(sentInvoice.getItems().size()).isEqualTo(1);
@@ -134,9 +130,9 @@ public class StepdefsSubscribeAndPaymentFeature {
     @When("the customer pays the subscription with credit\\/debit card with the following result")
     public void the_customer_pays_the_subscription_with_credit_debit_card_with_the_following_result(DataTable dataTable) {
         var paymentData = dataTable.asMaps(String.class, String.class);
-        assertThat(paymentData).isNotEqualTo(1);
-        this.creditDebitCardData = paymentData.get(0);
-        this.temporalPayCometToken = this.payCometApiClient.generateTemporalToken();
+        assertThat(paymentData.size()).isEqualTo(1);
+        creditDebitCardData = paymentData.get(0);
+        temporalPayCometToken = this.payCometApiClient.generateTemporalToken();
         var customData = convertToCustomData();
         subscriptionOutputCode = this.apiClient.subscription(customData);
     }
@@ -148,24 +144,24 @@ public class StepdefsSubscribeAndPaymentFeature {
     @Then("Holded has the following contacts")
     public void holded_has_the_following_contacts(DataTable dataTable) {
         var paymentData = dataTable.asMaps(String.class, String.class);
-        var expectedContactList = paymentData
-                .stream()
-                .map(data -> {
-                    try {
-                        return convertToHoldedContact(data);
-                    } catch (NotValidEMailFormat e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.toList());
-
-        List<HoldedContact> currentContactList = this.holdedApiClient.getAllContacts();
+        var expectedContactList = createContactList(paymentData);
+        var currentContactList = this.holdedApiClient.getAllContacts();
         assertThat(currentContactList.size()).isEqualTo(expectedContactList.size());
-        for (var contact: expectedContactList) {
-            assertThat(contact).isIn(currentContactList);
+        for (var contact : expectedContactList) {
+            assertThat(existInTheList(contact, currentContactList)).isTrue();
         }
-
     }
+
+    private boolean existInTheList(HoldedContact contact, List<HoldedContact> currentContactList) {
+        for (var currentContact : currentContactList) {
+            if (contact.haveSameMainData(currentContact)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     private PotentialCustomerData convertToCustomData() {
         var customData = new PotentialCustomerData();
         customData.setCourseId(FIXTURE_COURSE.getId() + "");
@@ -180,6 +176,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         customData.setPostalCode(this.userData.get("POSTAL CODE"));
         customData.setCity(this.userData.get("CITY"));
         customData.setRegion(this.userData.get("REGION"));
+        customData.setCountry(this.userData.get("COUNTRY"));
         customData.setUsername(this.creditDebitCardData.get("NAME"));
         customData.setPaytpvToken(this.temporalPayCometToken);
         return customData;
@@ -212,5 +209,19 @@ public class StepdefsSubscribeAndPaymentFeature {
         );
         contact.setCustomId(customId);
         return contact;
+    }
+
+    private List<HoldedContact> createContactList(List<Map<String, String>> paymentData) {
+        var expectedContactList = paymentData
+                .stream()
+                .map(data -> {
+                    try {
+                        return convertToHoldedContact(data);
+                    } catch (NotValidEMailFormat e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
+        return expectedContactList;
     }
 }

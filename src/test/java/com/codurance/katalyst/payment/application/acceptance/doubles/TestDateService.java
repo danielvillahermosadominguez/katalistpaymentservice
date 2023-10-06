@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.util.Date;
 
 public class TestDateService implements DateService {
-
     @Override
     public Instant getInstant() {
         Date date = new Date(2323223232L);

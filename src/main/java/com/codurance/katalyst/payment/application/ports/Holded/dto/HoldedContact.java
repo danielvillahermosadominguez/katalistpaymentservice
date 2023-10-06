@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.holded.dto;
+package com.codurance.katalyst.payment.application.ports.Holded.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -42,7 +42,7 @@ public class HoldedContact {
                          HoldedBillAddress billAddress,
                          String purchaseAccount) {
 
-        this.customId = code + email.getInUnicodeFormat();
+        this.customId = buildCustomId(code ,email);
         this.name = name;
         this.code = code;
         this.type = type;
@@ -51,6 +51,10 @@ public class HoldedContact {
         this.phone = phone;
         this.billAddress = billAddress;
         this.purchaseAccount = purchaseAccount;
+    }
+
+    public static String buildCustomId(String code, HoldedEmail email) {
+        return code + email.getInUnicodeFormat();
     }
 
     public String getId() {
@@ -95,10 +99,23 @@ public class HoldedContact {
     }
 
     public void setCustomId(String customId) {
-        this. customId = customId;
+        this.customId = customId;
     }
 
     public boolean isPerson() {
         return isPerson;
+    }
+
+    public boolean haveSameMainData(HoldedContact contact) {
+        // We don't have into account the id neither purchaseAccount
+        var result = contact.getCustomId().equals(customId);
+        result &= contact.getEmail().getValue().equals(email.getValue());
+        result &= contact.getCode().equals(code);
+        result &= contact.getName().equals(name);
+        result &= contact.getType() == type;
+        result &= contact.isPerson() == isPerson;
+        result &= contact.getPhone().equals(phone);
+        result &= contact.getBillAddress().equals(billAddress);
+        return result;
     }
 }

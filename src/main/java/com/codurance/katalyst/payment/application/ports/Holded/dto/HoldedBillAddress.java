@@ -1,4 +1,6 @@
-package com.codurance.katalyst.payment.application.holded.dto;
+package com.codurance.katalyst.payment.application.ports.Holded.dto;
+
+import java.util.Objects;
 
 public class HoldedBillAddress {
     private String address;
@@ -33,5 +35,18 @@ public class HoldedBillAddress {
 
     public String getCountry() {
         return country;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HoldedBillAddress that = (HoldedBillAddress) o;
+        return Objects.equals(address, that.address) && Objects.equals(postalCode, that.postalCode) && Objects.equals(city, that.city) && Objects.equals(province, that.province) && Objects.equals(country, that.country);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(address, postalCode, city, province, country);
     }
 }

@@ -16,8 +16,8 @@ Feature: As an user interested in Katalyst courses
       | John Doe | 4273682057894021 | 05    | 24   | 123 | OK     |
     Then the customer is informed about the success of the subscription
     Then Holded has the following contacts
-      | CUSTOMER-ID               | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL            | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | PROVINCE | COUNTRY | CITY | PURCHASE ACCOUNT |
-      | 46842041Djohn@example.com | JOHN DOE | 46842041D   | Person          | john@example.com | Avd. Yellowstone 45, 2B | +34 636737337 | 28080       | MADRID   | SPAIN   | Boadilla del Monte     | 70500000         |
+      | CUSTOMER-ID                 | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL            | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT |
+      | 46842041Djohn%40example.com | JOHN DOE | 46842041D   | Person          | john@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         |
     And the customer will receive an invoice to the recipients "john@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
       | TDD in depth | 99.9  | 1     | 99.9     | 99.9  |

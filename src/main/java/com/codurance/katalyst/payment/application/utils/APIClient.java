@@ -1,6 +1,8 @@
 package com.codurance.katalyst.payment.application.utils;
 
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentBody;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -70,5 +72,14 @@ public class APIClient {
         }
 
         return resultList.get(0);
+    }
+
+    protected  <T> String objectToJSON(T object) {
+        var objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
