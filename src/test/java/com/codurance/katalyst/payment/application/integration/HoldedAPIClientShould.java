@@ -107,7 +107,7 @@ public class HoldedAPIClientShould {
                 HoldedTypeContact.CLIENT,
                 true,
                 new HoldedEmail("RANDOM_USER@email.com"),
-                "PHONE",
+                null,
                 null,
                 ""
         );
@@ -120,7 +120,7 @@ public class HoldedAPIClientShould {
                 "client",
                 contact.getCode(),
                 contact.getCustomId(),
-                "true"
+                true
         );
 
         var responseBodyGet = wireMock.createContactResponseForGetContact(
@@ -145,7 +145,7 @@ public class HoldedAPIClientShould {
                 HoldedTypeContact.CLIENT,
                 true,
                 new HoldedEmail("RANDOM_USER@email.com"),
-                "PHONE",
+                null,
                 null,
                 ""
         );
@@ -155,7 +155,7 @@ public class HoldedAPIClientShould {
 
         assertThat(thrown).isNotNull();
         assertThat(thrown.getRequestBody()).isEqualTo(
-                "{\"name\":\"RANDOM_NAME\",\"email\":\"RANDOM_USER@email.com\",\"type\":\"client\",\"code\":\"46842041C\",\"CustomId\":\"46842041CRANDOM_USER%40email.com\",\"isperson\":\"true\"}"
+                "{\"name\":\"RANDOM_NAME\",\"email\":\"RANDOM_USER@email.com\",\"type\":\"client\",\"code\":\"46842041C\",\"CustomId\":\"46842041CRANDOM_USER%40email.com\",\"isperson\":true}"
         );
         assertThat(thrown.getUrl()).isEqualTo(apiAdapter.generateEndPoint("invoicing/v1/contacts"));
         assertThat(thrown.getUrlVariables()).isEqualTo("");

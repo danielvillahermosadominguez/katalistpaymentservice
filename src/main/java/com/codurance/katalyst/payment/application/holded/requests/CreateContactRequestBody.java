@@ -1,10 +1,16 @@
 package com.codurance.katalyst.payment.application.holded.requests;
 
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 
 public class CreateContactRequestBody {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonFormat(shape = JsonFormat.Shape.OBJECT)
+    private final HoldedBillAddress billAddress;
     @JsonProperty("name")
     private String name;
 
@@ -21,7 +27,11 @@ public class CreateContactRequestBody {
     private String customId;
 
     @JsonProperty("isperson")
-    private String isPerson;
+    private boolean isPerson;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("phone")
+    private final String phone;
+
 
     public CreateContactRequestBody(HoldedContact contact) {
         var email = contact.getEmail().getValue();
@@ -30,7 +40,9 @@ public class CreateContactRequestBody {
         this.type = contact.getType().getName();
         this.code = contact.getCode();
         this.customId = contact.getCustomId();
-        this.isPerson = "true";
+        this.isPerson = contact.isPerson();
+        this.phone = contact.getPhone();
+        this.billAddress = contact.getBillAddress();
     }
 
     public String getName() {
@@ -73,11 +85,11 @@ public class CreateContactRequestBody {
         this.customId = customId;
     }
 
-    public String getIsPerson() {
+    public boolean getIsPerson() {
         return isPerson;
     }
 
-    public void setIsPerson(String isPerson) {
+    public void setIsPerson(boolean isPerson) {
         this.isPerson = isPerson;
     }
 }

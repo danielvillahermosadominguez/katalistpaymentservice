@@ -43,8 +43,8 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         return bodyMap;
     }
 
-    public Map<String, String> createContactRequestParameters(String name, String email, String type, String nifCif, String customId, String isPerson) {
-        Map<String, String> requestBodyParameters = new LinkedHashMap();
+    public Map<String, Object> createContactRequestParameters(String name, String email, String type, String nifCif, String customId, boolean isPerson) {
+        Map<String, Object> requestBodyParameters = new LinkedHashMap();
         requestBodyParameters.put("name", name);
         requestBodyParameters.put("email", email);
         requestBodyParameters.put("type", type);
@@ -92,7 +92,7 @@ public class HoldedWireMockServer extends WireMockServerExtension {
                 jsonBody);
     }
 
-    public void stubForCreateContactsWithStatusOKAsJsonBody(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException {
+    public void stubForCreateContactsWithStatusOKAsJsonBody(Map<String, Object> requestBodyParameters, Map<String, Object> responseBody)  {
         var jsonBody = gson.toJson(responseBody);
         var jsonBodyParameters = gson.toJson(requestBodyParameters);
         stubForPostWithStatusOKAndBodyParameters("invoicing/v1/contacts",
