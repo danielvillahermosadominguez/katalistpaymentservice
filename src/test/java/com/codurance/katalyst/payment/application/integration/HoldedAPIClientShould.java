@@ -80,7 +80,7 @@ public class HoldedAPIClientShould {
                 "RANDOM_USERNAME@email.com",
                 "RANDOM_NAME",
                 nifCif,
-                "Person");
+                "client");
         wireMock.stubForGetContactByCustomIdStatusOK(customId, responseBody);
 
         var contact = apiAdapter.getContactByCustomId(customId);
@@ -108,7 +108,7 @@ public class HoldedAPIClientShould {
         var contact = new HoldedContact(
                 "RANDOM_NAME",
                 "46842041C",
-                HoldedTypeContact.Client,
+                HoldedTypeContact.CLIENT,
                 true,
                 new HoldedEmail("RANDOM_USER@email.com"),
                 "PHONE",
@@ -131,9 +131,9 @@ public class HoldedAPIClientShould {
                 "RANDOM_USER@email.com",
                 "RANDOM_NAME",
                 "46842041C",
-                "Person");
+                "client");
         wireMock.stubForGetContactByCustomIdStatusOK("46842041C" + new HoldedEmail("RANDOM_USER@email.com").getInUnicodeFormat(), responseBodyGet);
-        wireMock.stubForCreateContactsWithStatusOK(requestBodyParameters, responseBodyCreate);
+        wireMock.stubForCreateContactsWithStatusOKAsJsonBody(requestBodyParameters, responseBodyCreate);
 
         var contactResult = apiAdapter.createContact(contact);
 
@@ -146,7 +146,7 @@ public class HoldedAPIClientShould {
         var contact = new HoldedContact(
                 "RANDOM_NAME",
                 "46842041C",
-                HoldedTypeContact.Client,
+                HoldedTypeContact.CLIENT,
                 true,
                 new HoldedEmail("RANDOM_USER@email.com"),
                 "PHONE",
@@ -159,7 +159,7 @@ public class HoldedAPIClientShould {
 
         assertThat(thrown).isNotNull();
         assertThat(thrown.getRequestBody()).isEqualTo(
-                "{\"name\":\"RANDOM_NAME\",\"email\":\"RANDOM_USER@email.com\",\"type\":\"Person\",\"code\":\"46842041C\",\"customId\":\"46842041CRANDOM_USER@email.com\",\"isPerson\":\"true\"}"
+                "{\"name\":\"RANDOM_NAME\",\"email\":\"RANDOM_USER@email.com\",\"type\":\"client\",\"code\":\"46842041C\",\"CustomId\":\"46842041CRANDOM_USER%40email.com\",\"isperson\":\"true\"}"
         );
         assertThat(thrown.getUrl()).isEqualTo(apiAdapter.generateEndPoint("invoicing/v1/contacts"));
         assertThat(thrown.getUrlVariables()).isEqualTo("");

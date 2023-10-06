@@ -12,6 +12,8 @@ import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -115,10 +117,8 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         var url = generateEndPoint("invoicing/v1/contacts");
 
         var requestBody = new CreateContactRequestBody(contact);
-        Gson gson = new Gson();
-        var body = gson.toJson(requestBody, CreateContactRequestBody.class);
 
-        var request = createRequestString(body, MediaType.APPLICATION_JSON_VALUE);
+        var request = createRequestEntity(requestBody, MediaType.APPLICATION_JSON_VALUE);
         ResponseEntity<HoldedStatus> response = null;
         try {
             response = restTemplate.postForEntity(url, request, HoldedStatus.class);
@@ -129,7 +129,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
             throw new HoldedNotRespond(
                     url,
                     "",
-                    body,
+                    objectToJSON(requestBody),
                     httpException.getMessage()
             );
         }
@@ -137,6 +137,14 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
+    private <T> String objectToJSON(T object) {
+        var objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public HoldedCreationDataInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond {
         HoldedCreationDataInvoice result = null;
         var url = generateEndPoint("invoicing/v1/documents/invoice");

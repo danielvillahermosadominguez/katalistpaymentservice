@@ -5,6 +5,7 @@ import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedTypeContact;
 import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.holded.requests.CreateContactRequestBody;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -16,13 +17,14 @@ public class PruebaTest {
 
     @Test public void
     enum_to_String() {
-        var typeContact = HoldedTypeContact.Client;
+        var typeContact = HoldedTypeContact.CLIENT;
         var name = typeContact.getName();
         assertThat(name).isEqualTo("client");
     }
 
     @Test public void
     string_to_object() throws JsonProcessingException {
+        //{"id":1,"customId":"46842041CRANDOM_USERNAME%2540email.com","email":"RANDOM_USERNAME@email.com","name":"RANDOM_NAME","code":"46842041C","type":"client"}
         var s = "{\"id\":1,\"customId\":\"46842041CRANDOM_USERNAME%2540email.com\",\"email\":\"RANDOM_USERNAME@email.com\",\"name\":\"RANDOM_NAME\",\"code\":\"46842041C\",\"type\":\"client\"}";
         var objectMapper = new ObjectMapper();
         var contact = objectMapper.readValue(s,HoldedContact.class);
@@ -40,7 +42,7 @@ public class PruebaTest {
         var contact = new HoldedContact(
                 "John Doe",
                 "46842041C",
-                HoldedTypeContact.Client,
+                HoldedTypeContact.CLIENT,
                 true,
                 new HoldedEmail("john.doe@email.com"),
                 "636638359",
@@ -50,6 +52,26 @@ public class PruebaTest {
         var gsonString = gson.toJson(contact);
         var objectMapper = new ObjectMapper();
         var jacksonString = objectMapper.writeValueAsString(contact);
+        assertThat("").isEqualTo(jacksonString);
+    }
+
+    @Test
+    public void
+    create_to_string() throws NotValidEMailFormat, JsonProcessingException {
+        var gson = new Gson();
+        var contact = new HoldedContact(
+                "John Doe",
+                "46842041C",
+                HoldedTypeContact.CLIENT,
+                true,
+                new HoldedEmail("john.doe@email.com"),
+                "636638359",
+                null,
+                "70500000"
+        );
+        var createContactBody = new CreateContactRequestBody(contact);
+        var objectMapper = new ObjectMapper();
+        var jacksonString = objectMapper.writeValueAsString(createContactBody);
         assertThat("").isEqualTo(jacksonString);
     }
 }

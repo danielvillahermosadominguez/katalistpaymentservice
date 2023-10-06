@@ -124,7 +124,7 @@ public class SubscriptionUseCase {
 
     private HoldedContact createContactInHolded(PotentialCustomerData originalData) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond {
         var name = originalData.getCompany().toUpperCase();
-        var type = HoldedTypeContact.Client;
+        var type = HoldedTypeContact.CLIENT;
         var isPerson = !originalData.getIsCompany();
         if(!originalData.getIsCompany()) {
             name = originalData.getName().toUpperCase() + " " + originalData.getSurname().toUpperCase();

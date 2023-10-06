@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class HoldedContact {
     @JsonProperty("isperson")
-    private final boolean isPerson;
+    private boolean isPerson;
 
     protected String id;
 
@@ -29,6 +29,9 @@ public class HoldedContact {
     @JsonIgnore
     private String purchaseAccount;
 
+    public HoldedContact() {
+
+    }
 
     public HoldedContact(String name,
                          String code,

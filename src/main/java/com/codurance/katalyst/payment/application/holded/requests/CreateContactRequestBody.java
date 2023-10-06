@@ -16,7 +16,7 @@ public class CreateContactRequestBody {
     @JsonProperty("type")
     private String type;
 
-    @JsonProperty("type")
+    @JsonProperty("code")
     private String code;
 
     @JsonProperty("CustomId")
@@ -29,7 +29,7 @@ public class CreateContactRequestBody {
         var email = contact.getEmail().getValue();
         this.name = contact.getName();
         this.email = email;
-        this.type = contact.getType().toString();
+        this.type = contact.getType().getName();
         this.code = contact.getCode();
         this.customId = contact.getCustomId();
         this.isPerson = "true";

@@ -85,10 +85,18 @@ public class HoldedWireMockServer extends WireMockServerExtension {
                 jsonResponseBody);
     }
 
-    public void stubForCreateContactsWithStatusOK(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException {
+    public void stubForCreateContactsWithStatusOKAsBodyParameters(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException {
         var jsonBody = gson.toJson(responseBody);
         stubForPostWithStatusOKAndBodyParameters("invoicing/v1/contacts",
                 joinParameters(requestBodyParameters),
+                jsonBody);
+    }
+
+    public void stubForCreateContactsWithStatusOKAsJsonBody(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException {
+        var jsonBody = gson.toJson(responseBody);
+        var jsonBodyParameters = gson.toJson(requestBodyParameters);
+        stubForPostWithStatusOKAndBodyParameters("invoicing/v1/contacts",
+                jsonBodyParameters,
                 jsonBody);
     }
 

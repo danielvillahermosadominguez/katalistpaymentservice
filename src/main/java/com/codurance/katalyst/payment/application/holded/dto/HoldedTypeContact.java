@@ -3,11 +3,11 @@ package com.codurance.katalyst.payment.application.holded.dto;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum HoldedTypeContact {
-    Supplier("supplier"),
-    Debtor ("debtor"),
-    Creditor ("creditor"),
-    Client ("client"),
-    Lead ("lead");
+    SUPPLIER("supplier"),
+    DEBTOR("debtor"),
+    CREDITOR("creditor"),
+    CLIENT("client"),
+    LEAD("lead");
 
     private final String value;
 

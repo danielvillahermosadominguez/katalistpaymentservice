@@ -13,7 +13,6 @@ import com.codurance.katalyst.payment.application.holded.dto.HoldedTypeContact;
 import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
-import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -23,10 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -206,7 +203,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         var contact = new HoldedContact(
                 name,
                 code,
-                HoldedTypeContact.Client,
+                HoldedTypeContact.CLIENT,
                 thisContactIs.equals("Person"),
                 new HoldedEmail(email),
                 phoneNumber,
