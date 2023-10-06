@@ -1,16 +1,17 @@
 package com.codurance.katalyst.payment.application.usecases;
 
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
-import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
-import com.codurance.katalyst.payment.application.paycomet.dto.CreatedUser;
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
-import com.codurance.katalyst.payment.application.ports.HoldedApiClient;
+import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
 import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
@@ -104,7 +105,8 @@ public class SubscriptionUseCase {
 
     private void createContactAndInvoicing(PotentialCustomerData customerData, MoodleCourse course) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond, CustomFieldNotExists {
         var email = new HoldedEmail(customerData.getEmail());
-        var customId = this.holdedApiClient.createCustomId(customerData.getDnicif(), email);
+
+        var customId = HoldedContact.buildCustomId(customerData.getDnicif(), email);
         var contact = this.holdedApiClient.getContactByCustomId(customId);
         if (contact == null) {
             contact = this.createContactInHolded(customerData);
@@ -118,30 +120,33 @@ public class SubscriptionUseCase {
                 description,
                 amount,
                 price.getValue());
-        this.holdedApiClient.sendInvoice(invoice, Arrays.asList(new HoldedEmail(contact.getEmail())));
+        this.holdedApiClient.sendInvoice(invoice, Arrays.asList(contact.getEmail()));
     }
 
     private HoldedContact createContactInHolded(PotentialCustomerData originalData) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond {
-        var data = new PotentialCustomerData();
-        data.setCourseId(originalData.getCourseId());
-        data.setEmail(originalData.getEmail());
-        data.setName(originalData.getName().toUpperCase());
-        data.setSurname(originalData.getSurname().toUpperCase());
-        data.setCompany(originalData.getCompany().toUpperCase());
-        data.setDnicif(originalData.getDnicif().toUpperCase());
-        data.setIsCompany(originalData.getIsCompany());
-        data.setPhoneNumber(originalData.getPhoneNumber());
-        data.setAddress(originalData.getAddress().toUpperCase());
-        data.setPostalCode(originalData.getPostalCode().toUpperCase());
-        data.setCity(originalData.getCity().toUpperCase());
-        data.setRegion(originalData.getRegion().toUpperCase());
-        data.setPaytpvToken(originalData.getPaytpvToken());
-        data.setUsername(originalData.getUsername());
-        return holdedApiClient.createContact(data.getName(),
-                data.getSurname(),
-                new HoldedEmail(data.getEmail()),
-                data.getCompany(),
-                data.getDnicif()
+        var name = originalData.getCompany().toUpperCase();
+        var type = HoldedTypeContact.CLIENT;
+        var isPerson = !originalData.getIsCompany();
+        if(!originalData.getIsCompany()) {
+            name = originalData.getName().toUpperCase() + " " + originalData.getSurname().toUpperCase();
+        }
+        var billingAddress = new HoldedBillAddress(
+                originalData.getAddress().toUpperCase(),
+                originalData.getPostalCode().toUpperCase(),
+                originalData.getCity().toUpperCase(),
+                originalData.getRegion().toUpperCase(),
+                originalData.getCountry().toUpperCase());
+        var contact = new HoldedContact(
+                name,
+                originalData.getDnicif().toUpperCase(),
+                type,
+                isPerson,
+                new HoldedEmail(originalData.getEmail()),
+                originalData.getPhoneNumber().toUpperCase(),
+                billingAddress,
+                "70500000"
         );
+
+        return holdedApiClient.createContact(contact);
     }
 }

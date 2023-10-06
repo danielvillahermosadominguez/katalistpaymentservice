@@ -2,14 +2,15 @@ package com.codurance.katalyst.payment.application.integration;
 
 import com.codurance.katalyst.payment.application.acceptance.doubles.TestDateService;
 import com.codurance.katalyst.payment.application.holded.HoldedApiClientAdapter;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedStatus;
-import com.codurance.katalyst.payment.application.holded.exception.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -33,10 +34,6 @@ public class HoldedAPIClientShould {
     private String holdedApiKey = "RANDOM_API_KEY";
     private HoldedWireMockServer wireMock = null;
     private HoldedApiClientAdapter apiAdapter = new HoldedApiClientAdapter(new RestTemplate());
-
-    class HoldedInvoiceCreate {
-
-    }
 
     @BeforeEach
     void beforeEach() {
@@ -78,7 +75,8 @@ public class HoldedAPIClientShould {
         var responseBody = wireMock.createContactResponseForGetContact(
                 "RANDOM_USERNAME@email.com",
                 "RANDOM_NAME",
-                nifCif);
+                nifCif,
+                "client");
         wireMock.stubForGetContactByCustomIdStatusOK(customId, responseBody);
 
         var contact = apiAdapter.getContactByCustomId(customId);
@@ -102,57 +100,62 @@ public class HoldedAPIClientShould {
 
     @Test
     public void create_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
-        var email = new HoldedEmail("RANDOM_USER@email.com");
-        var nifCif = "46842041C";
-        var customId = nifCif + email.getInUnicodeFormat();
-        var name = "RANDOM_NAME";
-        var surname = "RANDOM_SURNAME";
-        var company = "RANDOM_COMPANY_NAME";
         var contactId = "1";
+        var contact = new HoldedContact(
+                "RANDOM_NAME",
+                "46842041C",
+                HoldedTypeContact.CLIENT,
+                true,
+                new HoldedEmail("RANDOM_USER@email.com"),
+                null,
+                null,
+                ""
+        );
+
         var responseBodyCreate = wireMock.createResponseBodyOkCreate(contactId);
 
         var requestBodyParameters = wireMock.createContactRequestParameters(
-                name + " " + surname + "(" + company + ")",
-                email.getValue(),
+                contact.getName(),
+                contact.getEmail().getValue(),
                 "client",
-                nifCif,
-                customId,
-                "true"
+                contact.getCode(),
+                contact.getCustomId(),
+                true
         );
 
         var responseBodyGet = wireMock.createContactResponseForGetContact(
                 "RANDOM_USER@email.com",
                 "RANDOM_NAME",
-                nifCif);
-        wireMock.stubForGetContactByCustomIdStatusOK(customId, responseBodyGet);
-        wireMock.stubForCreateContactsWithStatusOK(requestBodyParameters, responseBodyCreate);
+                "46842041C",
+                "client");
+        wireMock.stubForGetContactByCustomIdStatusOK("46842041C" + new HoldedEmail("RANDOM_USER@email.com").getInUnicodeFormat(), responseBodyGet);
+        wireMock.stubForCreateContactsWithStatusOKAsJsonBody(requestBodyParameters, responseBodyCreate);
 
-        var contact = apiAdapter.createContact(
-                name,
-                surname,
-                email,
-                company,
-                nifCif
-        );
+        var contactResult = apiAdapter.createContact(contact);
 
-        assertThat(contact).isNotNull();
+        assertThat(contactResult).isNotNull();
+        assertThat(contactResult.getId()).isEqualTo(contactId);
     }
 
     @Test
-    public void throw_an_holded_exception_when_create_contact_not_respond() {
+    public void throw_an_holded_exception_when_create_contact_not_respond() throws NotValidEMailFormat {
+        var contact = new HoldedContact(
+                "RANDOM_NAME",
+                "46842041C",
+                HoldedTypeContact.CLIENT,
+                true,
+                new HoldedEmail("RANDOM_USER@email.com"),
+                null,
+                null,
+                ""
+        );
         var thrown = Assertions.assertThrows(HoldedNotRespond.class, () -> {
-            apiAdapter.createContact(
-                    "RANDOM_NAME",
-                    "RANDOM_SURNAME",
-                    new HoldedEmail("RANDOM_EMAIL@EMAIL.COM"),
-                    "RANDOM_COMPANY_NAME",
-                    "RANDOM_NIF_CIF"
-            );
+            apiAdapter.createContact(contact);
         });
 
         assertThat(thrown).isNotNull();
         assertThat(thrown.getRequestBody()).isEqualTo(
-                "{name=[RANDOM_NAME RANDOM_SURNAME(RANDOM_COMPANY_NAME)], email=[RANDOM_EMAIL@EMAIL.COM], type=[client], code=[RANDOM_NIF_CIF], CustomId=[RANDOM_NIF_CIFRANDOM_EMAIL%40EMAIL.COM], isperson=[true]}"
+                "{\"name\":\"RANDOM_NAME\",\"email\":\"RANDOM_USER@email.com\",\"type\":\"client\",\"code\":\"46842041C\",\"CustomId\":\"46842041CRANDOM_USER%40email.com\",\"isperson\":true}"
         );
         assertThat(thrown.getUrl()).isEqualTo(apiAdapter.generateEndPoint("invoicing/v1/contacts"));
         assertThat(thrown.getUrlVariables()).isEqualTo("");

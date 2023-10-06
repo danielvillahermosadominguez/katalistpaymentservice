@@ -3,7 +3,7 @@ package com.codurance.katalyst.payment.application.ports;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 
 public interface MoodleApiClient {
     boolean existsAnUserinThisCourse(String courseId, String email) throws MoodleNotRespond;

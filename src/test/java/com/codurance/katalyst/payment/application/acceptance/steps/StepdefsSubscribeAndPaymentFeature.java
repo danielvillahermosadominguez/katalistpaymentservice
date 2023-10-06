@@ -5,10 +5,13 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
-import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -16,10 +19,10 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -54,7 +57,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         if (!apiClient.isInitialized()) {
             this.apiClient.setPort(randomServerPort);
         }
-        ResponseEntity<String> response = this.apiClient.checkItsAlive();
+        var response = this.apiClient.checkItsAlive();
 
         if (!response.getBody().equals("OK! Working")) {
             fail();
@@ -64,6 +67,17 @@ public class StepdefsSubscribeAndPaymentFeature {
         holdedApiClient.reset();
         subscriptionResult = NO_ANSWER;
         invoiceOutputCode = NO_ANSWER;
+    }
+
+    @Given("Holded has no contacts")
+    public void holded_has_no_contacts() {
+        var contacts = holdedApiClient.getAllContacts();
+        assertThat(contacts.size()).isEqualTo(0);
+    }
+    @Given("Moodle has not students")
+    public void moodle_has_not_students() {
+        var students = moodleApiClient.getAllUsers();
+        assertThat(students.size()).isEqualTo(0);
     }
 
     @Given("An customer who has chosen the following course the course {string} with a price of {string}")
@@ -80,8 +94,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         var rows = userData.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
         this.userData = rows.get(0);
-        subscriptionOutputCode = apiClient.freeSubscription(FIXTURE_COURSE.getId(), this.userData);
-        assertThat(subscriptionOutputCode).isGreaterThanOrEqualTo(0);
     }
 
     @When("the customer request the subscription to the course")
@@ -90,24 +102,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(this.userData).isNotNull();
     }
 
-    private PotentialCustomerData convertToCustomData() {
-        var customData = new PotentialCustomerData();
-        customData.setCourseId(FIXTURE_COURSE.getId() + "");
-        customData.setEmail(this.userData.get("EMAIL"));
-        customData.setName(this.userData.get("FIRST NAME"));
-        customData.setSurname(this.userData.get("SURNAME"));
-        customData.setCompany(this.userData.get("COMPANY NAME"));
-        customData.setDnicif(this.userData.get("NIF/CIF"));
-        customData.setIsCompany(this.userData.get("IS COMPANY").equals("YES"));
-        customData.setPhoneNumber(this.userData.get("PHONE NUMBER"));
-        customData.setAddress(this.userData.get("ADDRESS"));
-        customData.setPostalCode(this.userData.get("POSTAL CODE"));
-        customData.setCity(this.userData.get("CITY"));
-        customData.setRegion(this.userData.get("REGION"));
-        customData.setUsername(this.creditDebitCardData.get("NAME"));
-        customData.setPaytpvToken(this.temporalPayCometToken);
-        return customData;
-    }
 
     @Then("the customer is informed about the success of the subscription")
     public void the_customer_is_informed_about_the_success_of_the_subscription() {
@@ -119,7 +113,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         var invoiceDataList = dataTable.asMaps(String.class, String.class);
         assertThat(invoiceDataList).isNotEqualTo(1);
         var invoiceDataRow = invoiceDataList.get(0);
-        List<HoldedCreationDataInvoice> sentInvoices = holdedApiClient.getSentInvoices(emails);
+        var sentInvoices = holdedApiClient.getSentInvoices(emails);
         assertThat(sentInvoices.size()).isEqualTo(1);
         var sentInvoice = sentInvoices.get(0);
         assertThat(sentInvoice.getItems().size()).isEqualTo(1);
@@ -136,14 +130,98 @@ public class StepdefsSubscribeAndPaymentFeature {
     @When("the customer pays the subscription with credit\\/debit card with the following result")
     public void the_customer_pays_the_subscription_with_credit_debit_card_with_the_following_result(DataTable dataTable) {
         var paymentData = dataTable.asMaps(String.class, String.class);
-        assertThat(paymentData).isNotEqualTo(1);
-        this.creditDebitCardData = paymentData.get(0);
-        this.temporalPayCometToken = this.payCometApiClient.generateTemporalToken();
+        assertThat(paymentData.size()).isEqualTo(1);
+        creditDebitCardData = paymentData.get(0);
+        temporalPayCometToken = this.payCometApiClient.generateTemporalToken();
         var customData = convertToCustomData();
         subscriptionOutputCode = this.apiClient.subscription(customData);
     }
 
     @Then("the customer will receive access to the platform in the email {string} with the user {string}")
     public void the_customer_will_receive_access_to_the_platform_in_the_email_with_the_user(String string, String string2) {
+    }
+
+    @Then("Holded has the following contacts")
+    public void holded_has_the_following_contacts(DataTable dataTable) {
+        var paymentData = dataTable.asMaps(String.class, String.class);
+        var expectedContactList = createContactList(paymentData);
+        var currentContactList = this.holdedApiClient.getAllContacts();
+        assertThat(currentContactList.size()).isEqualTo(expectedContactList.size());
+        for (var contact : expectedContactList) {
+            assertThat(existInTheList(contact, currentContactList)).isTrue();
+        }
+    }
+
+    private boolean existInTheList(HoldedContact contact, List<HoldedContact> currentContactList) {
+        for (var currentContact : currentContactList) {
+            if (contact.haveSameMainData(currentContact)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private PotentialCustomerData convertToCustomData() {
+        var customData = new PotentialCustomerData();
+        customData.setCourseId(FIXTURE_COURSE.getId() + "");
+        customData.setEmail(this.userData.get("EMAIL"));
+        customData.setName(this.userData.get("FIRST NAME"));
+        customData.setSurname(this.userData.get("SURNAME"));
+        customData.setCompany(this.userData.get("COMPANY NAME"));
+        customData.setDnicif(this.userData.get("NIF/CIF"));
+        customData.setIsCompany(this.userData.get("IS COMPANY").equals("YES"));
+        customData.setPhoneNumber(this.userData.get("PHONE NUMBER"));
+        customData.setAddress(this.userData.get("ADDRESS"));
+        customData.setPostalCode(this.userData.get("POSTAL CODE"));
+        customData.setCity(this.userData.get("CITY"));
+        customData.setRegion(this.userData.get("REGION"));
+        customData.setCountry(this.userData.get("COUNTRY"));
+        customData.setUsername(this.creditDebitCardData.get("NAME"));
+        customData.setPaytpvToken(this.temporalPayCometToken);
+        return customData;
+    }
+
+    private HoldedContact convertToHoldedContact(Map<String,String> holdedContactData) throws NotValidEMailFormat {
+        var customId = holdedContactData.get("CUSTOMER-ID");
+        var name = holdedContactData.get("NAME");
+        var code = holdedContactData.get("CONTACT NIF");
+        var thisContactIs = holdedContactData.get("THIS CONTACT IS");
+        var email = holdedContactData.get("EMAIL");
+        var address = holdedContactData.get("ADDRESS");
+        var phoneNumber = holdedContactData.get("PHONE NUMBER");
+        var postalCode = holdedContactData.get("POSTAL CODE");
+        var province = holdedContactData.get("PROVINCE");
+        var city = holdedContactData.get("CITY");
+        var country = holdedContactData.get("COUNTRY");
+        var purchaseAccount = holdedContactData.get("PURCHASE ACCOUNT");
+        var billAddress = new HoldedBillAddress(address, postalCode, city, province, country);
+
+        var contact = new HoldedContact(
+                name,
+                code,
+                HoldedTypeContact.CLIENT,
+                thisContactIs.equals("Person"),
+                new HoldedEmail(email),
+                phoneNumber,
+                billAddress,
+                purchaseAccount
+        );
+        contact.setCustomId(customId);
+        return contact;
+    }
+
+    private List<HoldedContact> createContactList(List<Map<String, String>> paymentData) {
+        var expectedContactList = paymentData
+                .stream()
+                .map(data -> {
+                    try {
+                        return convertToHoldedContact(data);
+                    } catch (NotValidEMailFormat e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
+        return expectedContactList;
     }
 }

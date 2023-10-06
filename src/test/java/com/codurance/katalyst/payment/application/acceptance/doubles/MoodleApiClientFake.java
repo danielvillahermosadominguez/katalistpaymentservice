@@ -1,11 +1,11 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
-import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCustomField;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +41,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
 
         public MoodleUserDTOFake(String name, String surname, String email) throws NotValidEMailFormat {
             super();
-            HoldedEmail mail = new HoldedEmail(email);
+            var mail = new HoldedEmail(email);
             this.id = ++idCounter + "";
             this.username = mail.getUserName();
             this.email = email;
@@ -61,7 +61,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     public MoodleCourse addCourse(String fixtureDisplayName, double fixturePrice) {
-        MoodleCourse course = new MoodleCourseDTOFake(fixtureDisplayName, fixturePrice);
+        var course = new MoodleCourseDTOFake(fixtureDisplayName, fixturePrice);
         this.courses.put(course.getId(),course);
         this.studentsPerCourse.put(course.getId(), new ArrayList<>());
         return course;
@@ -72,23 +72,27 @@ public class MoodleApiClientFake implements MoodleApiClient {
         if(!studentsPerCourse.containsKey(courseId)) {
             return false;
         }
-        List<MoodleUser> userList = studentsPerCourse.get(courseId);
+        var userList = studentsPerCourse.get(courseId);
         return !userList.stream().filter(enroledUser-> enroledUser.getId().equals(enroledUser.getEmail())).toList().isEmpty();
 
     }
 
     @Override
     public MoodleUser getUserByMail(String email) {
-        List<MoodleUser> filteredUserList = users.stream().filter(user -> user.getEmail().equals(email)).toList();
+        var filteredUserList = users.stream().filter(user -> user.getEmail().equals(email)).toList();
         if (filteredUserList.isEmpty()) {
             return null;
         }
         return filteredUserList.get(0);
     }
 
+    public List<MoodleUser> getAllUsers() {
+        return users;
+    }
+
     @Override
     public MoodleUser createUser(String name, String surname, String email) throws NotValidEMailFormat {
-        MoodleUserDTOFake user = new MoodleUserDTOFake(name, surname, email);
+        var user = new MoodleUserDTOFake(name, surname, email);
         users.add(user);
         return user;
     }
@@ -98,7 +102,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
         if(!studentsPerCourse.containsKey(course.getId())) {
             return;
         }
-        List<MoodleUser> userList = studentsPerCourse.get(course.getId());
+        var userList = studentsPerCourse.get(course.getId());
         if(userList.stream().filter(enroledUser-> enroledUser.getId().equals(user.getId())).toList().isEmpty()) {
             userList.add(user);
         }

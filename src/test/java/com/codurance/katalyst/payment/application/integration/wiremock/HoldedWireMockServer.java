@@ -1,7 +1,7 @@
 package com.codurance.katalyst.payment.application.integration.wiremock;
 
-import com.codurance.katalyst.payment.application.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,7 +30,7 @@ public class HoldedWireMockServer extends WireMockServerExtension {
     }
 
 
-    public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif) throws UnsupportedEncodingException, NotValidEMailFormat {
+    public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif, String type) throws UnsupportedEncodingException, NotValidEMailFormat {
         Map<String, Object> bodyMap = new LinkedHashMap<>();
         var mail = new HoldedEmail(email);
         var customId = URLEncoder.encode(nifCif + mail.getInUnicodeFormat(), "UTF-8");
@@ -39,12 +39,12 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         bodyMap.put("email", email);
         bodyMap.put("name", name);
         bodyMap.put("code", nifCif);
-        bodyMap.put("type", "");
+        bodyMap.put("type", type);
         return bodyMap;
     }
 
-    public Map<String, String> createContactRequestParameters(String name, String email, String type, String nifCif, String customId, String isPerson) {
-        Map<String, String> requestBodyParameters = new LinkedHashMap();
+    public Map<String, Object> createContactRequestParameters(String name, String email, String type, String nifCif, String customId, boolean isPerson) {
+        Map<String, Object> requestBodyParameters = new LinkedHashMap();
         requestBodyParameters.put("name", name);
         requestBodyParameters.put("email", email);
         requestBodyParameters.put("type", type);
@@ -85,10 +85,18 @@ public class HoldedWireMockServer extends WireMockServerExtension {
                 jsonResponseBody);
     }
 
-    public void stubForCreateContactsWithStatusOK(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException {
+    public void stubForCreateContactsWithStatusOKAsBodyParameters(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException {
         var jsonBody = gson.toJson(responseBody);
         stubForPostWithStatusOKAndBodyParameters("invoicing/v1/contacts",
                 joinParameters(requestBodyParameters),
+                jsonBody);
+    }
+
+    public void stubForCreateContactsWithStatusOKAsJsonBody(Map<String, Object> requestBodyParameters, Map<String, Object> responseBody)  {
+        var jsonBody = gson.toJson(responseBody);
+        var jsonBodyParameters = gson.toJson(requestBodyParameters);
+        stubForPostWithStatusOKAndBodyParameters("invoicing/v1/contacts",
+                jsonBodyParameters,
                 jsonBody);
     }
 

@@ -5,7 +5,7 @@ import com.codurance.katalyst.payment.application.moodle.MoodleAPIClientAdapter;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
-import com.codurance.katalyst.payment.application.holded.dto.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

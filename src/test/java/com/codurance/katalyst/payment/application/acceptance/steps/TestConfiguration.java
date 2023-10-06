@@ -1,11 +1,11 @@
 package com.codurance.katalyst.payment.application.acceptance.steps;
 
-import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
-import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
-import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
+import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.TestDateService;
+import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
+import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

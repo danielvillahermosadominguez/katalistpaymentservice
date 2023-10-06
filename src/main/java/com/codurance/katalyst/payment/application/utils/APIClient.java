@@ -1,5 +1,9 @@
 package com.codurance.katalyst.payment.application.utils;
 
+import com.codurance.katalyst.payment.application.paycomet.dto.PaymentBody;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -40,6 +44,14 @@ public class APIClient {
         return request;
     }
 
+    protected <T> HttpEntity<T> createRequestEntity(T requestBody,  String mediaType) {
+        var headers = new HttpHeaders();
+        getHeaderParameter(headers);
+        headers.setContentType(MediaType.valueOf(mediaType));
+        var request = new HttpEntity<T>(requestBody, headers);
+        return request;
+    }
+
     protected HttpEntity<String> createRequestString(String requestBody, String mediaType) {
         var headers = new HttpHeaders();
         getHeaderParameter(headers);
@@ -49,8 +61,6 @@ public class APIClient {
                 : new HttpEntity<>(requestBody, headers);
         return request;
     }
-
-
     protected void getHeaderParameter(HttpHeaders headers) {
 
     }
@@ -62,5 +72,14 @@ public class APIClient {
         }
 
         return resultList.get(0);
+    }
+
+    protected  <T> String objectToJSON(T object) {
+        var objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

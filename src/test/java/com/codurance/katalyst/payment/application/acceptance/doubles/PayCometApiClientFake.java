@@ -11,7 +11,7 @@ public class PayCometApiClientFake implements PayCometApiClient {
 
     @Override
     public CreatedUser createUser(String jetToken) {
-        CreatedUser result = new CreatedUser();
+        var result = new CreatedUser();
         result.setIdUser(22);
         result.setTokenUser("RANDOM_TOKEN_USER");
         return result;
