@@ -1,28 +1,49 @@
 package com.codurance.katalyst.payment.application.holded.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class HoldedContact {
-    private String purchaseAccount;
-    private HoldedBillAddress billAddress;
-    private String phone;
+    @JsonProperty("isperson")
+    private final boolean isPerson;
+
     protected String id;
+
     protected String customId;
+
     protected String name;
-    protected HoldedEmail email;
+
     protected String code;
+    private String phone;
+
+    @JsonFormat(shape = JsonFormat.Shape.OBJECT)
+    protected HoldedEmail email;
+
+    @JsonFormat(shape = JsonFormat.Shape.OBJECT)
     protected HoldedTypeContact type;
+
+    @JsonFormat(shape = JsonFormat.Shape.OBJECT)
+    private HoldedBillAddress billAddress;
+
+    @JsonIgnore
+    private String purchaseAccount;
+
 
     public HoldedContact(String name,
                          String code,
                          HoldedTypeContact type,
+                         boolean isPerson,
                          HoldedEmail email,
                          String phone,
                          HoldedBillAddress billAddress,
                          String purchaseAccount) {
 
-        this.customId = code + email.getValue();
+        this.customId = code + email.getInUnicodeFormat();
         this.name = name;
         this.code = code;
         this.type = type;
+        this.isPerson = isPerson;
         this.email = email;
         this.phone = phone;
         this.billAddress = billAddress;
@@ -37,16 +58,16 @@ public class HoldedContact {
         this.id = id;
     }
 
+    public String getCustomId() {
+        return customId;
+    }
+
     public String getName() {
         return name;
     }
 
     public HoldedEmail getEmail() {
         return email;
-    }
-
-    public String getCustomId() {
-        return customId;
     }
 
     public String getCode() {
@@ -65,11 +86,16 @@ public class HoldedContact {
         return billAddress;
     }
 
+    @JsonIgnore
     public String getPurchaseAccount() {
         return purchaseAccount;
     }
 
     public void setCustomId(String customId) {
         this. customId = customId;
+    }
+
+    public boolean isPerson() {
+        return isPerson;
     }
 }

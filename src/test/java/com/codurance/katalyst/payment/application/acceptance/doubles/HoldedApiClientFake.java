@@ -24,6 +24,7 @@ public class HoldedApiClientFake implements HoldedApiClient {
             super(contact.getName(),
                     contact.getCode(),
                     contact.getType(),
+                    contact.isPerson(),
                     contact.getEmail(),
                     contact.getPhone(),
                     contact.getBillAddress(),

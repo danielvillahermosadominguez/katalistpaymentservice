@@ -1,5 +1,8 @@
 package com.codurance.katalyst.payment.application.holded.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
@@ -9,12 +12,16 @@ import java.util.stream.Collectors;
 public class HoldedEmail {
     public static final String AT = "@";
     public static final String SPECIAL_CHARACTERS = "[!#$%&'*+-/=?]";
+
+    @JsonValue
     private final String value;
+
+    @JsonIgnore
     private final String userName;
 
     public HoldedEmail(String email) throws NotValidEMailFormat {
         if (email == null) {
-            throwNotValidEmailException(email);
+            throw createNotValidEmailException(email);
         }
 
         validateFormat(email);
@@ -36,8 +43,8 @@ public class HoldedEmail {
         return result;
     }
 
-    private void throwNotValidEmailException(String email) throws NotValidEMailFormat {
-        throw new NotValidEMailFormat("'" + email + "'" + " is not a correct format. You need to include an '@'");
+    private NotValidEMailFormat createNotValidEmailException(String email)  {
+        return new NotValidEMailFormat("'" + email + "'" + " is not a correct format. You need to include an '@'");
     }
 
     private void validateFormat(String email) throws NotValidEMailFormat {
@@ -45,7 +52,7 @@ public class HoldedEmail {
         var pattern = Pattern.compile(regexPattern);
         var matcher = pattern.matcher(email);
         if (!matcher.matches()) {
-            throwNotValidEmailException(email);
+            throw createNotValidEmailException(email);
         }
     }
 
@@ -53,8 +60,13 @@ public class HoldedEmail {
         return userName;
     }
 
-    public String getInUnicodeFormat() throws UnsupportedEncodingException {
-        return URLEncoder.encode(value, "UTF-8");
+    public String getInUnicodeFormat()  {
+        try {
+            return URLEncoder.encode(value, "UTF-8");
+        } catch (UnsupportedEncodingException exception){
+            //it should happen never. We use a Runtime Exception because of this.
+            throw new RuntimeException(createNotValidEmailException(value));
+        }
     }
 
     public String getValue() {

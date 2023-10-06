@@ -79,7 +79,8 @@ public class HoldedAPIClientShould {
         var responseBody = wireMock.createContactResponseForGetContact(
                 "RANDOM_USERNAME@email.com",
                 "RANDOM_NAME",
-                nifCif);
+                nifCif,
+                "Person");
         wireMock.stubForGetContactByCustomIdStatusOK(customId, responseBody);
 
         var contact = apiAdapter.getContactByCustomId(customId);
@@ -107,7 +108,8 @@ public class HoldedAPIClientShould {
         var contact = new HoldedContact(
                 "RANDOM_NAME",
                 "46842041C",
-                HoldedTypeContact.Person,
+                HoldedTypeContact.Client,
+                true,
                 new HoldedEmail("RANDOM_USER@email.com"),
                 "PHONE",
                 null,
@@ -128,7 +130,8 @@ public class HoldedAPIClientShould {
         var responseBodyGet = wireMock.createContactResponseForGetContact(
                 "RANDOM_USER@email.com",
                 "RANDOM_NAME",
-                "46842041C");
+                "46842041C",
+                "Person");
         wireMock.stubForGetContactByCustomIdStatusOK("46842041C" + new HoldedEmail("RANDOM_USER@email.com").getInUnicodeFormat(), responseBodyGet);
         wireMock.stubForCreateContactsWithStatusOK(requestBodyParameters, responseBodyCreate);
 
@@ -143,7 +146,8 @@ public class HoldedAPIClientShould {
         var contact = new HoldedContact(
                 "RANDOM_NAME",
                 "46842041C",
-                HoldedTypeContact.Person,
+                HoldedTypeContact.Client,
+                true,
                 new HoldedEmail("RANDOM_USER@email.com"),
                 "PHONE",
                 null,

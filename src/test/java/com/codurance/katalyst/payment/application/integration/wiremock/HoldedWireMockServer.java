@@ -30,7 +30,7 @@ public class HoldedWireMockServer extends WireMockServerExtension {
     }
 
 
-    public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif) throws UnsupportedEncodingException, NotValidEMailFormat {
+    public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif, String type) throws UnsupportedEncodingException, NotValidEMailFormat {
         Map<String, Object> bodyMap = new LinkedHashMap<>();
         var mail = new HoldedEmail(email);
         var customId = URLEncoder.encode(nifCif + mail.getInUnicodeFormat(), "UTF-8");
@@ -39,7 +39,7 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         bodyMap.put("email", email);
         bodyMap.put("name", name);
         bodyMap.put("code", nifCif);
-        bodyMap.put("type", "");
+        bodyMap.put("type", type);
         return bodyMap;
     }
 

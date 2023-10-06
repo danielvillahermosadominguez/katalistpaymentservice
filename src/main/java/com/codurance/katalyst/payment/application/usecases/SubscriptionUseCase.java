@@ -124,10 +124,10 @@ public class SubscriptionUseCase {
 
     private HoldedContact createContactInHolded(PotentialCustomerData originalData) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond {
         var name = originalData.getCompany().toUpperCase();
-        var type = HoldedTypeContact.Company;
+        var type = HoldedTypeContact.Client;
+        var isPerson = !originalData.getIsCompany();
         if(!originalData.getIsCompany()) {
             name = originalData.getName().toUpperCase() + " " + originalData.getSurname().toUpperCase();
-            type = HoldedTypeContact.Person;
         }
         var billingAddress = new HoldedBillAddress(
                 originalData.getAddress().toUpperCase(),
@@ -139,6 +139,7 @@ public class SubscriptionUseCase {
                 name,
                 originalData.getDnicif().toUpperCase(),
                 type,
+                isPerson,
                 new HoldedEmail(originalData.getEmail()),
                 originalData.getPhoneNumber().toUpperCase(),
                 billingAddress,

@@ -206,7 +206,8 @@ public class StepdefsSubscribeAndPaymentFeature {
         var contact = new HoldedContact(
                 name,
                 code,
-                HoldedTypeContact.valueOf(thisContactIs),
+                HoldedTypeContact.Client,
+                thisContactIs.equals("Person"),
                 new HoldedEmail(email),
                 phoneNumber,
                 billAddress,
