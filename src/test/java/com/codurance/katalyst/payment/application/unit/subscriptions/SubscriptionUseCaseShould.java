@@ -282,7 +282,9 @@ public class SubscriptionUseCaseShould {
         verify(holdedApiClient).createContact(contactArg.capture());
         contact = contactArg.getValue();
         assertThat(contact.getName()).isEqualTo(companyName.toUpperCase());
-        assertThat(contact.getCode()).isEqualTo(nifCif.toUpperCase());
+        assertThat(contact.getCode()).isNull();
+        ;
+        assertThat(contact.getVatNumber()).isEqualTo(nifCif.toUpperCase());
         assertThat(contact.getBillAddress()).isNotNull();
         var bilAddress = contact.getBillAddress();
         assertThat(bilAddress.getAddress()).isEqualTo(address.toUpperCase());
@@ -544,7 +546,7 @@ public class SubscriptionUseCaseShould {
         var contact = new HoldedContact(
                 "RANDOM_NAME",
                 nifCif,
-                HoldedTypeContact.CLIENT,
+                "46842041C", HoldedTypeContact.CLIENT,
                 true,
                 email,
                 "RANDOM_PHONE",

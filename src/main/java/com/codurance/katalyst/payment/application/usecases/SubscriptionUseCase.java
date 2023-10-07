@@ -1,17 +1,17 @@
 package com.codurance.katalyst.payment.application.usecases;
 
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
 import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
@@ -127,7 +127,11 @@ public class SubscriptionUseCase {
         var name = originalData.getCompany().toUpperCase();
         var type = HoldedTypeContact.CLIENT;
         var isPerson = !originalData.getIsCompany();
-        if(!originalData.getIsCompany()) {
+        String code = null;
+        var vatNumber = originalData.getDnicif().toUpperCase();
+        if (!originalData.getIsCompany()) {
+            code = vatNumber;
+            vatNumber = null;
             name = originalData.getName().toUpperCase() + " " + originalData.getSurname().toUpperCase();
         }
         var billingAddress = new HoldedBillAddress(
@@ -138,7 +142,8 @@ public class SubscriptionUseCase {
                 originalData.getCountry().toUpperCase());
         var contact = new HoldedContact(
                 name,
-                originalData.getDnicif().toUpperCase(),
+                code,
+                vatNumber,
                 type,
                 isPerson,
                 new HoldedEmail(originalData.getEmail()),
