@@ -2,7 +2,9 @@ package com.codurance.katalyst.payment.application.acceptance.doubles;
 
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCustomField;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
@@ -30,7 +32,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
             super();
             this.displayname = displayName;
             this.customfields = new ArrayList<>();
-            MoodleCustomField priceField = new MoodleCustomFieldFake("price", "price", "text","", price+"");
+            var priceField = new MoodleCustomFieldFake("price", "price", "text", "", price + "");
             customfields.add(priceField);
             this.id = ++idCounter;
         }
@@ -60,20 +62,26 @@ public class MoodleApiClientFake implements MoodleApiClient {
         studentsPerCourse.clear();
     }
 
-    public MoodleCourse addCourse(String fixtureDisplayName, double fixturePrice) {
-        var course = new MoodleCourseDTOFake(fixtureDisplayName, fixturePrice);
-        this.courses.put(course.getId(),course);
+    public MoodleCourse addCourse(String fixtureDisplayName, MoodlePrice price) {
+        var course = new MoodleCourseDTOFake(fixtureDisplayName, price.getValue());
+        this.courses.put(course.getId(), course);
         this.studentsPerCourse.put(course.getId(), new ArrayList<>());
+        return course;
+    }
+
+    public MoodleCourse updatePrice(int courseId, MoodlePrice price) throws CustomFieldNotExists {
+        var course = this.courses.get(courseId);
+        course.setPrice(price);
         return course;
     }
 
     @Override
     public boolean existsAnUserinThisCourse(String courseId, String email) {
-        if(!studentsPerCourse.containsKey(courseId)) {
+        if (!studentsPerCourse.containsKey(courseId)) {
             return false;
         }
         var userList = studentsPerCourse.get(courseId);
-        return !userList.stream().filter(enroledUser-> enroledUser.getId().equals(enroledUser.getEmail())).toList().isEmpty();
+        return !userList.stream().filter(enroledUser -> enroledUser.getId().equals(enroledUser.getEmail())).toList().isEmpty();
 
     }
 
@@ -115,5 +123,14 @@ public class MoodleApiClientFake implements MoodleApiClient {
             return null;
         }
         return courses.get(courseIdInteger);
+    }
+
+    public MoodleCourse getCourseByName(String courseName) {
+        for (var course : courses.values()) {
+            if (course.getDisplayname().equals(courseName)) {
+                return course;
+            }
+        }
+        return null;
     }
 }

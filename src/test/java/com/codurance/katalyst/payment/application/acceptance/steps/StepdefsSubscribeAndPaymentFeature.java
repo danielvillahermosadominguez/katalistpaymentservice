@@ -7,6 +7,8 @@ import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
@@ -74,27 +76,89 @@ public class StepdefsSubscribeAndPaymentFeature {
         var contacts = holdedApiClient.getAllContacts();
         assertThat(contacts.size()).isEqualTo(0);
     }
+
+    @Given("Holded which has these previous contacts")
+    public void holded_which_has_these_previous_contacts(DataTable dtPreviousContacts) {
+        var contactList = dtPreviousContacts.asMaps(String.class, String.class);
+        var previousContactList = createContactList(contactList);
+        for (var contact : previousContactList) {
+            holdedApiClient.createContact(contact);
+        }
+        var currentContactList = holdedApiClient.getAllContacts();
+        assertThat(contactList.size()).isEqualTo(currentContactList.size());
+    }
+
     @Given("Moodle has not students")
     public void moodle_has_not_students() {
         var students = moodleApiClient.getAllUsers();
         assertThat(students.size()).isEqualTo(0);
     }
 
+    @Given("Moodle which has these previous users")
+    public void moodle_which_has_these_previous_users(DataTable dataTable) {
+        var userList = dataTable.asMaps(String.class, String.class);
+        var previousUserList = createUserList(userList);
+        for (var user : previousUserList) {
+            moodleApiClient.createUser(
+                    user.getName(),
+                    user.getUserName(),
+                    user.getEmail()
+            );
+        }
+        var currentUsersList = moodleApiClient.getAllUsers();
+        assertThat(userList.size()).isEqualTo(currentUsersList.size());
+    }
+
+    private List<MoodleUser> createUserList(List<Map<String, String>> userList) {
+        return userList
+                .stream()
+                .map(data -> convertToMoodleUser(data))
+                .collect(Collectors.toList());
+    }
+
+    private MoodleUser convertToMoodleUser(Map<String, String> data) {
+        var name = data.get("NAME");
+        var userName = data.get("USERNAME");
+        var email = data.get("EMAIL");
+        return new MoodleUser(name, userName, email);
+    }
+
+    @Given("a previous course called {string} exists which has the following students")
+    public void a_previous_course_exist_which_have_the_following_students(String courseName, DataTable dataTable) {
+        var userList = dataTable.asMaps(String.class, String.class);
+        var enrolledStudents = createUserList(userList);
+        var course = moodleApiClient.addCourse(
+                courseName,
+                new MoodlePrice("0")
+        );
+        assertThat(course).isNotNull();
+        assertThat(course.getDisplayname()).isEqualTo(courseName);
+        for (var student : enrolledStudents) {
+            moodleApiClient.enrolToTheCourse(course, student);
+        }
+    }
+
     @Given("An customer who has chosen the following course the course {string} with a price of {string}")
-    public void an_customer_who_has_chosen_the_following_course_the_course_with_a_price_of(String courseName, String priceText) {
+    public void an_customer_who_has_chosen_the_following_course_the_course_with_a_price_of(String courseName, String priceText) throws CustomFieldNotExists {
         var price = new MoodlePrice(priceText);
         assertThat(price).isNotEqualTo(0);
-        FIXTURE_COURSE = moodleApiClient.addCourse(courseName, price.getValue());
+        var course = moodleApiClient.getCourseByName(courseName);
+        course = (course == null)
+                ? moodleApiClient.addCourse(courseName, price)
+                : moodleApiClient.updatePrice(course.getId(), price);
+
+        FIXTURE_COURSE = course;
         assertThat(FIXTURE_COURSE).isNotNull();
     }
 
     @Given("the customer has filled the following data")
-    public void the_customer_has_filled_the_following_data(DataTable userData) {
+    public void the_customer_has_filled_the_following_data(DataTable dtUserData) {
         assertThat(FIXTURE_COURSE).isNotNull();
-        var rows = userData.asMaps(String.class, String.class);
+        var rows = dtUserData.asMaps(String.class, String.class);
         assertThat(rows.size()).isEqualTo(1);
-        this.userData = rows.get(0);
+        userData = rows.get(0);
     }
+
 
     @When("the customer request the subscription to the course")
     public void the_customer_request_the_subscription_to_the_course() {
@@ -142,10 +206,10 @@ public class StepdefsSubscribeAndPaymentFeature {
     }
 
     @Then("Holded has the following contacts")
-    public void holded_has_the_following_contacts(DataTable dataTable) {
-        var paymentData = dataTable.asMaps(String.class, String.class);
-        var expectedContactList = createContactList(paymentData);
-        var currentContactList = this.holdedApiClient.getAllContacts();
+    public void holded_has_the_following_contacts(DataTable dtContacts) {
+        var contactList = dtContacts.asMaps(String.class, String.class);
+        var expectedContactList = createContactList(contactList);
+        var currentContactList = holdedApiClient.getAllContacts();
         assertThat(currentContactList.size()).isEqualTo(expectedContactList.size());
         for (var contact : expectedContactList) {
             assertThat(existInTheList(contact, currentContactList)).isTrue();
@@ -160,7 +224,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         }
         return false;
     }
-
 
     private PotentialCustomerData convertToCustomData() {
         var customData = new PotentialCustomerData();
@@ -186,6 +249,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         var customId = holdedContactData.get("CUSTOMER-ID");
         var name = holdedContactData.get("NAME");
         var code = holdedContactData.get("CONTACT NIF");
+        var vatNumber = holdedContactData.get("VAT NUMBER");
         var thisContactIs = holdedContactData.get("THIS CONTACT IS");
         var email = holdedContactData.get("EMAIL");
         var address = holdedContactData.get("ADDRESS");
@@ -196,12 +260,19 @@ public class StepdefsSubscribeAndPaymentFeature {
         var country = holdedContactData.get("COUNTRY");
         var purchaseAccount = holdedContactData.get("PURCHASE ACCOUNT");
         var billAddress = new HoldedBillAddress(address, postalCode, city, province, country);
+
+        var isPerson = thisContactIs.equals("Person");
+        if (isPerson) {
+            vatNumber = null;
+        } else {
+            code = null;
+        }
         var contact = new HoldedContact(
                 name,
                 code,
-                null,
+                vatNumber,
                 HoldedTypeContact.CLIENT,
-                thisContactIs.equals("Person"),
+                isPerson,
                 new HoldedEmail(email),
                 phoneNumber,
                 billAddress,
