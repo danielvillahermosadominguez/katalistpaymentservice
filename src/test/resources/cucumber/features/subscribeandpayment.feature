@@ -16,8 +16,8 @@ Feature: As an user interested in Katalyst courses
       | John Doe | 4273682057894021 | 05    | 24   | 123 | OK     |
     Then the customer is informed about the success of the subscription
     Then Holded has the following contacts
-      | CUSTOMER-ID                 | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL            | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT |
-      | 46842041Djohn%40example.com | JOHN DOE | 46842041D   | Person          | john@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         |
+      | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL            | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
+      | JOHN DOE | 46842041D   | Person          | john@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | a9454f69cff66d9dd54b57369b9296096b28691e9878fb59da6992b1e3edafe8 |
     And the customer will receive an invoice to the recipients "john@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
       | TDD in depth | 99.9  | 1     | 99.9     | 99.9  |
@@ -26,9 +26,9 @@ Feature: As an user interested in Katalyst courses
   Scenario: The customer, which is not a company, subscribes to the course. He/She has been enrolled to other courses
   in the past but not in this course and he/she include in the subscription some different data in the address
     Given Holded which has these previous contacts
-      | CUSTOMER-ID                     | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT |
-      | 46842041Djohn.doe%40example.com | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         |
-      | 46842041Xjane.doe%40example.com | JANE DOE | 46842041X   | Person          | jane.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         |
+      | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
+      | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |
+      | JANE DOE | 46842041X   | Person          | jane.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d0b2e6cfdd64aed23e91362089620464ff874e5da81ca233cf12b20ac22a8088 |
     And Moodle which has these previous users
       | NAME     | USERNAME | EMAIL                |
       | John Doe | john.doe | john.doe@example.com |
@@ -46,9 +46,9 @@ Feature: As an user interested in Katalyst courses
       | John Doe | 4273682057894021 | 05    | 24   | 123 | OK     |
     Then the customer is informed about the success of the subscription
     Then Holded has the following contacts
-      | CUSTOMER-ID                     | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT |
-      | 46842041Djohn.doe%40example.com | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         |
-      | 46842041Xjane.doe%40example.com | JANE DOE | 46842041X   | Person          | jane.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         |
+      | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
+      | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |
+      | JANE DOE | 46842041X   | Person          | jane.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d0b2e6cfdd64aed23e91362089620464ff874e5da81ca233cf12b20ac22a8088 |
     And the customer will receive an invoice to the recipients "john.doe@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
       | TDD in depth | 99.9  | 1     | 99.9     | 99.9  |
@@ -68,8 +68,8 @@ Feature: As an user interested in Katalyst courses
       | Company bussiness S.A | 4273682057894021 | 05    | 24   | 123 | OK     |
     Then the customer is informed about the success of the subscription
     Then Holded has the following contacts
-      | CUSTOMER-ID                             | NAME                 | CONTACT NIF | VAT NUMBER | THIS CONTACT IS | EMAIL                        | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT |
-      | 46842041Dcompany.business%40example.com | COMPANY BUSINESS S.A | N/A         | 46842041D  | Company         | company.business@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         |
+      | NAME                 | CONTACT NIF | VAT NUMBER | THIS CONTACT IS | EMAIL                        | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
+      | COMPANY BUSINESS S.A | N/A         | 46842041D  | Company         | company.business@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | b4ab6e9f5fb366130cc8cd84d0845308cce9e0a5486424f3a56c0fff115e927e |
     And the customer will receive an invoice to the recipients "company.business@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
       | TDD in depth | 99.9  | 1     | 99.9     | 99.9  |

@@ -5,6 +5,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 public class HoldedContact {
     @JsonProperty("isperson")
     private boolean isPerson;
@@ -64,7 +68,26 @@ public class HoldedContact {
     }
 
     public static String buildCustomId(String codeOrVat, HoldedEmail email) {
-        return codeOrVat + email.getInUnicodeFormat();
+        try {
+            var messageDigest = MessageDigest.getInstance("SHA-256");
+            var input = codeOrVat + email.getValue();
+            var hash = messageDigest.digest(input.getBytes(StandardCharsets.UTF_8));
+            return bytesToHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static String bytesToHex(byte[] hash) {
+        var hexString = "";
+        for (var item : hash) {
+            var hex = Integer.toHexString(0xff & item);
+            if (hex.length() == 1) {
+                hex = "0" + hex;
+            }
+            hexString += hex;
+        }
+        return hexString;
     }
 
     public String getId() {
