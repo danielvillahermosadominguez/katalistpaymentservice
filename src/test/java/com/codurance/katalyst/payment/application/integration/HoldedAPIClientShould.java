@@ -76,7 +76,7 @@ public class HoldedAPIClientShould {
                 "RANDOM_USERNAME@email.com",
                 "RANDOM_NAME",
                 nifCif,
-                "client");
+                "client", false);
         wireMock.stubForGetContactByCustomIdStatusOK(customId, responseBody);
 
         var contact = apiAdapter.getContactByCustomId(customId);
@@ -99,7 +99,7 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void create_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+    public void create_person_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
         var contactId = "1";
         var contact = new HoldedContact(
                 "RANDOM_NAME",
@@ -127,7 +127,47 @@ public class HoldedAPIClientShould {
                 "RANDOM_USER@email.com",
                 "RANDOM_NAME",
                 "46842041C",
-                "client");
+                "client", false);
+        wireMock.stubForGetContactByCustomIdStatusOK("46842041C" + new HoldedEmail("RANDOM_USER@email.com").getInUnicodeFormat(), responseBodyGet);
+        wireMock.stubForCreateContactsWithStatusOKAsJsonBody(requestBodyParameters, responseBodyCreate);
+
+        var contactResult = apiAdapter.createContact(contact);
+
+        assertThat(contactResult).isNotNull();
+        assertThat(contactResult.getId()).isEqualTo(contactId);
+    }
+
+    @Test
+    public void create_company_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+        var contactId = "1";
+        var contact = new HoldedContact(
+                "RANDOM_NAME",
+                "46842041C",
+                HoldedTypeContact.CLIENT,
+                false,
+                new HoldedEmail("RANDOM_USER@email.com"),
+                null,
+                null,
+                ""
+        );
+
+        var responseBodyCreate = wireMock.createResponseBodyOkCreate(contactId);
+
+        var requestBodyParameters = wireMock.createContactRequestParameters(
+                contact.getName(),
+                contact.getEmail().getValue(),
+                "client",
+                contact.getCode(),
+                contact.getCustomId(),
+                false
+        );
+
+        var responseBodyGet = wireMock.createContactResponseForGetContact(
+                "RANDOM_USER@email.com",
+                "RANDOM_NAME",
+                "46842041C",
+                "client",
+                false);
         wireMock.stubForGetContactByCustomIdStatusOK("46842041C" + new HoldedEmail("RANDOM_USER@email.com").getInUnicodeFormat(), responseBodyGet);
         wireMock.stubForCreateContactsWithStatusOKAsJsonBody(requestBodyParameters, responseBodyCreate);
 

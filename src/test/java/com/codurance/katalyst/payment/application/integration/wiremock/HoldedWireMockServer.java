@@ -30,7 +30,7 @@ public class HoldedWireMockServer extends WireMockServerExtension {
     }
 
 
-    public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif, String type) throws UnsupportedEncodingException, NotValidEMailFormat {
+    public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif, String type, boolean isPerson) throws UnsupportedEncodingException, NotValidEMailFormat {
         Map<String, Object> bodyMap = new LinkedHashMap<>();
         var mail = new HoldedEmail(email);
         var customId = URLEncoder.encode(nifCif + mail.getInUnicodeFormat(), "UTF-8");
@@ -38,7 +38,11 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         bodyMap.put("customId", customId);
         bodyMap.put("email", email);
         bodyMap.put("name", name);
-        bodyMap.put("code", nifCif);
+        if(isPerson) {
+            bodyMap.put("code", nifCif);
+        } else {
+            bodyMap.put("vatnumber", nifCif);
+        }
         bodyMap.put("type", type);
         return bodyMap;
     }
@@ -48,7 +52,11 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         requestBodyParameters.put("name", name);
         requestBodyParameters.put("email", email);
         requestBodyParameters.put("type", type);
-        requestBodyParameters.put("code", nifCif);
+        if(isPerson) {
+            requestBodyParameters.put("code", nifCif);
+        } else {
+            requestBodyParameters.put("vatnumber", nifCif);
+        }
         requestBodyParameters.put("CustomId", customId);
         requestBodyParameters.put("isperson", isPerson);
         return requestBodyParameters;

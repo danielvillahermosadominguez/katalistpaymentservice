@@ -11,6 +11,7 @@ public class CreateContactRequestBody {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonFormat(shape = JsonFormat.Shape.OBJECT)
     private final HoldedBillAddress billAddress;
+
     @JsonProperty("name")
     private String name;
 
@@ -19,7 +20,10 @@ public class CreateContactRequestBody {
 
     @JsonProperty("type")
     private String type;
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("vatnumber")
+    private String vatNumber;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("code")
     private String code;
 
@@ -38,9 +42,13 @@ public class CreateContactRequestBody {
         this.name = contact.getName();
         this.email = email;
         this.type = contact.getType().getName();
-        this.code = contact.getCode();
         this.customId = contact.getCustomId();
         this.isPerson = contact.isPerson();
+        if (this.isPerson) {
+            this.code = contact.getCode();
+        } else {
+            this.vatNumber = contact.getCode();
+        }
         this.phone = contact.getPhone();
         this.billAddress = contact.getBillAddress();
     }
