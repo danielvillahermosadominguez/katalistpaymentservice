@@ -44,11 +44,8 @@ public class CreateContactRequestBody {
         this.type = contact.getType().getName();
         this.customId = contact.getCustomId();
         this.isPerson = contact.isPerson();
-        if (this.isPerson) {
-            this.code = contact.getCode();
-        } else {
-            this.vatNumber = contact.getCode();
-        }
+        this.code = contact.getCode();
+        this.vatNumber = contact.getVatNumber();
         this.phone = contact.getPhone();
         this.billAddress = contact.getBillAddress();
     }

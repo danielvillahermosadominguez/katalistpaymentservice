@@ -196,10 +196,10 @@ public class StepdefsSubscribeAndPaymentFeature {
         var country = holdedContactData.get("COUNTRY");
         var purchaseAccount = holdedContactData.get("PURCHASE ACCOUNT");
         var billAddress = new HoldedBillAddress(address, postalCode, city, province, country);
-
         var contact = new HoldedContact(
                 name,
                 code,
+                null,
                 HoldedTypeContact.CLIENT,
                 thisContactIs.equals("Person"),
                 new HoldedEmail(email),

@@ -2,15 +2,15 @@ package com.codurance.katalyst.payment.application.integration;
 
 import com.codurance.katalyst.payment.application.acceptance.doubles.TestDateService;
 import com.codurance.katalyst.payment.application.holded.HoldedApiClientAdapter;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
+import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
-import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -76,7 +76,11 @@ public class HoldedAPIClientShould {
                 "RANDOM_USERNAME@email.com",
                 "RANDOM_NAME",
                 nifCif,
-                "client", false);
+                null,
+                "client",
+                false
+        );
+
         wireMock.stubForGetContactByCustomIdStatusOK(customId, responseBody);
 
         var contact = apiAdapter.getContactByCustomId(customId);
@@ -104,6 +108,7 @@ public class HoldedAPIClientShould {
         var contact = new HoldedContact(
                 "RANDOM_NAME",
                 "46842041C",
+                null,
                 HoldedTypeContact.CLIENT,
                 true,
                 new HoldedEmail("RANDOM_USER@email.com"),
@@ -119,6 +124,7 @@ public class HoldedAPIClientShould {
                 contact.getEmail().getValue(),
                 "client",
                 contact.getCode(),
+                contact.getVatNumber(),
                 contact.getCustomId(),
                 true
         );
@@ -127,7 +133,10 @@ public class HoldedAPIClientShould {
                 "RANDOM_USER@email.com",
                 "RANDOM_NAME",
                 "46842041C",
-                "client", false);
+                null,
+                "client",
+                false
+        );
         wireMock.stubForGetContactByCustomIdStatusOK("46842041C" + new HoldedEmail("RANDOM_USER@email.com").getInUnicodeFormat(), responseBodyGet);
         wireMock.stubForCreateContactsWithStatusOKAsJsonBody(requestBodyParameters, responseBodyCreate);
 
@@ -142,6 +151,7 @@ public class HoldedAPIClientShould {
         var contactId = "1";
         var contact = new HoldedContact(
                 "RANDOM_NAME",
+                null,
                 "46842041C",
                 HoldedTypeContact.CLIENT,
                 false,
@@ -158,6 +168,7 @@ public class HoldedAPIClientShould {
                 contact.getEmail().getValue(),
                 "client",
                 contact.getCode(),
+                contact.getVatNumber(),
                 contact.getCustomId(),
                 false
         );
@@ -165,6 +176,7 @@ public class HoldedAPIClientShould {
         var responseBodyGet = wireMock.createContactResponseForGetContact(
                 "RANDOM_USER@email.com",
                 "RANDOM_NAME",
+                null,
                 "46842041C",
                 "client",
                 false);
@@ -182,7 +194,7 @@ public class HoldedAPIClientShould {
         var contact = new HoldedContact(
                 "RANDOM_NAME",
                 "46842041C",
-                HoldedTypeContact.CLIENT,
+                "46842041C", HoldedTypeContact.CLIENT,
                 true,
                 new HoldedEmail("RANDOM_USER@email.com"),
                 null,
@@ -195,7 +207,7 @@ public class HoldedAPIClientShould {
 
         assertThat(thrown).isNotNull();
         assertThat(thrown.getRequestBody()).isEqualTo(
-                "{\"name\":\"RANDOM_NAME\",\"email\":\"RANDOM_USER@email.com\",\"type\":\"client\",\"code\":\"46842041C\",\"CustomId\":\"46842041CRANDOM_USER%40email.com\",\"isperson\":true}"
+                "{\"name\":\"RANDOM_NAME\",\"email\":\"RANDOM_USER@email.com\",\"type\":\"client\",\"vatnumber\":\"46842041C\",\"code\":\"46842041C\",\"CustomId\":\"46842041CRANDOM_USER%40email.com\",\"isperson\":true}"
         );
         assertThat(thrown.getUrl()).isEqualTo(apiAdapter.generateEndPoint("invoicing/v1/contacts"));
         assertThat(thrown.getUrlVariables()).isEqualTo("");

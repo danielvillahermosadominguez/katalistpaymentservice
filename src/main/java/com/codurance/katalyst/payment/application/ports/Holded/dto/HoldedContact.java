@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.ports.Holded.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class HoldedContact {
@@ -13,8 +14,13 @@ public class HoldedContact {
     protected String customId;
 
     protected String name;
-
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     protected String code;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("vatNumber")
+    private String vatNumber;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String phone;
 
     @JsonFormat(shape = JsonFormat.Shape.OBJECT)
@@ -35,6 +41,7 @@ public class HoldedContact {
 
     public HoldedContact(String name,
                          String code,
+                         String vatNumber,
                          HoldedTypeContact type,
                          boolean isPerson,
                          HoldedEmail email,
@@ -42,19 +49,22 @@ public class HoldedContact {
                          HoldedBillAddress billAddress,
                          String purchaseAccount) {
 
-        this.customId = buildCustomId(code ,email);
         this.name = name;
         this.code = code;
+        this.vatNumber = vatNumber;
         this.type = type;
         this.isPerson = isPerson;
         this.email = email;
         this.phone = phone;
         this.billAddress = billAddress;
         this.purchaseAccount = purchaseAccount;
+        this.customId = isPerson
+                ? buildCustomId(code, email)
+                : buildCustomId(vatNumber, email);
     }
 
-    public static String buildCustomId(String code, HoldedEmail email) {
-        return code + email.getInUnicodeFormat();
+    public static String buildCustomId(String codeOrVat, HoldedEmail email) {
+        return codeOrVat + email.getInUnicodeFormat();
     }
 
     public String getId() {
@@ -106,11 +116,20 @@ public class HoldedContact {
         return isPerson;
     }
 
+    public String getVatNumber() {
+        return vatNumber;
+    }
+
     public boolean haveSameMainData(HoldedContact contact) {
         // We don't have into account the id neither purchaseAccount
         var result = contact.getCustomId().equals(customId);
         result &= contact.getEmail().getValue().equals(email.getValue());
-        result &= contact.getCode().equals(code);
+        result &= contact.getCode() != null
+                ? contact.getCode().equals(code)
+                : code == null;
+        result &= contact.getVatNumber() != null
+                ? contact.getVatNumber().equals(vatNumber)
+                : vatNumber == null;
         result &= contact.getName().equals(name);
         result &= contact.getType() == type;
         result &= contact.isPerson() == isPerson;
