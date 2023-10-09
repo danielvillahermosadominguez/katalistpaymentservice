@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -77,8 +78,21 @@ public class HoldedEmail {
     public static String getRecipients(List<HoldedEmail> emails) {
         List<String> emailList = emails
                 .stream()
-                .map( email-> email.getValue())
+                .map(email -> email.getValue())
                 .collect(Collectors.toList());
         return String.join(";", emailList);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        HoldedEmail that = (HoldedEmail) o;
+        return Objects.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value);
     }
 }

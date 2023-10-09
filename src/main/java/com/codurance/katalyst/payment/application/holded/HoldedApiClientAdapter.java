@@ -1,16 +1,16 @@
 package com.codurance.katalyst.payment.application.holded;
 
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
 import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
+import com.codurance.katalyst.payment.application.holded.requests.CreateContactRequestBody;
+import com.codurance.katalyst.payment.application.holded.requests.CreateInvoiceRequestBody;
+import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
-import com.codurance.katalyst.payment.application.holded.requests.CreateContactRequestBody;
-import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -136,30 +136,39 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
     }
 
     public HoldedCreationDataInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond {
-        HoldedCreationDataInvoice result = null;
         var url = generateEndPoint("invoicing/v1/documents/invoice");
-
-        MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
-        requestBody.add(CONTACT_ID, contact.getId());
-        requestBody.add(DESC,description);
         var instant = dateService.getInstant();
-        requestBody.add(DATE, instant.getEpochSecond()+"");
-        var item = new HoldedCreationDataInvoiceItem(concept, "",amount, price);
-        List<HoldedCreationDataInvoiceItem> items = Arrays.asList(item);
-        var gson = new Gson();
-        String jsonArray = gson.toJson(items);
-        requestBody.add(ITEMS,jsonArray);
+        var invoiceItem = new HoldedCreationDataInvoiceItem(
+                concept,
+                "",
+                amount,
+                price
+        );
+        var items = Arrays.asList(invoiceItem);
+        var requestBody = new CreateInvoiceRequestBody(
+                contact.getId(),
+                description,
+                instant.getEpochSecond(),
+                items
+        );
+        var request = createRequestEntity(
+                requestBody,
+                MediaType.APPLICATION_JSON_VALUE
+        );
 
-        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        ResponseEntity<HoldedCreationDataInvoice> response = null;
+        HoldedCreationDataInvoice result = null;
         try {
-            response = restTemplate.postForEntity(url, request, HoldedCreationDataInvoice.class);
+            var response = restTemplate.postForEntity(
+                    url,
+                    request,
+                    HoldedCreationDataInvoice.class
+            );
             result = response.getBody();
         } catch (HttpStatusCodeException httpException) {
             throw new HoldedNotRespond(
                     url,
                     "",
-                    requestBody.toString(),
+                    objectToJSON(requestBody),
                     httpException.getMessage()
             );
         }

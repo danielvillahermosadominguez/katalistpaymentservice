@@ -22,7 +22,7 @@ public class HoldedContact {
     protected String code;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @JsonProperty("vatNumber")
+    @JsonProperty("vatnumber")
     private String vatNumber;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String phone;
@@ -160,4 +160,5 @@ public class HoldedContact {
         result &= contact.getBillAddress().equals(billAddress);
         return result;
     }
+
 }

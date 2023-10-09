@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
@@ -73,26 +73,11 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         return responseBodyCreate;
     }
 
-    public Map<String, String> createRequestBodyForCreateInvoice(String contactId, String desc, String date) {
-        Map<String, String> requestBodyParameters = new LinkedHashMap<>();
-        requestBodyParameters.put("contactId", contactId + "");
-        requestBodyParameters.put("desc", desc);
-        requestBodyParameters.put("date", date);
-        return requestBodyParameters;
-    }
-
     public void stubForCreateInvoiceWithStatusOK(String invoiceID, Map<String, String> requestBodyMap, Map<String, Object> responseBody) throws UnsupportedEncodingException {
         var jsonResponseBody = gson.toJson(responseBody);
         stubForPostWithStatusOKAndBodyParameters("invoicing/v1/documents/invoice/" + unicode(invoiceID) + "/send",
                 joinParameters(requestBodyMap),
                 jsonResponseBody);
-    }
-
-    public void stubForCreateContactsWithStatusOKAsBodyParameters(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException {
-        var jsonBody = gson.toJson(responseBody);
-        stubForPostWithStatusOKAndBodyParameters("invoicing/v1/contacts",
-                joinParameters(requestBodyParameters),
-                jsonBody);
     }
 
     public void stubForCreateContactsWithStatusOKAsJsonBody(Map<String, Object> requestBodyParameters, Map<String, Object> responseBody)  {
@@ -103,19 +88,7 @@ public class HoldedWireMockServer extends WireMockServerExtension {
                 jsonBody);
     }
 
-    public void stubForCreateInvoiceWithStatusOk(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException {
-        var jsonResponse = gson.toJson(responseBody);
-        stubForPostWithStatusOKAndBodyParameters("invoicing/v1/documents/invoice",
-                joinParameters(requestBodyParameters),
-                jsonResponse);
-    }
-
-    public void stubForGetContactByCustomIdStatusOK(String customId, Map<String, Object> responseBody) throws UnsupportedEncodingException {
-        var expectedListOfContact = Arrays.asList();
-        if (responseBody != null) {
-            expectedListOfContact = Arrays.asList(responseBody);
-        }
-        var jsonResponse = gson.toJson(expectedListOfContact.toArray());
+    public void stubForGetContactByCustomIdStatusOK(String customId, String jsonResponse) throws UnsupportedEncodingException {
         var urlParameters = "?customId=" + URLEncoder.encode(customId, "UTF-8");
         this.wireMockServer.stubFor(
                 get(urlEqualTo(String.format(URL_BASE + "invoicing/v1/contacts%s", urlParameters)))
@@ -135,6 +108,22 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         this.wireMockServer.stubFor(
                 post(urlEqualTo(URL_BASE + function))
                         .withRequestBody(containing(requestBody))
+                        .willReturn(
+                                aResponse()
+                                        .withStatus(HttpStatus.OK.value())
+                                        .withBody(responseBody)
+                                        .withHeader(
+                                                HttpHeaders.CONTENT_TYPE,
+                                                MediaType.APPLICATION_JSON_VALUE
+                                        )
+                        )
+        );
+    }
+
+    public void stubForPostWithStatusOKAndBodyJson(String function, String requestBody, String responseBody) {
+        this.wireMockServer.stubFor(
+                post(urlEqualTo(URL_BASE + function))
+                        .withRequestBody(equalToJson(requestBody))
                         .willReturn(
                                 aResponse()
                                         .withStatus(HttpStatus.OK.value())
