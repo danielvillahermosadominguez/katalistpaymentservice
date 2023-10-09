@@ -130,19 +130,19 @@ public class MoodleAPIClientShould {
 
     @Test
     public void create_user_when_the_user_not_exists() throws UnsupportedEncodingException, MoodleNotRespond, NotValidEMailFormat {
-        Integer userId = 1;
-        String userName = "RANDOM_USERNAME";
-        String email = "RANDOM_USERNAME@email.com";
-        String firstName = "RANDOM_FIRST_NAME";
-        String lastName = "RANDOM_LAST_NAME";
-        String createPassword = "1";
-        Map<String, Object> responseBody = wireMock.createResponseBodyCreateUserOk(
+        var userId = 1;
+        var userName = "RANDOM_USERNAME";
+        var email = "RANDOM_USERNAME@email.com";
+        var firstName = "RANDOM_FIRST_NAME";
+        var lastName = "RANDOM_LAST_NAME";
+        var createPassword = "1";
+        var responseBody = wireMock.createResponseBodyCreateUserOk(
                 userId,
                 userName,
                 email
         );
 
-        Map<String, String> requestBodyParameters = wireMock.createRequestBodyParametersCreateUser(
+        var requestBodyParameters = wireMock.createRequestBodyParametersCreateUser(
                 userName,
                 email,
                 firstName,
@@ -153,9 +153,7 @@ public class MoodleAPIClientShould {
         wireMock.stubForCreateUsersWithStatusOk(requestBodyParameters, responseBody);
 
         var user = apiAdapter.createUser(
-                firstName,
-                lastName,
-                email
+                new MoodleUser(firstName, lastName, userName, email)
         );
 
         assertThat(user.getId()).isEqualTo(userId + "");
@@ -166,15 +164,13 @@ public class MoodleAPIClientShould {
         Integer courseId = 1;
         var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
             apiAdapter.createUser(
-                    "RANDOM_NAME",
-                    "RANDOM_LAST_NAME",
-                    "RANDOM_EMAIL@EMAIL.COM"
+                    new MoodleUser("RANDOM_NAME", "RANDOM SURNAME", "RANDOM_USERNAME", "RANDOM_EMAIL@EMAIL.COM")
             );
         });
 
         assertThat(thrown).isNotNull();
         assertThat(thrown.getRequestBody()).isEqualTo(
-                "{users[0][username]=[RANDOM_EMAIL], users[0][createpassword]=[1], users[0][email]=[RANDOM_EMAIL@EMAIL.COM], users[0][firstname]=[RANDOM_NAME], users[0][lastname]=[RANDOM_LAST_NAME]}"
+                "{users[0][username]=[RANDOM_USERNAME], users[0][createpassword]=[1], users[0][email]=[RANDOM_EMAIL@EMAIL.COM], users[0][firstname]=[RANDOM_NAME], users[0][lastname]=[RANDOM SURNAME]}"
         );
         assertThat(thrown.getFunction()).isEqualTo("core_user_create_users");
         assertThat(thrown.getEndPoint()).isEqualTo(

@@ -1,11 +1,9 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
-import com.codurance.katalyst.payment.application.moodle.dto.MoodleCustomField;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 
@@ -15,38 +13,19 @@ import java.util.List;
 import java.util.Map;
 
 public class MoodleApiClientFake implements MoodleApiClient {
-
-    private class MoodleCustomFieldFake extends MoodleCustomField {
-
-        public MoodleCustomFieldFake(String name, String shortName, String type, String valueRaw, String value) {
-            this.name =name;
-            this.shortname = shortName;
-            this.type = type;
-            this.valueraw = valueRaw;
-            this.value = value;
-        }
-    }
     private class MoodleCourseDTOFake extends MoodleCourse {
         public static int idCounter = 0;
-        public MoodleCourseDTOFake(String displayName, double price) {
-            super();
-            this.displayname = displayName;
-            this.customfields = new ArrayList<>();
-            var priceField = new MoodleCustomFieldFake("price", "price", "text", "", price + "");
-            customfields.add(priceField);
-            this.id = ++idCounter;
+
+        public MoodleCourseDTOFake(String displayName, double price) throws CustomFieldNotExists {
+            super(++idCounter, displayName, new MoodlePrice(price + ""));
         }
     }
 
     private class MoodleUserDTOFake extends MoodleUser {
         public static int idCounter = 0;
 
-        public MoodleUserDTOFake(String name, String surname, String email) throws NotValidEMailFormat {
-            super();
-            var mail = new HoldedEmail(email);
-            this.id = ++idCounter + "";
-            this.username = mail.getUserName();
-            this.email = email;
+        public MoodleUserDTOFake(MoodleUser user) throws NotValidEMailFormat {
+            super(++idCounter + "", user.getName(), user.getLastName(), user.getUserName(), user.getEmail());
         }
     }
 
@@ -62,7 +41,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
         studentsPerCourse.clear();
     }
 
-    public MoodleCourse addCourse(String fixtureDisplayName, MoodlePrice price) {
+    public MoodleCourse addCourse(String fixtureDisplayName, MoodlePrice price) throws CustomFieldNotExists {
         var course = new MoodleCourseDTOFake(fixtureDisplayName, price.getValue());
         this.courses.put(course.getId(), course);
         this.studentsPerCourse.put(course.getId(), new ArrayList<>());
@@ -99,10 +78,10 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     @Override
-    public MoodleUser createUser(String name, String surname, String email) throws NotValidEMailFormat {
-        var user = new MoodleUserDTOFake(name, surname, email);
-        users.add(user);
-        return user;
+    public MoodleUser createUser(MoodleUser user) throws NotValidEMailFormat {
+        var result = new MoodleUserDTOFake(user);
+        users.add(result);
+        return result;
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.codurance.katalyst.payment.application.unit.subscriptions;
 
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
@@ -12,6 +11,7 @@ import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
 import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
@@ -135,15 +135,15 @@ public class SubscriptionUseCaseShould {
 
     @Test
     void throw_an_exception_if_the_email_is_not_valid() throws MoodleNotRespond, CustomFieldNotExists {
-        var courseId = 1;
-        var courseIdString = String.format("%s", courseId);
-        customerData.setCourseId(courseIdString);
+
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("14.5")
+        );
+        customerData.setCourseId(course.getId() + "");
         customerData.setEmail("RANDOM_NO_VALID_EMAIL");
-        var moodleCourse = mock(MoodleCourse.class);
-        when(moodleCourse.getDisplayname()).thenReturn("RANDOM DISPLAY NAME");
-        when(moodleCourse.getId()).thenReturn(courseId);
-        when(moodleCourse.getPrice()).thenReturn(new MoodlePrice("100"));
-        when(moodleApiClient.getCourse(courseIdString)).thenReturn(moodleCourse);
+
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
 
         var thrown = assertThrows(InvalidInputCustomerData.class, () -> {
             useCase.subscribe(customerData);
@@ -154,40 +154,38 @@ public class SubscriptionUseCaseShould {
 
     @Test
     void check_if_the_course_exists_in_moodle() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid, NotValidEMailFormat {
-        var courseId = "1";
-        var course = mock(MoodleCourse.class);
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("14.5")
+        );
         var email = new HoldedEmail("random_username@random_domain.com");
         var nifCif = "46842041C";
-        HoldedContact contact = createBasicContact(email, nifCif);
+        var contact = createBasicContact(email, nifCif);
 
-        customerData.setCourseId(courseId);
+        customerData.setCourseId(course.getId() + "");
         customerData.setDnicif(nifCif);
         customerData.setEmail(email.getValue());
-        when(course.getDisplayname()).thenReturn("random name");
-        when(course.getPrice()).thenReturn(
-                new MoodlePrice("33.4")
-        );
-        when(moodleApiClient.getCourse(courseId)).thenReturn(course);
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(contact);
 
         useCase.subscribe(customerData);
 
-        verify(moodleApiClient).getCourse(courseId);
+        verify(moodleApiClient).getCourse(course.getId() + "");
     }
 
     @Test
     void throw_an_exception_if_the_customer_is_already_enrolled_in_the_course() throws HoldedNotRespond, MoodleNotRespond, CustomFieldNotExists, NotValidEMailFormat {
-        var courseId = "1";
         var email = new HoldedEmail("random_username@random_domain.com");
         var nifCif = "46842041C";
         var contact = createBasicContact(email, nifCif);
-        var course = mock(MoodleCourse.class);
-        when(course.getDisplayname()).thenReturn("random name");
-        when(course.getPrice()).thenReturn(new MoodlePrice("33.4"));
-        customerData.setCourseId(courseId);
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("44.3")
+        );
+        customerData.setCourseId(course.getId() + "");
         customerData.setDnicif(nifCif);
         customerData.setEmail(email.getValue());
-        when(moodleApiClient.getCourse(courseId)).thenReturn(course);
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(contact);
         when(moodleApiClient.existsAnUserinThisCourse(any(), any())).thenReturn(true);
 
@@ -200,17 +198,17 @@ public class SubscriptionUseCaseShould {
 
     @Test
     void throw_an_exception_if_holded_not_respond() throws HoldedNotRespond, MoodleNotRespond, NotValidEMailFormat, CustomFieldNotExists {
-        var courseId = "1";
         var nifCif = "46842041C";
         var email = new HoldedEmail("random_username@random_domain.com");
-        var course = mock(MoodleCourse.class);
-        customerData.setCourseId(courseId);
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("44.3")
+        );
+        customerData.setCourseId(course.getId() + "");
         customerData.setEmail(email.getValue());
         customerData.setDnicif(nifCif);
-        when(course.getDisplayname()).thenReturn("RANDOM NAME");
-        when(course.getPrice()).thenReturn(new MoodlePrice("44.5"));
         when(holdedApiClient.getContactByCustomId(any())).thenThrow(HoldedNotRespond.class);
-        when(moodleApiClient.getCourse(courseId)).thenReturn(course);
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
 
         var thrown = assertThrows(HoldedIsNotAvailable.class, () -> {
             useCase.subscribe(customerData);
@@ -224,16 +222,16 @@ public class SubscriptionUseCaseShould {
         var email = new HoldedEmail("random_username@random_domain.com");
         var nifCif = "46842041C";
         var contact = createBasicContact(email, nifCif);
-        var expectedCustomId = HoldedContact.buildCustomId(nifCif.toUpperCase(), email);
-        var course = mock(MoodleCourse.class);
-        var courseId = "1";
-        customerData.setCourseId(courseId);
+        var expectedCustomId = contact.getCustomId();
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("44.3")
+        );
+        customerData.setCourseId(course.getId() + "");
         customerData.setEmail(email.getValue());
         customerData.setDnicif(nifCif);
-        when(course.getDisplayname()).thenReturn("RANDOME NAME");
-        when(course.getPrice()).thenReturn(new MoodlePrice("44.5"));
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(contact);
-        when(moodleApiClient.getCourse(courseId)).thenReturn(course);
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
 
         useCase.subscribe(customerData);
 
@@ -243,10 +241,12 @@ public class SubscriptionUseCaseShould {
 
     @Test
     void create_a_contact_with_upper_case_data_when_contact_not_exists() throws CourseNotExists, UnsupportedEncodingException, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
-        //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
         var courseId = "1";
         var contactArg = ArgumentCaptor.forClass(HoldedContact.class);
-        var course = mock(MoodleCourse.class);
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("44.3")
+        );
         var firstName = "John";
         var surname = "Doe";
         var companyName = "random company";
@@ -256,22 +256,22 @@ public class SubscriptionUseCaseShould {
         var region = "random region";
         var city = "random city";
         var email = new HoldedEmail("random_username@random_domain.com");
-        var contact = createBasicContact(email, nifCif);
-        customerData.setCourseId(courseId);
-        customerData.setEmail(email.getValue());
-        customerData.setName(firstName);
-        customerData.setSurname(surname);
-        customerData.setPostalCode(postalCode);
-        customerData.setAddress(address);
-        customerData.setPhoneNumber("916185445");
-        customerData.setCompany(companyName);
-        customerData.setIsCompany(true);
-        customerData.setRegion(region);
-        customerData.setCity(city);
-        customerData.setDnicif(nifCif);
-        var expectedCustomId = HoldedContact.buildCustomId(nifCif.toUpperCase(), email);
-        when(course.getDisplayname()).thenReturn("random course name");
-        when(course.getPrice()).thenReturn(new MoodlePrice("44.3"));
+        var contact = createBasicContact(email, nifCif.toUpperCase());
+        var expectedCustomId = contact.getCustomId();
+        fillCustomerData(course.getId() + "",
+                email.getValue(),
+                firstName,
+                surname,
+                postalCode,
+                address,
+                "916185445",
+                companyName,
+                true,
+                region,
+                city,
+                nifCif
+        );
+
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
         when(moodleApiClient.getCourse(courseId)).thenReturn(course);
         when(holdedApiClient.createContact(any())).thenReturn(contact);
@@ -283,7 +283,6 @@ public class SubscriptionUseCaseShould {
         contact = contactArg.getValue();
         assertThat(contact.getName()).isEqualTo(companyName.toUpperCase());
         assertThat(contact.getCode()).isNull();
-        ;
         assertThat(contact.getVatNumber()).isEqualTo(nifCif.toUpperCase());
         assertThat(contact.getBillAddress()).isNotNull();
         var bilAddress = contact.getBillAddress();
@@ -295,32 +294,34 @@ public class SubscriptionUseCaseShould {
 
     @Test
     void create_an_invoice_with_the_course_data() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
-        //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
-        var course = mock(MoodleCourse.class);
-        when(course.getId()).thenReturn(1);
-        when(course.getPrice()).thenReturn(new MoodlePrice("14.5"));
-        when(course.getDisplayname()).thenReturn("random_display_name");
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("14.5")
+        );
         var email = "randomusername@randomdomain.com";
         var firstName = "John";
         var surname = "Doe";
         var nifCif = "46842041c";
-        customerData.setCourseId("1");
-        customerData.setEmail(email);
-        customerData.setName(firstName);
-        customerData.setSurname(surname);
-        customerData.setPostalCode("28080");
-        customerData.setAddress("random direction");
-        customerData.setPhoneNumber("916185445");
-        customerData.setCompany("random company");
-        customerData.setIsCompany(true);
-        customerData.setRegion("random region");
-        customerData.setCity("random city");
-        customerData.setDnicif(nifCif);
-        when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
-        when(moodleApiClient.getCourse("1")).thenReturn(course);
-        var contact = mock(HoldedContact.class);
-        when(contact.getEmail()).thenReturn(new HoldedEmail(email));
+        var contact = createBasicContact(
+                new HoldedEmail(email),
+                nifCif
+        );
         var invoice = new HoldedInvoiceInfo();
+        fillCustomerData(course.getId() + "",
+                email,
+                firstName,
+                surname,
+                "28080",
+                "random direction",
+                "916185445",
+                "random company",
+                true, 
+                "random region",
+                "random city",
+                nifCif
+        );
+        when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
         when(holdedApiClient.createContact(any())).thenReturn(contact);
         when(holdedApiClient.createInvoice(any(), any(), any(), anyInt(), anyDouble())).thenReturn(invoice);
 
@@ -328,7 +329,7 @@ public class SubscriptionUseCaseShould {
 
         verify(holdedApiClient).createInvoice(
                 any(),
-                eq("random_display_name"),
+                eq(course.getDisplayname()),
                 eq(""),
                 eq(1),
                 eq(14.5)
@@ -337,30 +338,33 @@ public class SubscriptionUseCaseShould {
 
     @Test
     void throw_an_exception_when_price_not_exist_in_moodle() throws HoldedNotRespond, MoodleNotRespond, NotValidEMailFormat, CustomFieldNotExists {
-        //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
         var courseId = "1";
         var course = mock(MoodleCourse.class);
+        when(course.getId()).thenReturn(Integer.parseInt(courseId));
+        when(course.getDisplayname()).thenReturn("random_display_name");
+        when(course.getPrice()).thenThrow(CustomFieldNotExists.class);
         var email = "random_username@random_domain.com";
         var firstName = "John";
         var surname = "Doe";
         var nifCif = "46842041c";
-        var contact = createBasicContact(new HoldedEmail(email), nifCif);
+        var contact = createBasicContact(
+                new HoldedEmail(email),
+                nifCif
+        );
         var invoice = new HoldedInvoiceInfo();
-        customerData.setCourseId(courseId);
-        customerData.setEmail(email);
-        customerData.setName(firstName);
-        customerData.setSurname(surname);
-        customerData.setPostalCode("28080");
-        customerData.setAddress("random direction");
-        customerData.setPhoneNumber("916185445");
-        customerData.setCompany("random company");
-        customerData.setIsCompany(true);
-        customerData.setRegion("random region");
-        customerData.setCity("random city");
-        customerData.setDnicif(nifCif);
-        when(course.getId()).thenReturn(Integer.parseInt(courseId));
-        when(course.getDisplayname()).thenReturn("random_display_name");
-        when(course.getPrice()).thenThrow(CustomFieldNotExists.class);
+        fillCustomerData(courseId,
+                email,
+                firstName,
+                surname,
+                "28080",
+                "random direction",
+                "916185445",
+                "random company",
+                false,
+                "random region",
+                "random city",
+                nifCif
+        );
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
         when(moodleApiClient.getCourse(courseId)).thenReturn(course);
         when(holdedApiClient.createContact(any())).thenReturn(contact);
@@ -375,40 +379,41 @@ public class SubscriptionUseCaseShould {
 
     @Test
     void send_the_invoice_to_the_customer_email() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
-        //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
-        var course = mock(MoodleCourse.class);
-        when(course.getId()).thenReturn(1);
-        when(course.getPrice()).thenReturn(new MoodlePrice("14.5"));
-        when(course.getDisplayname()).thenReturn("random_display_name");
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("14.5")
+        );
         var email = "random_username@random_domain.com";
         var firstName = "John";
         var surname = "Doe";
         var nifCif = "46842041c";
-        var courseId = "1";
-        customerData.setCourseId(courseId);
-        customerData.setEmail(email);
-        customerData.setName(firstName);
-        customerData.setSurname(surname);
-        customerData.setPostalCode("28080");
-        customerData.setAddress("random direction");
-        customerData.setPhoneNumber("916185445");
-        customerData.setCompany("random company");
-        customerData.setIsCompany(true);
-        customerData.setRegion("random region");
-        customerData.setCity("random city");
-        customerData.setDnicif(nifCif);
-        var contact = mock(HoldedContact.class);
+        var contact = createBasicContact(
+                new HoldedEmail(email),
+                nifCif
+        );
         var invoice = new HoldedInvoiceInfo();
+        fillCustomerData(course.getId() + "",
+                email,
+                firstName,
+                surname,
+                "28080",
+                "random direction",
+                "916185445",
+                "random company",
+                true, // Esto esta mal
+                "random region",
+                "random city",
+                nifCif
+        );
+
         ArgumentCaptor<List<HoldedEmail>> captor = ArgumentCaptor.forClass(List.class);
-        when(contact.getEmail()).thenReturn(new HoldedEmail(email));
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
-        when(moodleApiClient.getCourse(courseId)).thenReturn(course);
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
         when(holdedApiClient.createContact(any())).thenReturn(contact);
         when(holdedApiClient.createInvoice(any(), any(), any(), anyInt(), anyDouble())).thenReturn(invoice);
         when(holdedApiClient.sendInvoice(any(), captor.capture())).thenReturn(new HoldedStatus());
 
         useCase.subscribe(customerData);
-
 
         verify(holdedApiClient).sendInvoice(
                 any(),
@@ -421,42 +426,51 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void enrolle_a_new_user_in_moodle() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
-        //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
+    void enrolle_a_new_user_in_moodle_when_is_person() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         var userId = "1";
-        var courseId = "1";
-        var course = mock(MoodleCourse.class);
         var email = "random_username@random_domain.com";
         var firstName = "John";
         var surname = "Doe";
-        var nifCif = "46842041c";
-        var contact = createBasicContact(new HoldedEmail(email), nifCif);
-        var invoice = new HoldedInvoiceInfo();
-        var user = mock(MoodleUser.class);
-        customerData.setCourseId(courseId);
-        customerData.setEmail(email);
-        customerData.setName(firstName);
-        customerData.setSurname(surname);
-        customerData.setPostalCode("28080");
-        customerData.setAddress("random direction");
-        customerData.setPhoneNumber("916185445");
-        customerData.setCompany("random company");
-        customerData.setIsCompany(true);
-        customerData.setRegion("random region");
-        customerData.setCity("random city");
-        customerData.setDnicif(nifCif);
+        var username = "random_username";
+        var student = new MoodleUser(
+                userId,
+                firstName,
+                surname,
+                username,
+                email
+        );
 
-        when(course.getId()).thenReturn(Integer.parseInt(courseId));
-        when(course.getPrice()).thenReturn(new MoodlePrice("14.5"));
-        when(course.getDisplayname()).thenReturn("random_display_name");
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("14.5")
+        );
+        var nifCif = "46842041c";
+        var contact = createBasicContact(
+                new HoldedEmail(email),
+                nifCif
+        );
+
+        var invoice = new HoldedInvoiceInfo();
+        fillCustomerData(course.getId() + "",
+                email,
+                firstName,
+                surname,
+                "28080",
+                "random direction",
+                "916185445",
+                "random company",
+                false,
+                "random region",
+                "random city",
+                nifCif
+        );
+
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
-        when(moodleApiClient.getCourse(courseId)).thenReturn(course);
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
         when(moodleApiClient.getUserByMail(email)).thenReturn(null);
         when(holdedApiClient.createContact(any())).thenReturn(contact);
         when(holdedApiClient.createInvoice(any(), any(), any(), anyInt(), anyDouble())).thenReturn(invoice);
-        when(user.getId()).thenReturn(userId);
-        when(user.getEmail()).thenReturn(email);
-        when(moodleApiClient.createUser(any(), any(), any())).thenReturn(user);
+        when(moodleApiClient.createUser(any())).thenReturn(student);
         var captorCourse = ArgumentCaptor.forClass(MoodleCourse.class);
         var captorUser = ArgumentCaptor.forClass(MoodleUser.class);
         when(holdedApiClient.sendInvoice(any(), any())).thenReturn(new HoldedStatus());
@@ -464,9 +478,12 @@ public class SubscriptionUseCaseShould {
         useCase.subscribe(customerData);
 
         verify(moodleApiClient).createUser(
-                customerData.getName(),
-                customerData.getSurname(),
-                customerData.getEmail()
+                new MoodleUser(
+                        customerData.getName(),
+                        customerData.getSurname(),
+                        username,
+                        customerData.getEmail()
+                )
         );
 
         verify(moodleApiClient).enrolToTheCourse(
@@ -478,42 +495,129 @@ public class SubscriptionUseCaseShould {
         var enrolledCourse = captorCourse.getValue();
         assertThat(enrolledCourse.getId()).isEqualTo(course.getId());
         assertThat(enrolledUser.getId()).isEqualTo(userId);
+        assertThat(enrolledUser.getName()).isEqualTo(firstName);
+        assertThat(enrolledUser.getLastName()).isEqualTo(surname);
+        assertThat(enrolledUser.getUserName()).isEqualTo(username);
         assertThat(enrolledUser.getEmail()).isEqualTo(email);
     }
 
     @Test
-    void enrolle_an_existent_user_in_moodle() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
-        //TODO: We need to include more data in the adapter. And also, to use a dto more than a lot of parameters.
-        var courseId = "1";
+    void enrolle_a_new_user_in_moodle_when_is_company() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         var userId = "1";
-        var course = mock(MoodleCourse.class);
+        var email = "random_username@random_domain.com";
+        var firstName = "N/A";
+        var surname = "N/A";
+        var companyName = "RANDOM_COMPANY NAME S.A";
+        var username = "random_username";
+        var student = new MoodleUser(
+                userId,
+                companyName,
+                "",
+                username,
+                email
+        );
+
+        var course = new MoodleCourse(1,
+                "random_display_name",
+                new MoodlePrice("14.5")
+        );
+        var nifCif = "ES468420";
+        var contact = createBasicContact(
+                new HoldedEmail(email),
+                nifCif
+        );
+
+        var invoice = new HoldedInvoiceInfo();
+        fillCustomerData(course.getId() + "",
+                email,
+                firstName,
+                surname,
+                "28080",
+                "random direction",
+                "916185445",
+                companyName,
+                true,
+                "random region",
+                "random city",
+                nifCif
+        );
+
+        when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
+        when(moodleApiClient.getUserByMail(email)).thenReturn(null);
+        when(holdedApiClient.createContact(any())).thenReturn(contact);
+        when(holdedApiClient.createInvoice(any(), any(), any(), anyInt(), anyDouble())).thenReturn(invoice);
+        when(moodleApiClient.createUser(any())).thenReturn(student);
+        var captorCourse = ArgumentCaptor.forClass(MoodleCourse.class);
+        var captorUser = ArgumentCaptor.forClass(MoodleUser.class);
+        when(holdedApiClient.sendInvoice(any(), any())).thenReturn(new HoldedStatus());
+
+        useCase.subscribe(customerData);
+
+        verify(moodleApiClient).createUser(
+                new MoodleUser(
+                        customerData.getCompany(),
+                        "",
+                        username,
+                        customerData.getEmail()
+                )
+        );
+
+        verify(moodleApiClient).enrolToTheCourse(
+                captorCourse.capture(),
+                captorUser.capture()
+        );
+
+        var enrolledUser = captorUser.getValue();
+        var enrolledCourse = captorCourse.getValue();
+        assertThat(enrolledCourse.getId()).isEqualTo(course.getId());
+        assertThat(enrolledUser.getId()).isEqualTo(userId);
+        assertThat(enrolledUser.getName()).isEqualTo(companyName);
+        assertThat(enrolledUser.getUserName()).isEqualTo(username);
+        assertThat(enrolledUser.getEmail()).isEqualTo(email);
+    }
+
+    @Test
+    void enrolle_an_existent_user_in_moodle_when_is_person() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+        var userId = "1";
         var email = "random_username@random_domain.com";
         var firstName = "John";
         var surname = "Doe";
+        var username = "random_username";
+        var student = new MoodleUser(
+                userId,
+                firstName,
+                surname,
+                username,
+                email
+        );
+
+        var course = new MoodleCourse(1, "random_display_name", new MoodlePrice("14.5"));
         var nifCif = "46842041c";
-        var user = mock(MoodleUser.class);
-        var contact = createBasicContact(new HoldedEmail(email), nifCif);
+        var contact = createBasicContact(
+                new HoldedEmail(email),
+                nifCif
+        );
+
         var invoice = new HoldedInvoiceInfo();
-        customerData.setCourseId(courseId);
-        customerData.setEmail(email);
-        customerData.setName(firstName);
-        customerData.setSurname(surname);
-        customerData.setPostalCode("28080");
-        customerData.setAddress("random direction");
-        customerData.setPhoneNumber("916185445");
-        customerData.setCompany("random company");
-        customerData.setIsCompany(true);
-        customerData.setRegion("random region");
-        customerData.setCity("random city");
-        customerData.setDnicif(nifCif);
-        when(course.getId()).thenReturn(1);
-        when(course.getPrice()).thenReturn(new MoodlePrice("14.5"));
-        when(course.getDisplayname()).thenReturn("random_display_name");
-        when(user.getId()).thenReturn(userId);
-        when(user.getEmail()).thenReturn(email);
+
+        fillCustomerData(course.getId() + "",
+                email,
+                firstName,
+                surname,
+                "28080",
+                "random direction",
+                "916185445",
+                "random company",
+                true, // Esto esta mal
+                "random region",
+                "random city",
+                nifCif
+        );
+
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
-        when(moodleApiClient.getCourse(courseId)).thenReturn(course);
-        when(moodleApiClient.getUserByMail(email)).thenReturn(user);
+        when(moodleApiClient.getCourse(course.getId() + "")).thenReturn(course);
+        when(moodleApiClient.getUserByMail(email)).thenReturn(student);
         when(holdedApiClient.createContact(any())).thenReturn(contact);
         when(holdedApiClient.createInvoice(any(), any(), any(), anyInt(), anyDouble())).thenReturn(invoice);
 
@@ -525,8 +629,6 @@ public class SubscriptionUseCaseShould {
         useCase.subscribe(customerData);
 
         verify(moodleApiClient, never()).createUser(
-                any(),
-                any(),
                 any()
         );
 
@@ -554,5 +656,31 @@ public class SubscriptionUseCaseShould {
                 "RANDOM_PURCHASE_ACCOUNT"
         );
         return contact;
+    }
+
+    private void fillCustomerData(String course,
+                                  String email,
+                                  String firstName,
+                                  String surname,
+                                  String postalCode,
+                                  String direction,
+                                  String phone,
+                                  String company,
+                                  boolean isCompany,
+                                  String region,
+                                  String city,
+                                  String nifCif) {
+        customerData.setCourseId(course);
+        customerData.setEmail(email);
+        customerData.setName(firstName);
+        customerData.setSurname(surname);
+        customerData.setPostalCode(postalCode);
+        customerData.setAddress(direction);
+        customerData.setPhoneNumber(phone);
+        customerData.setCompany(company);
+        customerData.setIsCompany(isCompany);
+        customerData.setRegion(region);
+        customerData.setCity(city);
+        customerData.setDnicif(nifCif);
     }
 }

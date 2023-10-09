@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.usecases;
 
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
+import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
@@ -84,10 +85,20 @@ public class SubscriptionUseCase {
             createContactAndInvoicing(customerData, course);
             var user = moodleApiClient.getUserByMail(customerData.getEmail());
             if (user == null) {
+                var email = new HoldedEmail(customerData.getEmail());
+                var name = customerData.getName();
+                var surname = customerData.getSurname();
+                if (customerData.getIsCompany()) {
+                    surname = "";
+                    name = customerData.getCompany();
+                }
                 user = moodleApiClient.createUser(
-                        customerData.getName(),
-                        customerData.getSurname(),
-                        customerData.getEmail()
+                        new MoodleUser(
+                                name,
+                                surname,
+                                email.getUserName(),
+                                email.getValue()
+                        )
                 );
             }
             moodleApiClient.enrolToTheCourse(course, user);

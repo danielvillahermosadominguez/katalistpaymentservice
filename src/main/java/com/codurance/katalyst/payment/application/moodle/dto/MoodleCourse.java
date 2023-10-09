@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.moodle.dto;
 
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,17 @@ public class MoodleCourse {
     protected int id;
     protected String displayname;
     protected List<MoodleCustomField> customfields;
+
+    public MoodleCourse() {
+
+    }
+
+    public MoodleCourse(int id, String displayName, MoodlePrice price) throws CustomFieldNotExists {
+        this.id = id;
+        this.displayname = displayName;
+        initCustomFieldForPrice();
+        this.setPrice(price);
+    }
 
     public int getId() {
         return id;
@@ -29,6 +41,18 @@ public class MoodleCourse {
         var customField = getCustomField();
 
         return new MoodlePrice(customField.get().getValue());
+    }
+
+    private void initCustomFieldForPrice() {
+        var customField = new MoodleCustomField(
+                "price",
+                "price",
+                "text",
+                "",
+                "0"
+        );
+        this.customfields = new ArrayList<>();
+        this.customfields.add(customField);
     }
 
     private Optional<MoodleCustomField> getCustomField() throws CustomFieldNotExists {

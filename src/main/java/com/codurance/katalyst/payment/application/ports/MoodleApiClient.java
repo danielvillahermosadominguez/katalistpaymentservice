@@ -10,7 +10,7 @@ public interface MoodleApiClient {
 
     MoodleUser getUserByMail(String email) throws MoodleNotRespond;
 
-    MoodleUser createUser(String name, String surname, String email) throws MoodleNotRespond, NotValidEMailFormat;
+    MoodleUser createUser(MoodleUser user) throws MoodleNotRespond, NotValidEMailFormat;
 
     void enrolToTheCourse(MoodleCourse course, MoodleUser user) throws MoodleNotRespond;
 

@@ -97,11 +97,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         var userList = dataTable.asMaps(String.class, String.class);
         var previousUserList = createUserList(userList);
         for (var user : previousUserList) {
-            moodleApiClient.createUser(
-                    user.getName(),
-                    user.getUserName(),
-                    user.getEmail()
-            );
+            moodleApiClient.createUser(user);
         }
         var currentUsersList = moodleApiClient.getAllUsers();
         assertThat(userList.size()).isEqualTo(currentUsersList.size());
@@ -116,13 +112,14 @@ public class StepdefsSubscribeAndPaymentFeature {
 
     private MoodleUser convertToMoodleUser(Map<String, String> data) {
         var name = data.get("NAME");
+        var surname = data.get("SURNAME");
         var userName = data.get("USERNAME");
         var email = data.get("EMAIL");
-        return new MoodleUser(name, userName, email);
+        return new MoodleUser(name, surname, userName, email);
     }
 
     @Given("a previous course called {string} exists which has the following students")
-    public void a_previous_course_exist_which_have_the_following_students(String courseName, DataTable dataTable) {
+    public void a_previous_course_exist_which_have_the_following_students(String courseName, DataTable dataTable) throws CustomFieldNotExists {
         var userList = dataTable.asMaps(String.class, String.class);
         var enrolledStudents = createUserList(userList);
         var course = moodleApiClient.addCourse(
@@ -200,9 +197,15 @@ public class StepdefsSubscribeAndPaymentFeature {
         subscriptionOutputCode = this.apiClient.subscription(customData);
     }
 
-    @Then("the customer will receive access to the platform in the email {string} with the user {string}")
-    public void the_customer_will_receive_access_to_the_platform_in_the_email_with_the_user(String string, String string2) {
+    @Then("the customer will receive access to the platform in the email {string} with the user {string} and fullname {string} {string}")
+    public void the_customer_will_receive_access_to_the_platform_in_the_email_with_the_user_and_name(String moodleEmail, String moodleUser, String moodleName, String moodleSurname) {
+        var user = moodleApiClient.getUserByMail(moodleEmail);
+        assertThat(user).isNotNull();
+        assertThat(user.getUserName()).isEqualTo(moodleUser);
+        assertThat(user.getName()).isEqualTo(moodleName);
+        assertThat(user.getLastName()).isEqualTo(moodleSurname);
     }
+
 
     @Then("Holded has the following contacts")
     public void holded_has_the_following_contacts(DataTable dtContacts) {

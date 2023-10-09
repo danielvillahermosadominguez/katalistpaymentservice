@@ -1,9 +1,7 @@
 package com.codurance.katalyst.payment.application.utils;
 
-import com.codurance.katalyst.payment.application.paycomet.dto.PaymentBody;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -29,16 +27,6 @@ public class APIClient {
         getHeaderParameter(headers);
         headers.setContentType(MediaType.valueOf(mediaType));
         HttpEntity<MultiValueMap<String, T>> request = requestBody == null
-                ? new HttpEntity<>(headers)
-                : new HttpEntity<>(requestBody, headers);
-        return request;
-    }
-
-    protected <T> HttpEntity<Map<String, T>> createRequest(Map<String, T> requestBody, String mediaType) {
-        var headers = new HttpHeaders();
-        getHeaderParameter(headers);
-        headers.setContentType(MediaType.valueOf(mediaType));
-        HttpEntity<Map<String, T>> request = requestBody == null
                 ? new HttpEntity<>(headers)
                 : new HttpEntity<>(requestBody, headers);
         return request;

@@ -8,6 +8,17 @@ public class MoodleCustomField {
 
     protected String value;
 
+    public MoodleCustomField() {
+
+    }
+    public MoodleCustomField(String name, String shortName, String type, String valueRaw, String value) {
+        this.name =name;
+        this.shortname = shortName;
+        this.type = type;
+        this.valueraw = valueRaw;
+        this.value = value;
+    }
+
     public String getName() {
         return name;
     }

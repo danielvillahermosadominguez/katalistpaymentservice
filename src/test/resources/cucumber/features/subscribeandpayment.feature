@@ -21,7 +21,7 @@ Feature: As an user interested in Katalyst courses
     And the customer will receive an invoice to the recipients "john@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
       | TDD in depth | 99.9  | 1     | 99.9     | 99.9  |
-    And the customer will receive access to the platform in the email "john@example.com" with the user "john"
+    And the customer will receive access to the platform in the email "john@example.com" with the user "john" and fullname "John" "Doe"
 
   Scenario: The customer, which is not a company, subscribes to the course. He/She has been enrolled to other courses
   in the past but not in this course and he/she include in the subscription some different data in the address
@@ -30,12 +30,12 @@ Feature: As an user interested in Katalyst courses
       | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |
       | JANE DOE | 46842041X   | Person          | jane.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d0b2e6cfdd64aed23e91362089620464ff874e5da81ca233cf12b20ac22a8088 |
     And Moodle which has these previous users
-      | NAME     | USERNAME | EMAIL                |
-      | John Doe | john.doe | john.doe@example.com |
-      | Jane Doe | jane.doe | jane.doe@example.com |
+      | NAME | SURNAME | USERNAME | EMAIL                |
+      | John | Doe     | johndoe  | john.doe@example.com |
+      | Jane | Doe     | janedoe  | jane.doe@example.com |
     And a previous course called "TDD in depth" exists which has the following students
-      | NAME     | USERNAME | EMAIL                |
-      | Jane Doe | jane.doe | jane.doe@example.com |
+      | NAME | SURNAME | USERNAME | EMAIL                |
+      | Jane | Doe     | janedoe  | jane.doe@example.com |
     And An customer who has chosen the following course the course "TDD in depth" with a price of "99.9"
     And the customer has filled the following data
       | FIRST NAME | SURNAME | EMAIL                | COMPANY NAME | IS COMPANY | NIF/CIF   | PHONE NUMBER  | ADDRESS              | POSTAL CODE | REGION | COUNTRY | CITY               |
@@ -52,7 +52,7 @@ Feature: As an user interested in Katalyst courses
     And the customer will receive an invoice to the recipients "john.doe@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
       | TDD in depth | 99.9  | 1     | 99.9     | 99.9  |
-    And the customer will receive access to the platform in the email "john.doe@example.com" with the user "john.doe"
+    And the customer will receive access to the platform in the email "john.doe@example.com" with the user "johndoe" and fullname "John" "Doe"
 
   Scenario: The customer, which is a company, subscribes to the course. The company has not been enrolled to other courses
   in the past.
@@ -73,4 +73,4 @@ Feature: As an user interested in Katalyst courses
     And the customer will receive an invoice to the recipients "company.business@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
       | TDD in depth | 99.9  | 1     | 99.9     | 99.9  |
-    And the customer will receive access to the platform in the email "company.business@example.com" with the user "company.business"
+    And the customer will receive access to the platform in the email "company.business@example.com" with the user "companybusiness" and fullname "Company Business S.A" ""

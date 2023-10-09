@@ -3,10 +3,9 @@ package com.codurance.katalyst.payment.application.moodle;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
+import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
 import com.codurance.katalyst.payment.application.utils.APIClient;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -83,7 +82,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
 
     public boolean existsAnUserinThisCourse(String courseId, String email) throws MoodleNotRespond {
         //TODO: We need to review this function - performance issue
-        String lowerCaseEmailInput = email.toLowerCase();
+        var lowerCaseEmailInput = email.toLowerCase();
         var users = getUsersForCourse(courseId);
         var filtered = users
                 .stream()
@@ -124,18 +123,17 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
         return result;
     }
 
-    public MoodleUser createUser(String name, String surname, String email) throws MoodleNotRespond, NotValidEMailFormat {
+    public MoodleUser createUser(MoodleUser user) throws MoodleNotRespond, NotValidEMailFormat {
         var function = "core_user_create_users";
         var endPoint = generateEndPoint(function);
         ResponseEntity<MoodleUser[]> response = null;
         MoodleUser result = null;
         MultiValueMap<String, String> requestBody = new LinkedMultiValueMap<>();
-        var mail = new HoldedEmail(email);
-        requestBody.add(USERS_0_USERNAME, mail.getUserName());
+        requestBody.add(USERS_0_USERNAME, user.getUserName());
         requestBody.add(USERS_0_CREATEPASSWORD, CREATE_PASWORD_AND_SEND);
-        requestBody.add(USERS_0_EMAIL,  email);
-        requestBody.add(USERS_0_FIRSTNAME,name);
-        requestBody.add(USERS_0_LASTNAME, surname);
+        requestBody.add(USERS_0_EMAIL, user.getEmail());
+        requestBody.add(USERS_0_FIRSTNAME, user.getName());
+        requestBody.add(USERS_0_LASTNAME, user.getLastName());
         var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         try {
