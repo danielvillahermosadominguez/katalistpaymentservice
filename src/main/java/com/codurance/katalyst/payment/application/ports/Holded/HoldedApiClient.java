@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.ports.Holded;
 
-import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
@@ -13,7 +13,7 @@ public interface HoldedApiClient {
 
     HoldedContact getContactByCustomId(String customId) throws HoldedNotRespond;
 
-    HoldedCreationDataInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond;
+    HoldedInvoiceInfo createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond;
 
-    HoldedStatus sendInvoice(HoldedCreationDataInvoice invoice, List<HoldedEmail> emails) throws HoldedNotRespond;
+    HoldedStatus sendInvoice(HoldedInvoiceInfo invoice, List<HoldedEmail> emails) throws HoldedNotRespond;
 }

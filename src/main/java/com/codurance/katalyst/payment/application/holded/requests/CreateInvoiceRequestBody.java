@@ -1,6 +1,5 @@
 package com.codurance.katalyst.payment.application.holded.requests;
 
-import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -20,9 +19,9 @@ public class CreateInvoiceRequestBody {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonFormat(shape = JsonFormat.Shape.OBJECT)
     @JsonProperty
-    protected List<HoldedCreationDataInvoiceItem> items;
+    protected List<CreateInvoiceItemRequestBody> items;
 
-    public CreateInvoiceRequestBody(String contactId, String desc, long date, List<HoldedCreationDataInvoiceItem> items) {
+    public CreateInvoiceRequestBody(String contactId, String desc, long date, List<CreateInvoiceItemRequestBody> items) {
         this.contactId = contactId;
         this.desc = desc;
         this.date = date;

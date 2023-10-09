@@ -1,7 +1,7 @@
 package com.codurance.katalyst.payment.application.unit.subscriptions;
 
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
@@ -320,7 +320,7 @@ public class SubscriptionUseCaseShould {
         when(moodleApiClient.getCourse("1")).thenReturn(course);
         var contact = mock(HoldedContact.class);
         when(contact.getEmail()).thenReturn(new HoldedEmail(email));
-        var invoice = new HoldedCreationDataInvoice();
+        var invoice = new HoldedInvoiceInfo();
         when(holdedApiClient.createContact(any())).thenReturn(contact);
         when(holdedApiClient.createInvoice(any(), any(), any(), anyInt(), anyDouble())).thenReturn(invoice);
 
@@ -345,7 +345,7 @@ public class SubscriptionUseCaseShould {
         var surname = "Doe";
         var nifCif = "46842041c";
         var contact = createBasicContact(new HoldedEmail(email), nifCif);
-        var invoice = new HoldedCreationDataInvoice();
+        var invoice = new HoldedInvoiceInfo();
         customerData.setCourseId(courseId);
         customerData.setEmail(email);
         customerData.setName(firstName);
@@ -398,7 +398,7 @@ public class SubscriptionUseCaseShould {
         customerData.setCity("random city");
         customerData.setDnicif(nifCif);
         var contact = mock(HoldedContact.class);
-        var invoice = new HoldedCreationDataInvoice();
+        var invoice = new HoldedInvoiceInfo();
         ArgumentCaptor<List<HoldedEmail>> captor = ArgumentCaptor.forClass(List.class);
         when(contact.getEmail()).thenReturn(new HoldedEmail(email));
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
@@ -431,7 +431,7 @@ public class SubscriptionUseCaseShould {
         var surname = "Doe";
         var nifCif = "46842041c";
         var contact = createBasicContact(new HoldedEmail(email), nifCif);
-        var invoice = new HoldedCreationDataInvoice();
+        var invoice = new HoldedInvoiceInfo();
         var user = mock(MoodleUser.class);
         customerData.setCourseId(courseId);
         customerData.setEmail(email);
@@ -493,7 +493,7 @@ public class SubscriptionUseCaseShould {
         var nifCif = "46842041c";
         var user = mock(MoodleUser.class);
         var contact = createBasicContact(new HoldedEmail(email), nifCif);
-        var invoice = new HoldedCreationDataInvoice();
+        var invoice = new HoldedInvoiceInfo();
         customerData.setCourseId(courseId);
         customerData.setEmail(email);
         customerData.setName(firstName);

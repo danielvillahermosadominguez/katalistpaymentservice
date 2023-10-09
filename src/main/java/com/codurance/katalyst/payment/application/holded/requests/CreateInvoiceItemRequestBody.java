@@ -1,6 +1,6 @@
-package com.codurance.katalyst.payment.application.holded.dto;
+package com.codurance.katalyst.payment.application.holded.requests;
 
-public class HoldedCreationDataInvoiceItem {
+public class CreateInvoiceItemRequestBody {
     protected String name;
 
     protected String desc;
@@ -8,7 +8,7 @@ public class HoldedCreationDataInvoiceItem {
     protected int units;
     protected double subtotal;
 
-    public HoldedCreationDataInvoiceItem(String name, String desc, int units, double subtotal) {
+    public CreateInvoiceItemRequestBody(String name, String desc, int units, double subtotal) {
         this.name = name;
         this.units = units;
         this.subtotal = subtotal;

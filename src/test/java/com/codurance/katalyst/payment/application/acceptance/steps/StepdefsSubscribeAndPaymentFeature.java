@@ -35,7 +35,6 @@ public class StepdefsSubscribeAndPaymentFeature {
     public static MoodleCourse FIXTURE_COURSE = null;
 
     private int subscriptionOutputCode = -1;
-    private int invoiceOutputCode = -1;
     @LocalServerPort
     int randomServerPort;
 
@@ -68,7 +67,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         moodleApiClient.reset();
         holdedApiClient.reset();
         subscriptionResult = NO_ANSWER;
-        invoiceOutputCode = NO_ANSWER;
     }
 
     @Given("Holded has no contacts")
@@ -180,8 +178,9 @@ public class StepdefsSubscribeAndPaymentFeature {
         var sentInvoices = holdedApiClient.getSentInvoices(emails);
         assertThat(sentInvoices.size()).isEqualTo(1);
         var sentInvoice = sentInvoices.get(0);
-        assertThat(sentInvoice.getItems().size()).isEqualTo(1);
-        var item = sentInvoice.getItems().get(0);
+        var items = holdedApiClient.getSentItemsInTheResponseFor(sentInvoice);
+        assertThat(items.size()).isEqualTo(1);
+        var item = items.get(0);
         var concept = invoiceDataRow.get("CONCEPT");
         var units = Double.parseDouble(invoiceDataRow.get("UNITS"));
         var subtotal = Double.parseDouble(invoiceDataRow.get("SUBTOTAL"));

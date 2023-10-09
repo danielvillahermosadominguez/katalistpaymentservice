@@ -1,12 +1,13 @@
 package com.codurance.katalyst.payment.application.holded;
 
-import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoice;
-import com.codurance.katalyst.payment.application.holded.dto.HoldedCreationDataInvoiceItem;
 import com.codurance.katalyst.payment.application.holded.requests.CreateContactRequestBody;
+import com.codurance.katalyst.payment.application.holded.requests.CreateInvoiceItemRequestBody;
 import com.codurance.katalyst.payment.application.holded.requests.CreateInvoiceRequestBody;
+import com.codurance.katalyst.payment.application.holded.requests.HoldedInvoiceStatus;
 import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.utils.APIClient;
@@ -135,10 +136,10 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
-    public HoldedCreationDataInvoice createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond {
+    public HoldedInvoiceInfo createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond {
         var url = generateEndPoint("invoicing/v1/documents/invoice");
         var instant = dateService.getInstant();
-        var invoiceItem = new HoldedCreationDataInvoiceItem(
+        var invoiceItem = new CreateInvoiceItemRequestBody(
                 concept,
                 "",
                 amount,
@@ -156,14 +157,27 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
                 MediaType.APPLICATION_JSON_VALUE
         );
 
-        HoldedCreationDataInvoice result = null;
+        HoldedInvoiceInfo result = null;
         try {
             var response = restTemplate.postForEntity(
                     url,
                     request,
-                    HoldedCreationDataInvoice.class
+                    HoldedInvoiceStatus.class
             );
-            result = response.getBody();
+            // ----- Holded API Documentation inconsistency -------------------
+            // Be careful with the documentation of Holded:https://developers.holded.com/reference/create-document-1
+            // This API method don't send as response a HoldedInvoice. Instead of this:
+            //{
+            //    "status": 1,
+            //    "id": "6523fbb4056b14a8e70b3cef",
+            //    "invoiceNum": "F230017",
+            //    "contactId": "6523fa44ca9b5aa0880b5a41"
+            //}
+            // We decide not to expose this Request and send an invoice info
+            var status = response.getBody();
+            if (status.getStatus() == HoldedInvoiceStatus.OK) {
+                result = new HoldedInvoiceInfo(status.getId());
+            }
         } catch (HttpStatusCodeException httpException) {
             throw new HoldedNotRespond(
                     url,
@@ -176,7 +190,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return result;
     }
 
-    public HoldedStatus sendInvoice(HoldedCreationDataInvoice invoice, List<HoldedEmail> emails) throws HoldedNotRespond {
+    public HoldedStatus sendInvoice(HoldedInvoiceInfo invoice, List<HoldedEmail> emails) throws HoldedNotRespond {
         String strEmails = HoldedEmail.getRecipients(emails);
         var url = generateEndPoint("invoicing/v1/documents/invoice/" + invoice.getId() + "/send");
 
