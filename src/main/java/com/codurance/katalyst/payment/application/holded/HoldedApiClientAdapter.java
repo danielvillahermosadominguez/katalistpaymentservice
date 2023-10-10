@@ -4,12 +4,12 @@ import com.codurance.katalyst.payment.application.holded.requests.CreateContactR
 import com.codurance.katalyst.payment.application.holded.requests.CreateInvoiceItemRequestBody;
 import com.codurance.katalyst.payment.application.holded.requests.CreateInvoiceRequestBody;
 import com.codurance.katalyst.payment.application.holded.requests.HoldedInvoiceStatus;
-import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedInvoiceInfo;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.ports.holded.HoldedApiClient;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedInvoiceInfo;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedStatus;
+import com.codurance.katalyst.payment.application.ports.holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.utils.APIClient;
 import com.codurance.katalyst.payment.application.utils.DateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -34,10 +33,6 @@ import java.util.Map;
 public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient {
 
     public static final String CUSTOM_ID = "customId";
-    public static final String CONTACT_ID = "contactId";
-    public static final String DESC = "desc";
-    public static final String DATE = "date";
-    public static final String ITEMS = "items";
     public static final String EMAILS = "emails";
     public static final String API_KEY_PARAM_NAME = "key";
     @Value("${holded.urlbase}")
@@ -82,7 +77,6 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
                 MediaType.APPLICATION_JSON_VALUE
         );
 
-        HoldedContact result = null;
         try {
             var response = restTemplate.exchange(
                     url,
@@ -91,7 +85,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
                     HoldedContact[].class,
                     uriVariables);
 
-            result = getFirst(response);
+            return getFirst(response);
         }  catch (HttpStatusCodeException httpException) {
             throw new HoldedNotRespond(
                     url,
@@ -100,8 +94,6 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
                     httpException.getMessage()
             );
         }
-
-        return result;
     }
 
     public HoldedContact createContact(HoldedContact contact) throws HoldedNotRespond {
@@ -112,7 +104,6 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
                 MediaType.APPLICATION_JSON_VALUE
         );
 
-        HoldedContact result = null;
         try {
             var response = restTemplate.postForEntity(
                     url,
@@ -122,7 +113,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
 
             var body = response.getBody();
             if (body.getStatus() == HoldedStatus.OK) {
-                result = getContactByCustomId(contact.getCustomId());
+                return getContactByCustomId(contact.getCustomId());
             }
         }  catch (HttpStatusCodeException httpException) {
             throw new HoldedNotRespond(
@@ -132,8 +123,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
                     httpException.getMessage()
             );
         }
-
-        return result;
+        return null;
     }
 
     public HoldedInvoiceInfo createInvoice(HoldedContact contact, String concept, String description, int amount, double price) throws HoldedNotRespond {
@@ -157,7 +147,6 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
                 MediaType.APPLICATION_JSON_VALUE
         );
 
-        HoldedInvoiceInfo result = null;
         try {
             var response = restTemplate.postForEntity(
                     url,
@@ -176,7 +165,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
             // We decide not to expose this Request and send an invoice info
             var status = response.getBody();
             if (status.getStatus() == HoldedInvoiceStatus.OK) {
-                result = new HoldedInvoiceInfo(status.getId());
+                return new HoldedInvoiceInfo(status.getId());
             }
         } catch (HttpStatusCodeException httpException) {
             throw new HoldedNotRespond(
@@ -187,20 +176,27 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
             );
         }
 
-        return result;
+        return null;
     }
 
     public HoldedStatus sendInvoice(HoldedInvoiceInfo invoice, List<HoldedEmail> emails) throws HoldedNotRespond {
-        String strEmails = HoldedEmail.getRecipients(emails);
+        var strEmails = HoldedEmail.getRecipients(emails);
         var url = generateEndPoint("invoicing/v1/documents/invoice/" + invoice.getId() + "/send");
 
         MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
         requestBody.add(EMAILS, strEmails);
 
-        var request = createRequest(requestBody, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        ResponseEntity<HoldedStatus> response = null;
+        var request = createRequest(
+                requestBody,
+                MediaType.APPLICATION_FORM_URLENCODED_VALUE
+        );
+
         try {
-            response = restTemplate.postForEntity(url, request, HoldedStatus.class);
+            var response = restTemplate.postForEntity(
+                    url,
+                    request,
+                    HoldedStatus.class
+            );
             return response.getBody();
         } catch (HttpStatusCodeException httpException) {
             throw new HoldedNotRespond(

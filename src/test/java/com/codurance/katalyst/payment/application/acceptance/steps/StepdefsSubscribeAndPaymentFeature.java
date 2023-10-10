@@ -5,15 +5,16 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
 import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
-import com.codurance.katalyst.payment.application.moodle.dto.MoodleCourse;
-import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
-import com.codurance.katalyst.payment.application.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedBillAddress;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.ports.holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodleCourse;
+import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodlePrice;
+import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.usecases.UserNameService;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -102,22 +103,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         var currentUsersList = moodleApiClient.getAllUsers();
         assertThat(userList.size()).isEqualTo(currentUsersList.size());
     }
-
-    private List<MoodleUser> createUserList(List<Map<String, String>> userList) {
-        return userList
-                .stream()
-                .map(data -> convertToMoodleUser(data))
-                .collect(Collectors.toList());
-    }
-
-    private MoodleUser convertToMoodleUser(Map<String, String> data) {
-        var name = data.get("NAME");
-        var surname = data.get("SURNAME");
-        var userName = data.get("USERNAME");
-        var email = data.get("EMAIL");
-        return new MoodleUser(name, surname, userName, email);
-    }
-
     @Given("a previous course called {string} exists which has the following students")
     public void a_previous_course_exist_which_have_the_following_students(String courseName, DataTable dataTable) throws CustomFieldNotExists {
         var userList = dataTable.asMaps(String.class, String.class);
@@ -205,7 +190,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(user.getName()).isEqualTo(moodleName);
         assertThat(user.getLastName()).isEqualTo(moodleSurname);
     }
-
 
     @Then("Holded has the following contacts")
     public void holded_has_the_following_contacts(DataTable dtContacts) {
@@ -296,5 +280,20 @@ public class StepdefsSubscribeAndPaymentFeature {
                 })
                 .collect(Collectors.toList());
         return expectedContactList;
+    }
+
+    private List<MoodleUser> createUserList(List<Map<String, String>> userList) {
+        return userList
+                .stream()
+                .map(data -> convertToMoodleUser(data))
+                .collect(Collectors.toList());
+    }
+
+    private MoodleUser convertToMoodleUser(Map<String, String> data) {
+        var name = data.get("NAME");
+        var surname = data.get("SURNAME");
+        var userName = data.get("USERNAME");
+        var email = data.get("EMAIL");
+        return new MoodleUser(name, surname, userName, email);
     }
 }

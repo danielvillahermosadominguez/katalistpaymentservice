@@ -1,10 +1,10 @@
 package com.codurance.katalyst.payment.application.api;
 
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
-import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
-import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
+import com.codurance.katalyst.payment.application.ports.holded.HoldedApiClient;
+import com.codurance.katalyst.payment.application.ports.moodle.MoodleApiClient;
+import com.codurance.katalyst.payment.application.ports.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
 import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
 import com.codurance.katalyst.payment.application.usecases.exception.CreditCardNotValid;

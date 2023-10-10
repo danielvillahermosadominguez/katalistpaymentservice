@@ -1,11 +1,11 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
 import com.codurance.katalyst.payment.application.holded.requests.CreateInvoiceItemRequestBody;
-import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedInvoiceInfo;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
+import com.codurance.katalyst.payment.application.ports.holded.HoldedApiClient;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedInvoiceInfo;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,15 +33,6 @@ public class HoldedApiClientFake implements HoldedApiClient {
         }
     }
 
-    class HoldedStatusDTOFake extends HoldedStatus {
-        public HoldedStatusDTOFake(int status, String info, String id) {
-            this.status = status;
-            this.info = info;
-            this.id = id;
-        }
-    }
-
-
     private Map<String, HoldedContact> contacts = new HashMap<>();
 
     private Map<String, List<HoldedInvoiceInfo>> sentInvoices = new HashMap<>();
@@ -49,7 +40,7 @@ public class HoldedApiClientFake implements HoldedApiClient {
     @Override
     public HoldedContact createContact(HoldedContact contact) {
         contact.setId(++holdedCounterId + "");
-        this.contacts.put(contact.getCustomId(), contact);
+        contacts.put(contact.getCustomId(), contact);
         return contact;
     }
 
@@ -82,7 +73,7 @@ public class HoldedApiClientFake implements HoldedApiClient {
         }
         sentList = sentInvoices.get(strEmails);
         sentList.add(invoice);
-        return new HoldedStatusDTOFake(
+        return new HoldedStatus(
                 HoldedStatus.OK,
                 "RANDOM_INFO",
                 invoice.getId()
@@ -92,16 +83,13 @@ public class HoldedApiClientFake implements HoldedApiClient {
     public void reset() {
         this.contacts.clear();
         this.sentInvoices.clear();
-        ;
     }
 
     public List<HoldedInvoiceInfo> getSentInvoices(String emails) {
-        List<HoldedInvoiceInfo> sentList;
         if (!sentInvoices.containsKey(emails)) {
             return Arrays.asList();
         }
-        sentList = sentInvoices.get(emails);
-        return sentList;
+        return sentInvoices.get(emails);
     }
 
     public List<CreateInvoiceItemRequestBody> getSentItemsInTheResponseFor(HoldedInvoiceInfo invoice) {

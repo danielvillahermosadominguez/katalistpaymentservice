@@ -2,14 +2,14 @@ package com.codurance.katalyst.payment.application.integration;
 
 import com.codurance.katalyst.payment.application.acceptance.doubles.TestDateService;
 import com.codurance.katalyst.payment.application.holded.HoldedApiClientAdapter;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedInvoiceInfo;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedStatus;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedTypeContact;
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.HoldedNotRespond;
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedStatus;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.ports.holded.exceptions.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.ports.holded.exceptions.NotValidEMailFormat;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -363,7 +363,7 @@ public class HoldedAPIClientShould {
         var status = apiAdapter.sendInvoice(invoice, emails);
         assertThat(status).isNotNull();
         assertThat(status.getStatus()).isEqualTo(HoldedStatus.OK);
-        wireMock.verifySendInvoiceHasBeenCalled(recipient, invoiceID);
+        wireMock.verifySendInvoiceHasBeenCalled(invoiceID);
     }
 
     @Test
@@ -385,7 +385,7 @@ public class HoldedAPIClientShould {
         assertThat(status).isNotNull();
         assertThat(status.getStatus()).isNotEqualTo(HoldedStatus.OK);
 
-        wireMock.verifySendInvoiceHasBeenCalled(recipient, invoiceID);
+        wireMock.verifySendInvoiceHasBeenCalled(invoiceID);
     }
 
     @Test

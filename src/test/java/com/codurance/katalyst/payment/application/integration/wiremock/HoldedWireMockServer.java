@@ -1,8 +1,5 @@
 package com.codurance.katalyst.payment.application.integration.wiremock;
 
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,21 +25,6 @@ public class HoldedWireMockServer extends WireMockServerExtension {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
-    }
-
-
-    public Map<String, Object> createContactResponseForGetContact(String email, String name, String nifCif, String vatNumber, String type, boolean isPerson) throws UnsupportedEncodingException, NotValidEMailFormat {
-        Map<String, Object> bodyMap = new LinkedHashMap<>();
-        var mail = new HoldedEmail(email);
-        var customId = HoldedContact.buildCustomId(nifCif, mail);
-        bodyMap.put("id", 1);
-        bodyMap.put("customId", customId);
-        bodyMap.put("email", email);
-        bodyMap.put("name", name);
-        bodyMap.put("code", nifCif);
-        bodyMap.put("vatnumber", vatNumber);
-        bodyMap.put("type", type);
-        return bodyMap;
     }
 
     public Map<String, Object> createContactRequestParameters(String name, String email, String type, String nifCif, String vatNumber, String customId, boolean isPerson) {
@@ -73,14 +55,17 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         return responseBodyCreate;
     }
 
-    public void stubForCreateInvoiceWithStatusOK(String invoiceID, Map<String, String> requestBodyMap, Map<String, Object> responseBody) throws UnsupportedEncodingException {
+    public void stubForCreateInvoiceWithStatusOK(String invoiceID,
+                                                 Map<String, String> requestBodyMap,
+                                                 Map<String, Object> responseBody) throws UnsupportedEncodingException {
         var jsonResponseBody = gson.toJson(responseBody);
         stubForPostWithStatusOKAndBodyParameters("invoicing/v1/documents/invoice/" + unicode(invoiceID) + "/send",
                 joinParameters(requestBodyMap),
                 jsonResponseBody);
     }
 
-    public void stubForCreateContactsWithStatusOKAsJsonBody(Map<String, Object> requestBodyParameters, Map<String, Object> responseBody)  {
+    public void stubForCreateContactsWithStatusOKAsJsonBody(Map<String, Object> requestBodyParameters,
+                                                            Map<String, Object> responseBody)  {
         var jsonBody = gson.toJson(responseBody);
         var jsonBodyParameters = gson.toJson(requestBodyParameters);
         stubForPostWithStatusOKAndBodyParameters("invoicing/v1/contacts",
@@ -88,7 +73,8 @@ public class HoldedWireMockServer extends WireMockServerExtension {
                 jsonBody);
     }
 
-    public void stubForGetContactByCustomIdStatusOK(String customId, String jsonResponse) throws UnsupportedEncodingException {
+    public void stubForGetContactByCustomIdStatusOK(String customId,
+                                                    String jsonResponse) throws UnsupportedEncodingException {
         var urlParameters = "?customId=" + URLEncoder.encode(customId, "UTF-8");
         this.wireMockServer.stubFor(
                 get(urlEqualTo(String.format(URL_BASE + "invoicing/v1/contacts%s", urlParameters)))
@@ -104,7 +90,9 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         );
     }
 
-    private void stubForPostWithStatusOKAndBodyParameters(String function, String requestBody, String responseBody) {
+    private void stubForPostWithStatusOKAndBodyParameters(String function,
+                                                          String requestBody,
+                                                          String responseBody) {
         this.wireMockServer.stubFor(
                 post(urlEqualTo(URL_BASE + function))
                         .withRequestBody(containing(requestBody))
@@ -120,7 +108,9 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         );
     }
 
-    public void stubForPostWithStatusOKAndBodyJson(String function, String requestBody, String responseBody) {
+    public void stubForPostWithStatusOKAndBodyJson(String function,
+                                                   String requestBody,
+                                                   String responseBody) {
         this.wireMockServer.stubFor(
                 post(urlEqualTo(URL_BASE + function))
                         .withRequestBody(equalToJson(requestBody))
@@ -136,8 +126,11 @@ public class HoldedWireMockServer extends WireMockServerExtension {
         );
     }
 
-    public void verifySendInvoiceHasBeenCalled(String email, String invoiceID) throws UnsupportedEncodingException {
+    public void verifySendInvoiceHasBeenCalled(String invoiceID) throws UnsupportedEncodingException {
         this.wireMockServer.verify(1,
-                postRequestedFor(urlEqualTo(URL_BASE + "invoicing/v1/documents/invoice/" + unicode(invoiceID) + "/send")));
+                postRequestedFor(
+                        urlEqualTo(URL_BASE + "invoicing/v1/documents/invoice/" + unicode(invoiceID) + "/send")
+                )
+        );
     }
 }

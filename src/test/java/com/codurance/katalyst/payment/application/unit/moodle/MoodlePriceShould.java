@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.unit.moodle;
 
-import com.codurance.katalyst.payment.application.moodle.dto.MoodlePrice;
+import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodlePrice;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 

@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.ports.Holded.dto;
+package com.codurance.katalyst.payment.application.ports.holded.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -144,7 +144,7 @@ public class HoldedContact {
     }
 
     public boolean haveSameMainData(HoldedContact contact) {
-        // We don't have into account the id neither purchaseAccount
+        // We don't have into account the id neither purchaseAccount. It is not an equal.
         var result = contact.getCustomId().equals(customId);
         result &= contact.getEmail().getValue().equals(email.getValue());
         result &= contact.getCode() != null

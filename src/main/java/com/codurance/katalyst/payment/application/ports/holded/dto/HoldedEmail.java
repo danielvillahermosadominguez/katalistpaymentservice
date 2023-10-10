@@ -1,6 +1,6 @@
-package com.codurance.katalyst.payment.application.ports.Holded.dto;
+package com.codurance.katalyst.payment.application.ports.holded.dto;
 
-import com.codurance.katalyst.payment.application.ports.Holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.ports.holded.exceptions.NotValidEMailFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 

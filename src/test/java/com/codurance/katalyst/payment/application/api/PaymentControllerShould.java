@@ -1,15 +1,15 @@
 package com.codurance.katalyst.payment.application.api;
 
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
-import com.codurance.katalyst.payment.application.ports.Holded.HoldedApiClient;
-import com.codurance.katalyst.payment.application.ports.MoodleApiClient;
+import com.codurance.katalyst.payment.application.ports.holded.HoldedApiClient;
+import com.codurance.katalyst.payment.application.ports.moodle.MoodleApiClient;
+import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
 import com.codurance.katalyst.payment.application.usecases.exception.CourseNotExists;
 import com.codurance.katalyst.payment.application.usecases.exception.CreditCardNotValid;
 import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
 import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.NoPriceAvailable;
-import com.codurance.katalyst.payment.application.usecases.SubscriptionUseCase;
 import com.codurance.katalyst.payment.application.usecases.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.usecases.exception.UserIsEnroledInTheCourse;
 import com.google.gson.Gson;

@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.moodle.exception;
+package com.codurance.katalyst.payment.application.ports.moodle.exception;
 
 public class MoodleNotRespond extends Throwable {
     private final String function;

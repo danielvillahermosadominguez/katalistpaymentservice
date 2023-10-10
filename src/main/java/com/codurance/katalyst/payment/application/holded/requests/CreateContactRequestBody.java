@@ -1,7 +1,7 @@
 package com.codurance.katalyst.payment.application.holded.requests;
 
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedBillAddress;
-import com.codurance.katalyst.payment.application.ports.Holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedBillAddress;
+import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedContact;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

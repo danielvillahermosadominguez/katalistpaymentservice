@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.moodle.dto;
+package com.codurance.katalyst.payment.application.ports.moodle.dto;
 
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 

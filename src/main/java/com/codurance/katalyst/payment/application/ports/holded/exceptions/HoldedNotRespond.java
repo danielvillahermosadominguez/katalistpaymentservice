@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.ports.Holded.exceptions;
+package com.codurance.katalyst.payment.application.ports.holded.exceptions;
 
 public class HoldedNotRespond extends Throwable {
     private final String url;

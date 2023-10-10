@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.ports.Holded.dto;
+package com.codurance.katalyst.payment.application.ports.holded.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -10,7 +10,6 @@ public class HoldedInvoiceInfo {
     public HoldedInvoiceInfo() {
 
     }
-
     public HoldedInvoiceInfo(String id) {
         this.id = id;
     }
