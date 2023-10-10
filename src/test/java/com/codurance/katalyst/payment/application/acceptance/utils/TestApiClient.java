@@ -15,8 +15,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class TestApiClient {
     private static final String HTTP_LOCALHOST = "http://localhost:";
@@ -44,6 +45,7 @@ public class TestApiClient {
         return HTTP_LOCALHOST + this.port;
     }
 
+    private List<Error> errorList = new ArrayList<>();
     private ResponseEntity<String> sendRequest(HttpMethod method, String endpoint) {
         HttpHeaders header = new HttpHeaders();
         header.set("Accept", MediaType.APPLICATION_JSON_VALUE);
@@ -81,6 +83,8 @@ public class TestApiClient {
         if (response.getStatusCode() == HttpStatus.OK) {
             return gson.fromJson(response.getBody(), Course.class);
         } else {
+            var error = gson.fromJson(response.getBody(), Error.class);
+            errorList.add(error);
             return null;
         }
     }
@@ -93,5 +97,13 @@ public class TestApiClient {
             return error.getCode();
         }
         return SUCCESS_CODE;
+    }
+
+    public List<Error> getLastErrors() {
+        return errorList;
+    }
+
+    public void resetLastErrors() {
+        errorList.clear();
     }
 }

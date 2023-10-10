@@ -82,4 +82,12 @@ public class MoodleCourse {
             throw new CustomFieldNotExists(THE_CUSTOM_FIELD_PRICE_NOT_EXIST);
         }
     }
+
+    public void setDisplayName(String name) {
+        this.displayname = name;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

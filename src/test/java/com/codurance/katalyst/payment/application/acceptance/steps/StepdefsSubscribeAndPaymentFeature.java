@@ -14,7 +14,7 @@ import com.codurance.katalyst.payment.application.ports.holded.exceptions.NotVal
 import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodleUser;
-import com.codurance.katalyst.payment.application.usecases.UserNameService;
+import com.codurance.katalyst.payment.application.ports.moodle.exception.MoodleNotRespond;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -94,7 +94,7 @@ public class StepdefsSubscribeAndPaymentFeature {
     }
 
     @Given("Moodle which has these previous users")
-    public void moodle_which_has_these_previous_users(DataTable dataTable) {
+    public void moodle_which_has_these_previous_users(DataTable dataTable) throws MoodleNotRespond {
         var userList = dataTable.asMaps(String.class, String.class);
         var previousUserList = createUserList(userList);
         for (var user : previousUserList) {
@@ -103,8 +103,9 @@ public class StepdefsSubscribeAndPaymentFeature {
         var currentUsersList = moodleApiClient.getAllUsers();
         assertThat(userList.size()).isEqualTo(currentUsersList.size());
     }
+
     @Given("a previous course called {string} exists which has the following students")
-    public void a_previous_course_exist_which_have_the_following_students(String courseName, DataTable dataTable) throws CustomFieldNotExists {
+    public void a_previous_course_exist_which_have_the_following_students(String courseName, DataTable dataTable) throws CustomFieldNotExists, MoodleNotRespond {
         var userList = dataTable.asMaps(String.class, String.class);
         var enrolledStudents = createUserList(userList);
         var course = moodleApiClient.addCourse(
@@ -183,7 +184,7 @@ public class StepdefsSubscribeAndPaymentFeature {
     }
 
     @Then("the customer will receive access to the platform in the email {string} with the user {string} and fullname {string} {string}")
-    public void the_customer_will_receive_access_to_the_platform_in_the_email_with_the_user_and_name(String moodleEmail, String moodleUser, String moodleName, String moodleSurname) {
+    public void the_customer_will_receive_access_to_the_platform_in_the_email_with_the_user_and_name(String moodleEmail, String moodleUser, String moodleName, String moodleSurname) throws MoodleNotRespond {
         var user = moodleApiClient.getUserByMail(moodleEmail);
         assertThat(user).isNotNull();
         assertThat(user.getUserName()).isEqualTo(moodleUser);

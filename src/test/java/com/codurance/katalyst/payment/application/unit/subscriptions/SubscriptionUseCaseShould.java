@@ -24,7 +24,7 @@ import com.codurance.katalyst.payment.application.usecases.exception.CourseNotEx
 import com.codurance.katalyst.payment.application.usecases.exception.CreditCardNotValid;
 import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
-import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.usecases.exception.UserIsEnroledInTheCourse;
@@ -124,7 +124,7 @@ public class SubscriptionUseCaseShould {
     @Test
     void throw_an_exception_if_moodle_not_respond() throws MoodleNotRespond {
         when(moodleApiClient.getCourse(any())).thenThrow(MoodleNotRespond.class);
-        var thrown = assertThrows(MoodleIsNotAvailable.class, () -> {
+        var thrown = assertThrows(LearningPlatformIsNotAvailable.class, () -> {
             useCase.subscribe(customerData);
         });
 
@@ -153,7 +153,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void check_if_the_course_exists_in_moodle() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid, NotValidEMailFormat {
+    void check_if_the_course_exists_in_moodle() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid, NotValidEMailFormat {
         var email = new HoldedEmail("random_username@random_domain.com");
         var nifCif = "46842041C";
         var contact = createBasicContact(email, nifCif);
@@ -202,7 +202,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void not_to_create_a_contact_if_the_contact_exists_in_holded() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+    void not_to_create_a_contact_if_the_contact_exists_in_holded() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         var email = new HoldedEmail("random_username@random_domain.com");
         var nifCif = "46842041C";
         var contact = createBasicContact(email, nifCif);
@@ -218,7 +218,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void create_a_contact_with_upper_case_data_when_contact_not_exists() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+    void create_a_contact_with_upper_case_data_when_contact_not_exists() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, NoPriceAvailable, CustomFieldNotExists, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         var contactArg = ArgumentCaptor.forClass(HoldedContact.class);
         var companyName = "random company";
         var nifCif = "46842041c";
@@ -263,7 +263,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void create_an_invoice_with_the_course_data() throws CourseNotExists, HoldedNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+    void create_an_invoice_with_the_course_data() throws CourseNotExists, HoldedNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         var email = "randomusername@randomdomain.com";
         var nifCif = "46842041c";
         var contact = createBasicContact(
@@ -339,7 +339,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void send_the_invoice_to_the_customer_email() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+    void send_the_invoice_to_the_customer_email() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         var email = "random_username@random_domain.com";
         var nifCif = "46842041c";
         var contact = createBasicContact(
@@ -380,7 +380,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void enrolle_a_new_user_in_moodle_when_is_person() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+    void enrolle_a_new_user_in_moodle_when_is_person() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         var username = "random_username_propose_for_service";
         when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
         var userId = "1";
@@ -451,7 +451,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void enrolle_a_new_user_in_moodle_when_is_company() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+    void enrolle_a_new_user_in_moodle_when_is_company() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         var username = "random_username_propose_for_service";
         when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
         var userId = "1";
@@ -523,7 +523,7 @@ public class SubscriptionUseCaseShould {
     }
 
     @Test
-    void enrolle_an_existent_user_in_moodle_when_is_person() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+    void enrolle_an_existent_user_in_moodle_when_is_person() throws CourseNotExists, HoldedNotRespond, MoodleNotRespond, InvalidInputCustomerData, NotValidEMailFormat, CustomFieldNotExists, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         var userId = "1";
         var email = "random_username@random_domain.com";
         var firstName = "John";

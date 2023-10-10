@@ -19,7 +19,7 @@ import com.codurance.katalyst.payment.application.usecases.exception.CourseNotEx
 import com.codurance.katalyst.payment.application.usecases.exception.CreditCardNotValid;
 import com.codurance.katalyst.payment.application.usecases.exception.HoldedIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.InvalidInputCustomerData;
-import com.codurance.katalyst.payment.application.usecases.exception.MoodleIsNotAvailable;
+import com.codurance.katalyst.payment.application.usecases.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.usecases.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.usecases.exception.UserIsEnroledInTheCourse;
@@ -51,7 +51,7 @@ public class SubscriptionUseCase {
         this.userNameService = userNameService;
     }
 
-    public PaymentStatus subscribe(PotentialCustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, MoodleIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+    public PaymentStatus subscribe(PotentialCustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
         if(customerData.getPaytpvToken() == null || customerData.getPaytpvToken().trim().isEmpty()) {
             throw new TPVTokenIsRequired();
         }
@@ -96,7 +96,7 @@ public class SubscriptionUseCase {
         } catch (CustomFieldNotExists exception) {
             throw new NoPriceAvailable();
         } catch (MoodleNotRespond exception) {
-            throw new MoodleIsNotAvailable();
+            throw new LearningPlatformIsNotAvailable();
         } catch (HoldedNotRespond exception) {
             throw new HoldedIsNotAvailable();
         }

@@ -5,6 +5,7 @@ import com.codurance.katalyst.payment.application.ports.moodle.MoodleApiClient;
 import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.ports.moodle.exception.MoodleNotRespond;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,8 @@ import java.util.Map;
 public class MoodleApiClientFake implements MoodleApiClient {
     public static int idMoodleCourseCounter = 0;
     public static int idMoodleUserCounter = 0;
+
+    public boolean available = true;
 
     private Map<Integer, MoodleCourse> courses = new HashMap<>();
 
@@ -25,11 +28,17 @@ public class MoodleApiClientFake implements MoodleApiClient {
         courses.clear();
         users.clear();
         studentsPerCourse.clear();
+        available = true;
     }
 
     public MoodleCourse addCourse(String fixtureDisplayName, MoodlePrice price) throws CustomFieldNotExists {
-        var course = new MoodleCourse(++idMoodleCourseCounter, fixtureDisplayName, price);
+        var course = new MoodleCourse(idMoodleCourseCounter, fixtureDisplayName, price);
+        return addCourse(course);
+    }
+
+    public MoodleCourse addCourse(MoodleCourse course) {
         this.courses.put(course.getId(), course);
+        idMoodleCourseCounter = course.getId() + 1;
         this.studentsPerCourse.put(course.getId(), new ArrayList<>());
         return course;
     }
@@ -41,7 +50,8 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     @Override
-    public boolean existsAnUserinThisCourse(String courseId, String email) {
+    public boolean existsAnUserinThisCourse(String courseId, String email) throws MoodleNotRespond {
+        checkAvailability();
         if (!studentsPerCourse.containsKey(courseId)) {
             return false;
         }
@@ -55,8 +65,19 @@ public class MoodleApiClientFake implements MoodleApiClient {
                 ).toList().isEmpty();
     }
 
+    private void checkAvailability() throws MoodleNotRespond {
+        if (!available) {
+            throw new MoodleNotRespond("MoodleApiClientFake",
+                    "MoodleApiClientFake",
+                    "MoodleApiClientFake",
+                    "MoodleApiClientFake"
+            );
+        }
+    }
+
     @Override
-    public MoodleUser getUserByMail(String email) {
+    public MoodleUser getUserByMail(String email) throws MoodleNotRespond {
+        checkAvailability();
         var filteredUserList = users
                 .stream()
                 .filter(user -> user.getEmail().equals(email))
@@ -72,7 +93,8 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     @Override
-    public MoodleUser createUser(MoodleUser user) {
+    public MoodleUser createUser(MoodleUser user) throws MoodleNotRespond {
+        checkAvailability();
         var result = new MoodleUser(
                 ++idMoodleUserCounter + "",
                 user.getName(),
@@ -84,7 +106,8 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     @Override
-    public void enrolToTheCourse(MoodleCourse course, MoodleUser user) {
+    public void enrolToTheCourse(MoodleCourse course, MoodleUser user) throws MoodleNotRespond {
+        checkAvailability();
         if (!studentsPerCourse.containsKey(course.getId())) {
             return;
         }
@@ -99,8 +122,9 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     @Override
-    public MoodleCourse getCourse(String courseId) {
-        int courseIdInteger = Integer.parseInt(courseId);
+    public MoodleCourse getCourse(String courseId) throws MoodleNotRespond {
+        checkAvailability();
+        var courseIdInteger = Integer.parseInt(courseId);
         if (!courses.containsKey(courseIdInteger)) {
             return null;
         }
@@ -108,7 +132,8 @@ public class MoodleApiClientFake implements MoodleApiClient {
     }
 
     @Override
-    public MoodleUser getUserByUserName(String userName) {
+    public MoodleUser getUserByUserName(String userName) throws MoodleNotRespond {
+        checkAvailability();
         for (var user : users) {
             if (user.getUserName().equals(userName)) {
                 return user;
@@ -124,5 +149,9 @@ public class MoodleApiClientFake implements MoodleApiClient {
             }
         }
         return null;
+    }
+
+    public void notAvailable() {
+        available = false;
     }
 }
