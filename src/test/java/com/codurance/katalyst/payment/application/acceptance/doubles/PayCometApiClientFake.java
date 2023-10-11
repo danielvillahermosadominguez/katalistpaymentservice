@@ -5,6 +5,9 @@ import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
 
 public class PayCometApiClientFake implements PayCometApiClient {
+
+    public static String URL_CHALLENGE_OK ="URL_CHALLENGE_OK";
+
     public String generateTemporalToken() {
         return "RANDOM_TOKEN";
     }
@@ -19,6 +22,8 @@ public class PayCometApiClientFake implements PayCometApiClient {
 
     @Override
     public PaymentStatus payment(double amount, String currency, int idUser, String methodId, String order, String originalIp, String tokenUser) {
-        return new PaymentStatus();
+        var paymentStatus = new PaymentStatus();
+        paymentStatus.setChallengeUrl(URL_CHALLENGE_OK);
+        return paymentStatus;
     }
 }

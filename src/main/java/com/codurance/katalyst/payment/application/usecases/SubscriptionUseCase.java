@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.usecases;
 
-import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
+import com.codurance.katalyst.payment.application.api.CustomerData;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
@@ -39,6 +39,9 @@ public class SubscriptionUseCase {
 
     private final DateService dataService;
 
+
+    private int terminal;
+
     @Autowired
     public SubscriptionUseCase(HoldedApiClient holdedApiClient,
                                MoodleApiClient moodleApiClient,
@@ -51,12 +54,12 @@ public class SubscriptionUseCase {
         this.userNameService = userNameService;
     }
 
-    public PaymentStatus subscribe(PotentialCustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
-        if(customerData.getPaytpvToken() == null || customerData.getPaytpvToken().trim().isEmpty()) {
+    public PaymentStatus subscribe(CustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, HoldedIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+        if (customerData.getPaytpvToken() == null || customerData.getPaytpvToken().trim().isEmpty()) {
             throw new TPVTokenIsRequired();
         }
         var tpvUser = this.payCometApiClient.createUser(customerData.getPaytpvToken());
-        if(tpvUser == null) {
+        if (tpvUser == null) {
             throw new CreditCardNotValid();
         }
 
@@ -102,7 +105,7 @@ public class SubscriptionUseCase {
         }
     }
 
-    private MoodleUser createMoodleUser(PotentialCustomerData customerData) throws MoodleNotRespond {
+    private MoodleUser createMoodleUser(CustomerData customerData) throws MoodleNotRespond {
         MoodleUser user;
         var email = new HoldedEmail(customerData.getEmail());
         var name = customerData.getName();
@@ -123,7 +126,7 @@ public class SubscriptionUseCase {
         return user;
     }
 
-    private void createContactAndInvoicing(PotentialCustomerData customerData, MoodleCourse course) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond, CustomFieldNotExists {
+    private void createContactAndInvoicing(CustomerData customerData, MoodleCourse course) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond, CustomFieldNotExists {
         var email = new HoldedEmail(customerData.getEmail());
 
         var customId = HoldedContact.buildCustomId(customerData.getDnicif(), email);
@@ -143,7 +146,7 @@ public class SubscriptionUseCase {
         this.holdedApiClient.sendInvoice(invoice, Arrays.asList(contact.getEmail()));
     }
 
-    private HoldedContact createContactInHolded(PotentialCustomerData originalData) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond {
+    private HoldedContact createContactInHolded(CustomerData originalData) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond {
         var name = originalData.getCompany().toUpperCase();
         var type = HoldedTypeContact.CLIENT;
         var isPerson = !originalData.getIsCompany();

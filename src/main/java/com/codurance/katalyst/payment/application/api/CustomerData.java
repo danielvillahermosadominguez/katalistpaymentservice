@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.api;
 
-public class PotentialCustomerData {
+public class CustomerData {
     private String courseId = "";
 
     private String email = "";

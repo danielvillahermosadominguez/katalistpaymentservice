@@ -2,7 +2,11 @@ package com.codurance.katalyst.payment.application.acceptance.utils;
 
 import com.codurance.katalyst.payment.application.api.Course;
 import com.codurance.katalyst.payment.application.api.Error;
-import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
+import com.codurance.katalyst.payment.application.api.PaymentMethod;
+import com.codurance.katalyst.payment.application.api.PaymentNotification;
+import com.codurance.katalyst.payment.application.api.CustomerData;
+import com.codurance.katalyst.payment.application.api.TransactionType;
+import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -12,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
@@ -22,7 +28,7 @@ import java.util.List;
 public class TestApiClient {
     private static final String HTTP_LOCALHOST = "http://localhost:";
     private static final String HEALTHCHECK = "/healthcheck";
-    public static final int SUCCESS_CODE = 0;
+    public static final String SUBSCRIPTION = "/subscription";
     private int port = -1;
 
     private Gson gson = new Gson();
@@ -74,6 +80,33 @@ public class TestApiClient {
         return response;
     }
 
+    private ResponseEntity<String> post(String endPoint, PaymentNotification notification) {
+        var header = new HttpHeaders();
+        header.set("Accept", MediaType.APPLICATION_JSON_VALUE);
+        header.set("Content-Type", MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+        ResponseEntity<String> response;
+        MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
+        requestBody.add("MethodId", notification.getMethodId().getValue());
+        requestBody.add("Order", notification.getOrder());
+        requestBody.add("Amount", notification.getAmount());
+        requestBody.add("TpvID", notification.getTpvID());
+        requestBody.add("TransactionType", notification.getTransactionType().getValue());
+        requestBody.add("Response", notification.getResponse());
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(requestBody, header);
+
+        try {
+            response = restTemplate.postForEntity(
+                    endPoint,
+                    request,
+                    String.class
+            );
+        } catch (HttpStatusCodeException e) {
+            response = ResponseEntity.status(e.getStatusCode()).headers(e.getResponseHeaders())
+                    .body(e.getResponseBodyAsString());
+        }
+        return response;
+    }
+
     public boolean isInitialized() {
         return this.port != -1;
     }
@@ -89,14 +122,16 @@ public class TestApiClient {
         }
     }
 
-    public int subscription(PotentialCustomerData customData) {
+    public PaymentStatus paySubscription(CustomerData customData) {
         var body = gson.toJson(customData);
-        var response = post(getUrlBase() + "/subscription", body);
+        var response = post(getUrlBase() + SUBSCRIPTION, body);
         if (response.getStatusCode() != HttpStatus.OK) {
-            Error error = gson.fromJson(response.getBody(), Error.class);
-            return error.getCode();
+            var error = gson.fromJson(response.getBody(), Error.class);
+            this.errorList.add(error);
+            return null;
         }
-        return SUCCESS_CODE;
+        var paymentStatus = gson.fromJson(response.getBody(), PaymentStatus.class);
+        return paymentStatus;
     }
 
     public List<Error> getLastErrors() {
@@ -105,5 +140,13 @@ public class TestApiClient {
 
     public void resetLastErrors() {
         errorList.clear();
+    }
+
+    public boolean confirmPayment(PaymentNotification notification) {
+        var response = post(getUrlBase() + "/confirmation", notification);
+        if (response.getStatusCode() != HttpStatus.OK) {
+            return false;
+        }
+        return true;
     }
 }

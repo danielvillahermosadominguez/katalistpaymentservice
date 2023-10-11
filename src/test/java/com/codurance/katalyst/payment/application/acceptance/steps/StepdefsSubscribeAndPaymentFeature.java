@@ -4,8 +4,12 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
-import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
+import com.codurance.katalyst.payment.application.api.CustomerData;
+import com.codurance.katalyst.payment.application.api.PaymentMethod;
+import com.codurance.katalyst.payment.application.api.PaymentNotification;
+import com.codurance.katalyst.payment.application.api.TransactionType;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
+import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedEmail;
@@ -21,6 +25,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
 import java.util.List;
@@ -48,11 +53,13 @@ public class StepdefsSubscribeAndPaymentFeature {
     HoldedApiClientFake holdedApiClient;
     @Autowired
     private PayCometApiClientFake payCometApiClient;
-
+    @Value("${paycomet.terminal}")
+    int tpvId;
     private int subscriptionResult = NO_ANSWER;
     private Map<String, String> userData = null;
     private Map<String, String> creditDebitCardData = null;
     private String temporalPayCometToken = null;
+    private PaymentStatus paymentStatus;
 
     @Before
     public void beforeEachScenario() {
@@ -140,17 +147,10 @@ public class StepdefsSubscribeAndPaymentFeature {
         userData = rows.get(0);
     }
 
-
-    @When("the customer request the subscription to the course")
-    public void the_customer_request_the_subscription_to_the_course() {
-        assertThat(FIXTURE_COURSE).isNotNull();
-        assertThat(this.userData).isNotNull();
-    }
-
-
     @Then("the customer is informed about the success of the subscription")
     public void the_customer_is_informed_about_the_success_of_the_subscription() {
-        assertThat(subscriptionOutputCode).isEqualTo(TestApiClient.SUCCESS_CODE);
+        assertThat(paymentStatus).isNotNull();
+        assertThat(apiClient.getLastErrors().size()).isEqualTo(0);
     }
 
     @Then("the customer will receive an invoice to the recipients {string} with the following data")
@@ -172,15 +172,39 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(units).isEqualTo(item.getUnits());
         assertThat(subtotal).isEqualTo(item.getSubtotal());
     }
-
-    @When("the customer pays the subscription with credit\\/debit card with the following result")
-    public void the_customer_pays_the_subscription_with_credit_debit_card_with_the_following_result(DataTable dataTable) {
+    @When("the customer pays the subscription with credit\\/debit card with the following data")
+    public void the_customer_pays_the_subscription_with_credit_debit_card_with_the_following_data(DataTable dataTable) {
         var paymentData = dataTable.asMaps(String.class, String.class);
+        assertThat(FIXTURE_COURSE).isNotNull();
+        assertThat(this.userData).isNotNull();
         assertThat(paymentData.size()).isEqualTo(1);
         creditDebitCardData = paymentData.get(0);
         temporalPayCometToken = this.payCometApiClient.generateTemporalToken();
         var customData = convertToCustomData();
-        subscriptionOutputCode = this.apiClient.subscription(customData);
+        paymentStatus = this.apiClient.paySubscription(customData);
+    }
+
+    @When("the customer receives a challenge URL and decide to {string} the payment")
+    public void the_customer_receives_a_challenge_url_and_decide_to_the_payment(String decision) {
+        if(decision.equals("Accept")) {
+            assertThat(paymentStatus).isNotNull();
+            assertThat(apiClient.getLastErrors().size()).isNotNull();
+            assertThat(paymentStatus.getChallengeUrl()).isEqualTo(PayCometApiClientFake.URL_CHALLENGE_OK);
+            var notification = createOKNotification();
+            assertThat(apiClient.confirmPayment(notification)).isTrue();
+        }
+    }
+
+    private PaymentNotification createOKNotification() {
+        var notification = new PaymentNotification(
+                PaymentMethod.CARDS,
+                TransactionType.AUTHORIZATION,
+                tpvId,
+                "RANDOM_ORDER",
+                "RANDOM_AMOUNT",
+                "OK"
+        );
+        return notification;
     }
 
     @Then("the customer will receive access to the platform in the email {string} with the user {string} and fullname {string} {string}")
@@ -212,8 +236,8 @@ public class StepdefsSubscribeAndPaymentFeature {
         return false;
     }
 
-    private PotentialCustomerData convertToCustomData() {
-        var customData = new PotentialCustomerData();
+    private CustomerData convertToCustomData() {
+        var customData = new CustomerData();
         customData.setCourseId(FIXTURE_COURSE.getId() + "");
         customData.setEmail(this.userData.get("EMAIL"));
         customData.setName(this.userData.get("FIRST NAME"));

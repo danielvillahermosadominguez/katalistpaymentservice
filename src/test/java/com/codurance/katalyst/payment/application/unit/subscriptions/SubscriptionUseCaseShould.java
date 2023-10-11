@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.unit.subscriptions;
 
-import com.codurance.katalyst.payment.application.api.PotentialCustomerData;
+import com.codurance.katalyst.payment.application.api.CustomerData;
 import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.paycomet.dto.CreatedUser;
 import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
@@ -57,7 +57,7 @@ public class SubscriptionUseCaseShould {
     private DateService dateService;
     private SubscriptionUseCase useCase;
     private UserNameService userNameService;
-    private PotentialCustomerData customerData;
+    private CustomerData customerData;
     private MoodleCourse course;
     private String courseId;
 
@@ -75,7 +75,7 @@ public class SubscriptionUseCaseShould {
                 dateService,
                 userNameService
         );
-        customerData = new PotentialCustomerData();
+        customerData = new CustomerData();
         customerData.setPaytpvToken("RANDOM_TPV_TOKEN");
         when(payCometApiClient.createUser(any())).thenReturn(new CreatedUser());
         when(payCometApiClient.payment(
