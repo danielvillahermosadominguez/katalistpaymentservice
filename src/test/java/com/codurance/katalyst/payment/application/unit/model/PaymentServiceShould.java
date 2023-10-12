@@ -1,5 +1,7 @@
 package com.codurance.katalyst.payment.application.unit.model;
 
+import com.codurance.katalyst.payment.application.actions.exception.CreditCardNotValid;
+import com.codurance.katalyst.payment.application.actions.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
 import com.codurance.katalyst.payment.application.model.payment.TransactionRepository;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
@@ -8,9 +10,15 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTr
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -29,11 +37,14 @@ public class PaymentServiceShould {
     private PaymentNotification notification;
 
     @Mock
+    private PayCometApiClient payCometApiClient;
+
+    @Mock
     private TransactionRepository transactionRepository;
 
     @BeforeEach
     void beforeEach() {
-        paymentService = new PaymentService(transactionRepository, TPV_ID);
+        paymentService = new PaymentService(transactionRepository, payCometApiClient, TPV_ID);
         notification = new PaymentNotification(
                 PaymentMethod.CARDS,
                 TransactionType.AUTHORIZATION,
@@ -93,8 +104,8 @@ public class PaymentServiceShould {
                 orderName,
                 amount,
                 date,
-                PaymentTransactionState.PENDING
-        );
+                PaymentTransactionState.PENDING,
+                new PaymentStatus());
         notification.setOrder(orderName);
         when(transactionRepository.getOpenTransactionBasedOn(orderName)).thenReturn(paymentTransactionExpected);
 
@@ -111,6 +122,7 @@ public class PaymentServiceShould {
         assertThat(paymentTransaction.getAmount()).isEqualTo(amount);
         assertThat(paymentTransaction.getDate()).isEqualTo(date);
         assertThat(paymentTransaction.getState()).isEqualTo(PaymentTransactionState.PENDING);
+        assertThat(paymentTransaction.getPaymentStatus()).isNotNull();
     }
 
     @Test
@@ -121,5 +133,26 @@ public class PaymentServiceShould {
 
         verify(transactionRepository, times(1)).getOpenTransactionBasedOn(orderName);
         assertThat(paymentTransaction).isNull();
+    }
+
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"", " "})
+    void throw_an_exception_if_customer_data_dont_have_tpv_token(String token) throws TPVTokenIsRequired {
+
+        var thrown = Assertions.assertThrows(TPVTokenIsRequired.class, () -> {
+            paymentService.authorizeTransaction("RANDOM_IP", token);
+        });
+
+        assertThat(thrown).isNotNull();
+    }
+
+    @Test
+    void throw_an_exception_if_paycomet_dont_return_an_user() {
+        var thrown = Assertions.assertThrows(CreditCardNotValid.class, () -> {
+            paymentService.authorizeTransaction("RANDOM_IP", "RANDOM_TOKEN");
+        });
+
+        assertThat(thrown).isNotNull();
     }
 }

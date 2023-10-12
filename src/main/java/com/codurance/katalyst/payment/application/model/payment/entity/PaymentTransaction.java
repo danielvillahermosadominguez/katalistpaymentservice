@@ -1,8 +1,11 @@
 package com.codurance.katalyst.payment.application.model.payment.entity;
 
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+
 import java.util.Objects;
 
 public class PaymentTransaction {
+    private PaymentStatus paymentStatus;
     private TransactionType transactionType;
     private int id;
     private String ip;
@@ -23,8 +26,8 @@ public class PaymentTransaction {
                               String order,
                               double amount,
                               String date,
-                              PaymentTransactionState state
-    ) {
+                              PaymentTransactionState state,
+                              PaymentStatus paymentStatus) {
         this.id = id;
         this.ip = ip;
         this.method = method;
@@ -35,6 +38,7 @@ public class PaymentTransaction {
         this.date = date;
         this.state = state;
         this.transactionType = transactionType;
+        this.paymentStatus = paymentStatus;
     }
 
     public int getId() {
@@ -92,5 +96,13 @@ public class PaymentTransaction {
 
     public String getTpvToken() {
         return tpvToken;
+    }
+
+    public PaymentStatus getPaymentStatus() {
+        return paymentStatus;
+    }
+
+    public void setPaymentStatus(PaymentStatus value) {
+        paymentStatus = value;
     }
 }

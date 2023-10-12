@@ -11,6 +11,7 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTr
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,39 +44,22 @@ public class ConfirmPaymentShould {
 
     @BeforeEach
     void beforeEach() throws NotValidNotification {
-        notification = new PaymentNotification(
-                PaymentMethod.CARDS,
-                TransactionType.AUTHORIZATION,
-                1234567,
-                "RANDOM_ORDER",
-                "RANDOM_AMOUNT",
-                "OK"
-        );
-        int idTransaction = 12345;
-        paymentTransaction = new PaymentTransaction(
-                idTransaction,
-                "RANDOM_IP",
-                PaymentMethod.CARDS,
-                TransactionType.AUTHORIZATION, "RANDOM_TPV_TOKEN",
-                "RANDOM_TPV_USER",
-                "RANDOM_ORDER_NAME",
-                34.56,
-                "20231205103259",
-                PaymentTransactionState.PENDING
-        );
+        int transactionId = 12345;
+        notification = createNotificationFixture();
+        paymentTransaction = createPaymentTransactionFixture(transactionId);
+        purchase = createPurchaseFixture(transactionId);
         paymentService = mock(PaymentService.class);
         purchaseService = mock(PurchaseService.class);
         financialService = mock(FinancialService.class);
         learningService = mock(LearningService.class);
-        when(paymentService.confirmPayment(notification)).thenReturn(paymentTransaction);
-        purchase = new Purchase(idTransaction);
-        when(purchaseService.getPurchase(idTransaction)).thenReturn(purchase);
         confirmPayment = new ConfirmPayment(
                 paymentService,
                 purchaseService,
                 financialService,
                 learningService
         );
+        when(paymentService.confirmPayment(notification)).thenReturn(paymentTransaction);
+        when(purchaseService.getPurchase(transactionId)).thenReturn(purchase);
     }
 
     @Test
@@ -152,4 +136,34 @@ public class ConfirmPaymentShould {
         verify(learningService, times(1)).acquireACourseFor(purchase);
         verify(purchaseService, never()).updateLearningStepFor(any(), anyBoolean());
     }
+
+    private Purchase createPurchaseFixture(int transactionId) {
+        return new Purchase(transactionId, "RANDOM_ORDER_NAME");
+    }
+
+    private PaymentTransaction createPaymentTransactionFixture(int transactionId) {
+        return new PaymentTransaction(
+                transactionId,
+                "RANDOM_IP",
+                PaymentMethod.CARDS,
+                TransactionType.AUTHORIZATION, "RANDOM_TPV_TOKEN",
+                "RANDOM_TPV_USER",
+                "RANDOM_ORDER_NAME",
+                34.56,
+                "20231205103259",
+                PaymentTransactionState.PENDING,
+                new PaymentStatus());
+    }
+
+    private PaymentNotification createNotificationFixture() {
+        return new PaymentNotification(
+                PaymentMethod.CARDS,
+                TransactionType.AUTHORIZATION,
+                1234567,
+                "RANDOM_ORDER",
+                "RANDOM_AMOUNT",
+                "OK"
+        );
+    }
+
 }

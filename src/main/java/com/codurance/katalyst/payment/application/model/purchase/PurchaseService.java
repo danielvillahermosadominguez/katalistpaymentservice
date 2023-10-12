@@ -1,6 +1,5 @@
 package com.codurance.katalyst.payment.application.model.purchase;
 
-import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,7 +12,11 @@ public class PurchaseService {
         throw new UnsupportedOperationException();
     }
 
-    public void updateLearningStepFor(Purchase purchase, boolean setpOvercome) {
+    public void updateLearningStepFor(Purchase purchase, boolean septOvercome) {
+        throw new UnsupportedOperationException();
+    }
+
+    public Purchase save(Purchase purchase) {
         throw new UnsupportedOperationException();
     }
 }
