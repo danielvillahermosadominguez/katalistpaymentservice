@@ -136,10 +136,14 @@ public class PaymentNotification {
     }
 
     public String getAmount() {
-    return this.amount;
+        return this.amount;
     }
 
     public String getResponse() {
         return response;
+    }
+
+    public void setOrder(String value) {
+        order = value;
     }
 }

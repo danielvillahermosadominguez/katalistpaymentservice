@@ -20,7 +20,8 @@ public class ConfirmPayment {
     @Autowired
     public ConfirmPayment(PaymentService paymentService,
                           PurchaseService purchaseService,
-                          FinancialService financialService, LearningService learningService
+                          FinancialService financialService,
+                          LearningService learningService
     ) {
         this.paymentService = paymentService;
         this.purchaseService = purchaseService;

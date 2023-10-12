@@ -4,9 +4,10 @@ import com.codurance.katalyst.payment.application.actions.ConfirmPayment;
 import com.codurance.katalyst.payment.application.model.financial.FinancialService;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
-import com.codurance.katalyst.payment.application.model.payment.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
@@ -51,7 +52,17 @@ public class ConfirmPaymentShould {
                 "OK"
         );
         int idTransaction = 12345;
-        paymentTransaction = new PaymentTransaction(idTransaction);
+        paymentTransaction = new PaymentTransaction(
+                idTransaction,
+                "RANDOM_IP",
+                PaymentMethod.CARDS,
+                TransactionType.AUTHORIZATION, "RANDOM_TPV_TOKEN",
+                "RANDOM_TPV_USER",
+                "RANDOM_ORDER_NAME",
+                34.56,
+                "20231205103259",
+                PaymentTransactionState.PENDING
+        );
         paymentService = mock(PaymentService.class);
         purchaseService = mock(PurchaseService.class);
         financialService = mock(FinancialService.class);

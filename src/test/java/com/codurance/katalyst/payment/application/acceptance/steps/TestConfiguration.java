@@ -4,6 +4,8 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.ClockStub;
+import com.codurance.katalyst.payment.application.acceptance.doubles.TransactionRepositoryFake;
+import com.codurance.katalyst.payment.application.model.payment.TransactionRepository;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
 import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
@@ -19,6 +21,7 @@ public class TestConfiguration {
 
     private PayCometApiClientFake payCometApiClientFake = new PayCometApiClientFake();
 
+    private TransactionRepositoryFake transactionRepositoryFake = new TransactionRepositoryFake();
     @Bean
     @Primary
     public Clock getTestingDateService() {
@@ -41,6 +44,12 @@ public class TestConfiguration {
     @Primary
     public PayCometApiClient getPayCometApiClient() {
         return payCometApiClientFake;
+    }
+
+    @Bean
+    @Primary
+    public TransactionRepository getTransactionRepository() {
+        return transactionRepositoryFake;
     }
 
 }
