@@ -1,8 +1,8 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
-import com.codurance.katalyst.payment.application.paycomet.dto.CreatedUser;
-import com.codurance.katalyst.payment.application.paycomet.dto.PaymentStatus;
-import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 
 public class PayCometApiClientFake implements PayCometApiClient {
 

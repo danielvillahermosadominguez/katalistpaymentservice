@@ -3,10 +3,10 @@ package com.codurance.katalyst.payment.application.acceptance.steps;
 import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
-import com.codurance.katalyst.payment.application.acceptance.doubles.TestDateService;
-import com.codurance.katalyst.payment.application.ports.PayCometApiClient;
-import com.codurance.katalyst.payment.application.ports.moodle.MoodleApiClient;
-import com.codurance.katalyst.payment.application.utils.DateService;
+import com.codurance.katalyst.payment.application.acceptance.doubles.ClockStub;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
+import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
+import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,8 +21,8 @@ public class TestConfiguration {
 
     @Bean
     @Primary
-    public DateService getTestingDateService() {
-        return new TestDateService();
+    public Clock getTestingDateService() {
+        return new ClockStub();
     }
 
     @Bean

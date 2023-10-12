@@ -1,11 +1,11 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
-import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.ports.moodle.MoodleApiClient;
-import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodleCourse;
-import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodlePrice;
-import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodleUser;
-import com.codurance.katalyst.payment.application.ports.moodle.exception.MoodleNotRespond;
+import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
+import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
+import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
+import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
+import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,15 +1,15 @@
 package com.codurance.katalyst.payment.application.integration;
 
-import com.codurance.katalyst.payment.application.acceptance.doubles.TestDateService;
-import com.codurance.katalyst.payment.application.holded.HoldedApiClientAdapter;
-import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedInvoiceInfo;
+import com.codurance.katalyst.payment.application.acceptance.doubles.ClockStub;
+import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.HoldedApiClientAdapter;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
-import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedStatus;
-import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedTypeContact;
-import com.codurance.katalyst.payment.application.ports.holded.exceptions.HoldedNotRespond;
-import com.codurance.katalyst.payment.application.ports.holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedTypeContact;
+import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
+import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -40,7 +40,7 @@ public class HoldedAPIClientShould {
             this.wireMock = new HoldedWireMockServer();
             this.apiAdapter.setApiKey(holdedApiKey);
             this.apiAdapter.setURLBase(urlBase);
-            this.apiAdapter.setDateService(new TestDateService());
+            this.apiAdapter.setDateService(new ClockStub());
             this.wireMock.setPort(WIREMOCK_PORT);
             this.wireMock.setApiKey(holdedApiKey);
             this.wireMock.start();

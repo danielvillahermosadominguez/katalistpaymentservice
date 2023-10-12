@@ -1,11 +1,11 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
-import com.codurance.katalyst.payment.application.holded.requests.CreateInvoiceItemRequestBody;
-import com.codurance.katalyst.payment.application.ports.holded.HoldedApiClient;
-import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedInvoiceInfo;
-import com.codurance.katalyst.payment.application.ports.holded.dto.HoldedStatus;
+import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.CreateInvoiceItemRequestBody;
+import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;

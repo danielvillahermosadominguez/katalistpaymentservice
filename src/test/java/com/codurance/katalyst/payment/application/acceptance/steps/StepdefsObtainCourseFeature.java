@@ -2,11 +2,11 @@ package com.codurance.katalyst.payment.application.acceptance.steps;
 
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
-import com.codurance.katalyst.payment.application.api.Course;
-import com.codurance.katalyst.payment.application.api.Error;
-import com.codurance.katalyst.payment.application.moodle.exception.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodleCourse;
-import com.codurance.katalyst.payment.application.ports.moodle.dto.MoodlePrice;
+import com.codurance.katalyst.payment.application.model.learning.entity.Course;
+import com.codurance.katalyst.payment.application.apirest.payment.dto.Error;
+import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
+import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
+import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
