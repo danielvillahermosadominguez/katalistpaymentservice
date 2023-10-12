@@ -3,13 +3,12 @@ package com.codurance.katalyst.payment.application.acceptance.steps;
 import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
+import com.codurance.katalyst.payment.application.acceptance.doubles.TransactionRepositoryFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
 import com.codurance.katalyst.payment.application.apirest.payment.dto.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
-import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
@@ -18,7 +17,9 @@ import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -53,6 +54,9 @@ public class StepdefsSubscribeAndPaymentFeature {
     HoldedApiClientFake holdedApiClient;
     @Autowired
     private PayCometApiClientFake payCometApiClient;
+
+    @Autowired
+    TransactionRepositoryFake transactionRepositoryFake;
     @Value("${paycomet.terminal}")
     int tpvId;
     private int subscriptionResult = NO_ANSWER;
@@ -74,6 +78,7 @@ public class StepdefsSubscribeAndPaymentFeature {
 
         moodleApiClient.reset();
         holdedApiClient.reset();
+        transactionRepositoryFake.reset();
         subscriptionResult = NO_ANSWER;
     }
 

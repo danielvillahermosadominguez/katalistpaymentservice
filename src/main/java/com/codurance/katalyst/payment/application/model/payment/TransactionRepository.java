@@ -4,4 +4,6 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTr
 
 public interface TransactionRepository {
     PaymentTransaction getOpenTransactionBasedOn(String orderName);
+
+    void save(PaymentTransaction paymentData);
 }

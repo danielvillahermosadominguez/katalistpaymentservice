@@ -147,7 +147,7 @@ public class ConfirmPaymentShould {
                 "RANDOM_IP",
                 PaymentMethod.CARDS,
                 TransactionType.AUTHORIZATION, "RANDOM_TPV_TOKEN",
-                "RANDOM_TPV_USER",
+                1,
                 "RANDOM_ORDER_NAME",
                 34.56,
                 "20231205103259",

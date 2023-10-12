@@ -17,6 +17,8 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMe
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
+import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
+import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
@@ -41,6 +43,7 @@ public class SubscribeToCourseShould {
     public static final String RANDOM_IP = "RANDOM_IP";
     public static final String RANDOM_TPV_TOKEN = "RANDOM_TPV_TOKEN";
     public static final String RANDOM_COURSE_NAME = "RANDOM_COURSE_NAME";
+    public static final double PRICE = 13.5;
     private PaymentService paymentService;
     private LearningService learningService;
     private SubscribeToCourse subscribeToCourse;
@@ -64,7 +67,7 @@ public class SubscribeToCourseShould {
     }
 
     @Test
-    void be_sure_the_course_is_available() throws CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
+    void be_sure_the_course_is_available() throws CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, CustomFieldNotExists, MoodleNotRespond {
         var courseId = "1";
         customerData.setCourseId(courseId);
         prepareStubsForNormalFlow(courseId);
@@ -87,9 +90,8 @@ public class SubscribeToCourseShould {
         assertThat(exception).isNotNull();
     }
 
-
     @Test
-    void check_availability_for_this_customer() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid {
+    void check_availability_for_this_customer() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid, CustomFieldNotExists, MoodleNotRespond {
         var courseId = "1";
         customerData.setCourseId(courseId);
         prepareStubsForNormalFlow(courseId);
@@ -103,7 +105,7 @@ public class SubscribeToCourseShould {
     }
 
     @Test
-    void authorize_the_payment_transaction() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid {
+    void authorize_the_payment_transaction() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid, CustomFieldNotExists, MoodleNotRespond {
         var courseId = "1";
         customerData.setCourseId(courseId);
         expectedPaymentTransaction.setPaymentStatus(new PaymentStatus());
@@ -112,12 +114,12 @@ public class SubscribeToCourseShould {
         var paymentStatus = subscribeToCourse.subscribe(customerData);
 
         verify(paymentService, times(1))
-                .authorizeTransaction(RANDOM_IP, RANDOM_TPV_TOKEN);
+                .authorizeTransaction(RANDOM_IP, RANDOM_TPV_TOKEN, PRICE);
         assertThat(paymentStatus).isNotNull();
     }
 
     @Test
-    void save_customer_data_when_payment_status_is_not_null() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid {
+    void save_customer_data_when_payment_status_is_not_null() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid, CustomFieldNotExists, MoodleNotRespond {
         var courseId = "1";
         var purchaseCaptor = ArgumentCaptor.forClass(Purchase.class);
         customerData.setCourseId(courseId);
@@ -174,7 +176,7 @@ public class SubscribeToCourseShould {
     }
 
     @Test
-    void not_save_customer_data_when_payment_status_is_null() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid {
+    void not_save_customer_data_when_payment_status_is_null() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid, CustomFieldNotExists, MoodleNotRespond {
         var courseId = "1";
         customerData.setCourseId(courseId);
         expectedPaymentTransaction.setPaymentStatus(null);
@@ -187,13 +189,13 @@ public class SubscribeToCourseShould {
         assertThat(paymentStatus).isNull();
     }
 
-    private void prepareStubsForNormalFlow(String courseId) throws TPVTokenIsRequired, CreditCardNotValid {
+    private void prepareStubsForNormalFlow(String courseId) throws TPVTokenIsRequired, CreditCardNotValid, NoPriceAvailable, LearningPlatformIsNotAvailable {
         when(learningService.isThereASeatFor(anyString(), anyString()))
                 .thenReturn(true);
         when(learningService.getCourse(any())).thenReturn(
-                new Course(Integer.parseInt(courseId), RANDOM_COURSE_NAME, 13.5)
+                new Course(Integer.parseInt(courseId), RANDOM_COURSE_NAME, PRICE)
         );
-        when(paymentService.authorizeTransaction(RANDOM_IP, RANDOM_TPV_TOKEN))
+        when(paymentService.authorizeTransaction(RANDOM_IP, RANDOM_TPV_TOKEN, PRICE))
                 .thenReturn(expectedPaymentTransaction);
     }
 
@@ -211,8 +213,8 @@ public class SubscribeToCourseShould {
                 PaymentMethod.CARDS,
                 TransactionType.AUTHORIZATION,
                 RANDOM_TPV_TOKEN,
-                "RANDOM_TPV_USER",
-                "RANDOM_ORDER_NAME",
+                1,
+                "RANDOM_ORDER",
                 34.56,
                 "20231205103259",
                 PaymentTransactionState.PENDING,

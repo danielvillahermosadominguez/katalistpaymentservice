@@ -11,7 +11,7 @@ public class PaymentTransaction {
     private String ip;
     private PaymentMethod method;
     private String tpvToken;
-    private String tpvUser;
+    private int tpvUser;
     private String order;
     private double amount;
     private String date;
@@ -22,13 +22,26 @@ public class PaymentTransaction {
                               PaymentMethod method,
                               TransactionType transactionType,
                               String tpvToken,
-                              String tpvUser,
+                              int tpvUser,
                               String order,
                               double amount,
                               String date,
                               PaymentTransactionState state,
                               PaymentStatus paymentStatus) {
+        this(ip, method, transactionType, tpvToken, tpvUser, order, amount, date, state, paymentStatus);
         this.id = id;
+    }
+
+    public PaymentTransaction(String ip,
+                              PaymentMethod method,
+                              TransactionType transactionType,
+                              String tpvToken,
+                              int tpvUser,
+                              String order,
+                              double amount,
+                              String date,
+                              PaymentTransactionState state,
+                              PaymentStatus paymentStatus) {
         this.ip = ip;
         this.method = method;
         this.tpvToken = tpvToken;
@@ -40,7 +53,6 @@ public class PaymentTransaction {
         this.transactionType = transactionType;
         this.paymentStatus = paymentStatus;
     }
-
     public int getId() {
         return id;
     }
@@ -70,7 +82,7 @@ public class PaymentTransaction {
         return method;
     }
 
-    public String getTpvUser() {
+    public int getTpvUser() {
         return tpvUser;
     }
 

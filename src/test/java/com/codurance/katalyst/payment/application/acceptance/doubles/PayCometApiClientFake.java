@@ -1,8 +1,9 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentData;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 
 public class PayCometApiClientFake implements PayCometApiClient {
 
@@ -21,7 +22,7 @@ public class PayCometApiClientFake implements PayCometApiClient {
     }
 
     @Override
-    public PaymentStatus payment(double amount, String currency, int idUser, String methodId, String order, String originalIp, String tokenUser) {
+    public PaymentStatus payment(PaymentData paymentData) {
         var paymentStatus = new PaymentStatus();
         paymentStatus.setChallengeUrl(URL_CHALLENGE_OK);
         return paymentStatus;

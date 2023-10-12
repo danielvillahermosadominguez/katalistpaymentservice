@@ -44,7 +44,8 @@ public class SubscribeToCourse {
 
         var paymentTransaction = paymentService.authorizeTransaction(
                 customerData.getIp(),
-                customerData.getPaytpvToken()
+                customerData.getPaytpvToken(),
+                course.getPrice()
         );
 
         if (paymentTransaction.getPaymentStatus() == null) {
