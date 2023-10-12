@@ -1,15 +1,15 @@
 package com.codurance.katalyst.payment.application.unit.actions;
 
-import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
-import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
-import com.codurance.katalyst.payment.application.model.payment.PaymentTransaction;
-import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.actions.ConfirmPayment;
 import com.codurance.katalyst.payment.application.model.financial.FinancialService;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
+import com.codurance.katalyst.payment.application.model.payment.PaymentService;
+import com.codurance.katalyst.payment.application.model.payment.PaymentTransaction;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
+import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
-import com.codurance.katalyst.payment.application.model.payment.PaymentService;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,10 +26,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ConfirmPaymentShould {
-
-    public static final int TPV_ID = 1234;
     public static final int NOT_VALID_TRANSACTION = 4453;
-    public static final int NOT_MY_TPV_ID = 44444;
+
     private PaymentNotification notification;
     private PaymentTransaction paymentTransaction;
     private PaymentService paymentService;
@@ -43,11 +41,11 @@ public class ConfirmPaymentShould {
     private Purchase purchase;
 
     @BeforeEach
-    void beforeEach() {
+    void beforeEach() throws NotValidNotification {
         notification = new PaymentNotification(
                 PaymentMethod.CARDS,
                 TransactionType.AUTHORIZATION,
-                TPV_ID,
+                1234567,
                 "RANDOM_ORDER",
                 "RANDOM_AMOUNT",
                 "OK"
@@ -65,8 +63,7 @@ public class ConfirmPaymentShould {
                 paymentService,
                 purchaseService,
                 financialService,
-                learningService,
-                TPV_ID
+                learningService
         );
     }
 
@@ -78,28 +75,8 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void throw_not_valid_notification_when_transaction_type_is_not_authorization() {
-        notification.setTransactionType(TransactionType.CHARGEBACK);
-        var exception = assertThrows(NotValidNotification.class, () -> {
-            confirmPayment.confirm(notification);
-        });
-
-        assertThat(exception).isNotNull();
-    }
-
-    @Test
-    void throw_not_valid_notification_when_method_is_not_card() {
-        notification.setMethod(PaymentMethod.BIZUM);
-        var exception = assertThrows(NotValidNotification.class, () -> {
-            confirmPayment.confirm(notification);
-        });
-
-        assertThat(exception).isNotNull();
-    }
-
-    @Test
-    void throw_not_valid_notification_when_tpv_is_not_correct() {
-        notification.setTpvID(NOT_MY_TPV_ID);
+    void throw_not_valid_notification_when_payment_service_detect_is_not_valid() throws NotValidNotification {
+        when(paymentService.confirmPayment(notification)).thenThrow(NotValidNotification.class);
         var exception = assertThrows(NotValidNotification.class, () -> {
             confirmPayment.confirm(notification);
         });
