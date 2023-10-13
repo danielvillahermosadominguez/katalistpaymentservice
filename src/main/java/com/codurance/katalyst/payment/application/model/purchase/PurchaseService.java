@@ -17,12 +17,18 @@ public class PurchaseService {
         return purchaseRepository.findPurchaseByTransactionId(transactionId);
     }
 
-    public void updateFinantialStepFor(Purchase purchase, boolean stepOvercome) {
-        throw new UnsupportedOperationException();
+    public Purchase updateFinantialStepFor(Purchase purchase, boolean stepOvercome) {
+        var originalPurchase = purchaseRepository.findPurchaseById(purchase.getId());
+        originalPurchase.setFinantialState(stepOvercome);
+        purchaseRepository.update(purchase);
+        return originalPurchase;
     }
 
-    public void updateLearningStepFor(Purchase purchase, boolean septOvercome) {
-        throw new UnsupportedOperationException();
+    public Purchase updateLearningStepFor(Purchase purchase, boolean septOvercome) {
+        var originalPurchase = purchaseRepository.findPurchaseById(purchase.getId());
+        originalPurchase.setLearningState(septOvercome);
+        purchaseRepository.update(purchase);
+        return originalPurchase;
     }
 
     public Purchase save(Purchase purchase) {

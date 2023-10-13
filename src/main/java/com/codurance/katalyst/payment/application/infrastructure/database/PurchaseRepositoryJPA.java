@@ -15,4 +15,14 @@ public class PurchaseRepositoryJPA implements PurchaseRepository {
     public Purchase findPurchaseByTransactionId(int transactionId) {
         throw new UnsupportedOperationException();
     }
+
+    @Override
+    public Purchase update(Purchase capture) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Purchase findPurchaseById(int id) {
+        throw new UnsupportedOperationException();
+    }
 }

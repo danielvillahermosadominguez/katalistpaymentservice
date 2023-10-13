@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -72,6 +73,77 @@ public class PurchaseServiceShould {
         assertThat(savedPurchase.isProcessedInLearningState()).isEqualTo(false);
         assertThat(savedPurchase.isCompany()).isEqualTo(false);
         assertThat(savedPurchase.isProcessedInFinantialState()).isEqualTo(false);
+    }
+
+    @Test
+    void update_finantial_state() {
+        var purchaseCaptor = ArgumentCaptor.forClass(Purchase.class);
+        when(purchaseRepository.update(any())).thenReturn(purchaseFixture);
+        when(purchaseRepository.findPurchaseById(purchaseFixture.getId())).thenReturn(purchaseFixture);
+
+        var purchase = purchaseService.updateFinantialStepFor(purchaseFixture, true);
+
+        verify(purchaseRepository, times(1)).update(purchaseCaptor.capture());
+        var savedPurchase = purchaseCaptor.getValue();
+        assertThat(savedPurchase).isNotNull();
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(TRANSACTION_ID);
+        assertThat(savedPurchase.getCourseId()).isEqualTo("1");
+        assertThat(savedPurchase.getConcept()).isEqualTo(CONCEPT);
+        assertThat(savedPurchase.getDescription()).isEqualTo(DESCRIPTION);
+        assertThat(savedPurchase.getPrice()).isEqualTo(PRICE);
+        assertThat(savedPurchase.getName()).isEqualTo(NAME);
+        assertThat(savedPurchase.getSurname()).isEqualTo(SURNAME);
+        assertThat(savedPurchase.getNifCif()).isEqualTo(NIF_CIF);
+        assertThat(savedPurchase.isCompany()).isFalse();
+        assertThat(savedPurchase.getCompany()).isEqualTo(COMPANY_NAME);
+        assertThat(savedPurchase.getEmail()).isEqualTo(EMAIL);
+        assertThat(savedPurchase.getPhone()).isEqualTo(PHONE_NUMBER);
+        assertThat(savedPurchase.getOrder()).isEqualTo(ORDER);
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(TRANSACTION_ID);
+        assertThat(savedPurchase.getAddress()).isEqualTo(ADDRESS);
+        assertThat(savedPurchase.getPostalCode()).isEqualTo(POSTAL_CODE);
+        assertThat(savedPurchase.getCity()).isEqualTo(CITY);
+        assertThat(savedPurchase.getRegion()).isEqualTo(REGION);
+        assertThat(savedPurchase.getCountry()).isEqualTo(COUNTRY_CODE);
+        assertThat(savedPurchase.isProcessedInLearningState()).isFalse();
+        assertThat(purchase.isProcessedInFinantialState()).isTrue();
+        assertThat(savedPurchase.isProcessedInFinantialState()).isTrue();
+    }
+
+    @Test
+    void update_learning_state() {
+        var purchaseCaptor = ArgumentCaptor.forClass(Purchase.class);
+        when(purchaseRepository.update(any())).thenReturn(purchaseFixture);
+        when(purchaseRepository.update(any())).thenReturn(purchaseFixture);
+        when(purchaseRepository.findPurchaseById(purchaseFixture.getId())).thenReturn(purchaseFixture);
+
+        var purchase = purchaseService.updateLearningStepFor(purchaseFixture, true);
+
+        verify(purchaseRepository, times(1)).update(purchaseCaptor.capture());
+
+        var savedPurchase = purchaseCaptor.getValue();
+        assertThat(savedPurchase).isNotNull();
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(TRANSACTION_ID);
+        assertThat(savedPurchase.getCourseId()).isEqualTo("1");
+        assertThat(savedPurchase.getConcept()).isEqualTo(CONCEPT);
+        assertThat(savedPurchase.getDescription()).isEqualTo(DESCRIPTION);
+        assertThat(savedPurchase.getPrice()).isEqualTo(PRICE);
+        assertThat(savedPurchase.getName()).isEqualTo(NAME);
+        assertThat(savedPurchase.getSurname()).isEqualTo(SURNAME);
+        assertThat(savedPurchase.getNifCif()).isEqualTo(NIF_CIF);
+        assertThat(savedPurchase.isCompany()).isFalse();
+        assertThat(savedPurchase.getCompany()).isEqualTo(COMPANY_NAME);
+        assertThat(savedPurchase.getEmail()).isEqualTo(EMAIL);
+        assertThat(savedPurchase.getPhone()).isEqualTo(PHONE_NUMBER);
+        assertThat(savedPurchase.getOrder()).isEqualTo(ORDER);
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(TRANSACTION_ID);
+        assertThat(savedPurchase.getAddress()).isEqualTo(ADDRESS);
+        assertThat(savedPurchase.getPostalCode()).isEqualTo(POSTAL_CODE);
+        assertThat(savedPurchase.getCity()).isEqualTo(CITY);
+        assertThat(savedPurchase.getRegion()).isEqualTo(REGION);
+        assertThat(savedPurchase.getCountry()).isEqualTo(COUNTRY_CODE);
+        assertThat(savedPurchase.isProcessedInLearningState()).isTrue();
+        assertThat(purchase.isProcessedInFinantialState()).isFalse();
     }
 
     @Test

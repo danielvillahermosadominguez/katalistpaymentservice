@@ -201,4 +201,16 @@ public class Purchase {
     public void setCity(String value) {
         city = value;
     }
+
+    public void setFinantialState(boolean value) {
+        finantialState = value;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setLearningState(boolean value) {
+        this.learningState = value;
+    }
 }
