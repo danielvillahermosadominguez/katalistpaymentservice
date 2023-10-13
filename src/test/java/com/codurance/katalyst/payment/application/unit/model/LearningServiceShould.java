@@ -318,4 +318,15 @@ public class LearningServiceShould {
         assertThat(enrolledUser.getEmail()).isEqualTo(email);
         assertThat(result).isTrue();
     }
+
+    @Test
+    void throw_an_learning_platform_not_respond_exception_if_moodle_not_respond_when_get_acquire_a_course() throws MoodleNotRespond {
+        var purchase = fixtures.createPurchase();
+        when(moodleApiClient.getCourse(any())).thenThrow(MoodleNotRespond.class);
+        var exception = Assertions.assertThrows(LearningPlatformIsNotAvailable.class, () -> {
+            learningService.acquireACourseFor(purchase);
+        });
+
+        assertThat(exception).isNotNull();
+    }
 }

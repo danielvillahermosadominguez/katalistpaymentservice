@@ -31,8 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -53,17 +51,17 @@ public class StepdefsSubscribeAndPaymentFeature {
     private TestApiClient apiClient;
 
     @Autowired
-    MoodleApiClientFake moodleApiClient;
+    private MoodleApiClientFake moodleApiClient;
     @Autowired
-    HoldedApiClientFake holdedApiClient;
+    private HoldedApiClientFake holdedApiClient;
     @Autowired
     private PayCometApiClientFake payCometApiClient;
 
     @Autowired
-    TransactionRepositoryFake transactionRepositoryFake;
+    private TransactionRepositoryFake transactionRepositoryFake;
 
     @Autowired
-    PurchaseRepositoryFake purchaseRepositoryFake;
+    private PurchaseRepositoryFake purchaseRepositoryFake;
     @Value("${paycomet.terminal}")
     int tpvId;
     private int subscriptionResult = NO_ANSWER;
@@ -85,6 +83,7 @@ public class StepdefsSubscribeAndPaymentFeature {
 
         moodleApiClient.reset();
         holdedApiClient.reset();
+        payCometApiClient.reset();
         transactionRepositoryFake.reset();
         purchaseRepositoryFake.reset();
         subscriptionResult = NO_ANSWER;

@@ -36,4 +36,7 @@ public class PayCometApiClientFake implements PayCometApiClient {
     public List<PaymentOrder> getLastPaymentOrders() {
         return paymentOrders;
     }
+    public void reset() {
+        paymentOrders.clear();;
+    }
 }

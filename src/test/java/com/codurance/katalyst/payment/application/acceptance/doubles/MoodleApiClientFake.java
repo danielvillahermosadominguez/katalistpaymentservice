@@ -1,10 +1,10 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
-import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
 
 import java.util.ArrayList;
@@ -56,12 +56,14 @@ public class MoodleApiClientFake implements MoodleApiClient {
             return false;
         }
         var userList = studentsPerCourse.get(courseId);
+        return existInThisList(email, userList);
+    }
+
+    private boolean existInThisList(String email, List<MoodleUser> userList) {
         return !userList
                 .stream()
                 .filter(
-                        enroledUser -> enroledUser.getId().equals(
-                                enroledUser.getEmail()
-                        )
+                        enroledUser -> enroledUser.getEmail().equals(email)
                 ).toList().isEmpty();
     }
 
@@ -111,13 +113,14 @@ public class MoodleApiClientFake implements MoodleApiClient {
         if (!studentsPerCourse.containsKey(course.getId())) {
             return;
         }
+        var originalUser = getUserByUserName(user.getUserName());
         var userList = studentsPerCourse.get(course.getId());
         var isInTheCourse = !userList.stream()
-                .filter(enroledUser -> enroledUser.getId().equals(user.getId()))
+                .filter(enroledUser -> enroledUser.getId().equals(originalUser.getId()))
                 .toList()
                 .isEmpty();
         if (!isInTheCourse) {
-            userList.add(user);
+            userList.add(originalUser);
         }
     }
 
