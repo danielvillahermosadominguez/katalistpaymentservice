@@ -10,6 +10,7 @@ import com.codurance.katalyst.payment.application.actions.exception.TPVTokenIsRe
 import com.codurance.katalyst.payment.application.actions.exception.UserIsEnroledInTheCourse;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
+import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
@@ -54,7 +55,7 @@ public class SubscribeToCourse {
 
         var purchase = createPurchase(
                 paymentTransaction,
-                course.getId() + "",
+                course,
                 customerData,
                 false,
                 false
@@ -64,20 +65,24 @@ public class SubscribeToCourse {
     }
 
     private Purchase createPurchase(PaymentTransaction paymentTransaction,
-                                    String courseId,
+                                    Course course,
                                     CustomerData customerData,
                                     boolean finantialStep,
                                     boolean learningStep) {
         return new Purchase(
                 paymentTransaction.getId(),
                 paymentTransaction.getOrder(),
-                courseId,
+                course.getId()+"",
+                course.getName(),
+                "",
+                course.getPrice(),
                 customerData.getEmail(),
                 customerData.getName(),
                 customerData.getSurname(),
                 customerData.getDnicif(),
                 customerData.getIsCompany(),
                 customerData.getCompany(),
+                customerData.getPhoneNumber(),
                 customerData.getAddress(),
                 customerData.getPostalCode(),
                 customerData.getCity(),

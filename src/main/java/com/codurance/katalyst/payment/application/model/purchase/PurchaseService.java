@@ -1,11 +1,20 @@
 package com.codurance.katalyst.payment.application.model.purchase;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PurchaseService {
+
+    private final PurchaseRepository purchaseRepository;
+
+    @Autowired
+    public PurchaseService(PurchaseRepository purchaseRepository) {
+        this.purchaseRepository = purchaseRepository;
+    }
+
     public Purchase getPurchase(int transactionId) {
-        throw new UnsupportedOperationException();
+        return purchaseRepository.findPurchaseByTransactionId(transactionId);
     }
 
     public void updateFinantialStepFor(Purchase purchase, boolean stepOvercome) {
@@ -17,6 +26,6 @@ public class PurchaseService {
     }
 
     public Purchase save(Purchase purchase) {
-        throw new UnsupportedOperationException();
+        return purchaseRepository.save(purchase);
     }
 }

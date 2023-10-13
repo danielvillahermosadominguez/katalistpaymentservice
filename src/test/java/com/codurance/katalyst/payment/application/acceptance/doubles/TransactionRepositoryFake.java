@@ -25,6 +25,5 @@ public class TransactionRepositoryFake implements TransactionRepository {
 
     public void reset() {
         paymenTransactions.clear();
-        ;
     }
 }

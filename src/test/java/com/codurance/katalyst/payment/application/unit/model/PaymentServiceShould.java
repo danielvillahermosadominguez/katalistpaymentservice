@@ -13,7 +13,7 @@ import com.codurance.katalyst.payment.application.model.payment.exceptions.NotVa
 import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentData;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,9 +44,7 @@ public class PaymentServiceShould {
     private static final int NOT_MY_TPV_ID = 44444;
     private PaymentService paymentService;
     private PaymentNotification notification;
-
     private PayCometApiClient payCometApiClient;
-
 
     private TransactionRepository transactionRepository;
 
@@ -170,15 +168,15 @@ public class PaymentServiceShould {
 
     @Test
     void authorize_the_payment() throws TPVTokenIsRequired, CreditCardNotValid, ParseException {
-        var paymentDataCatcher = ArgumentCaptor.forClass(PaymentData.class);
+        var paymentDataCatcher = ArgumentCaptor.forClass(PaymentOrder.class);
         var instant = createInstant("26-09-2023 18:00:00");
         var idUser = 3;
         var token = "RANDOM_TOKEN";
         var ip = "RANDOM_IP";
         var price = 14.4;
-        var payCommetUser = new CreatedUser(idUser, token, 0);
+        var payCometUser = new CreatedUser(idUser, token, 0);
         when(clock.getInstant()).thenReturn(instant);
-        when(payCometApiClient.createUser(token)).thenReturn(payCommetUser);
+        when(payCometApiClient.createUser(token)).thenReturn(payCometUser);
         when(payCometApiClient.payment(any())
         ).thenReturn(new PaymentStatus());
 

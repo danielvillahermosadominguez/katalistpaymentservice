@@ -6,7 +6,7 @@ import com.codurance.katalyst.payment.application.infrastructure.adapters.paycom
 import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentData;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +69,7 @@ public class PayCometApiClientAdapter extends APIClient implements PayCometApiCl
     }
 
     @Override
-    public PaymentStatus payment(PaymentData paymentData) {
+    public PaymentStatus payment(PaymentOrder paymentData) {
         String error = "";
         PaymentStatus result = null;
         try {

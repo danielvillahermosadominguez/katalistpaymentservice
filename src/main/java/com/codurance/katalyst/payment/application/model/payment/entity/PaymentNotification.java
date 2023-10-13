@@ -93,13 +93,13 @@ public class PaymentNotification {
                                TransactionType transactionType,
                                int tpvID,
                                String order,
-                               String amount,
+                               String amountEur,
                                String response) {
         this.methodId = methodId;
         this.transactionType = transactionType;
         this.tpvID = tpvID;
         this.order = order;
-        this.amount = amount;
+        this.amountEur = amountEur;
         this.response = response;
     }
 
@@ -135,8 +135,8 @@ public class PaymentNotification {
         return this.order;
     }
 
-    public String getAmount() {
-        return this.amount;
+    public String getAmountEur() {
+        return this.amountEur;
     }
 
     public String getResponse() {

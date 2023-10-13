@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.model.ports.paycomet.dto;
 
-public class PaymentData {
+public class PaymentOrder {
     private double amount;
     private String currency;
     private int idUser;
@@ -9,13 +9,13 @@ public class PaymentData {
     private String originalIp;
     private String tokenUser;
 
-    public PaymentData(double amount,
-                       String currency,
-                       int idUser,
-                       int methodId,
-                       String order,
-                       String originalIPm,
-                       String tokenUser) {
+    public PaymentOrder(double amount,
+                        String currency,
+                        int idUser,
+                        int methodId,
+                        String order,
+                        String originalIPm,
+                        String tokenUser) {
         this.amount = amount;
         this.currency = currency;
         this.idUser = idUser;

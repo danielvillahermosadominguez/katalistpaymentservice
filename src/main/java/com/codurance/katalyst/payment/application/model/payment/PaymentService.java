@@ -11,7 +11,7 @@ import com.codurance.katalyst.payment.application.model.payment.exceptions.NotVa
 import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentData;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +21,10 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class PaymentService {
 
+    public static final String DEFAULT_CURRENCY_EUR = "EUR";
+    public static final String DATETIME_FORMAT_IN_STRING = "yyyyMMddHHmmss";
+    public static final String ORDER_PREFIX = "PAY";
+    public static final String ORDER_SUFIX = "1";
     private final int terminal;
     private final TransactionRepository transactionRepository;
     private final PayCometApiClient payCometApiClient;
@@ -57,11 +61,11 @@ public class PaymentService {
         var tpvUser = getUser(paytpvToken);
         var date = generateNowInString();
         var order = generateOrderName(date);
-        var paymentData = new PaymentData(
+        var paymentData = new PaymentOrder(
                 price,
-                "EUR",
+                DEFAULT_CURRENCY_EUR,
                 tpvUser.getIdUser(),
-                1,
+                1, //TODO: Change for PaymentMethod.CARDS
                 order,
                 ip,
                 tpvUser.getTokenUser()
@@ -86,13 +90,13 @@ public class PaymentService {
 
     private String generateNowInString() {
         var formatter = DateTimeFormatter
-                .ofPattern("yyyyMMddHHmmss")
+                .ofPattern(DATETIME_FORMAT_IN_STRING)
                 .withZone(ZoneId.systemDefault());
         return formatter.format(clock.getInstant());
     }
 
     private String generateOrderName(String date) {
-        return "PAY" + date + "1";
+        return ORDER_PREFIX + date + ORDER_SUFIX;
     }
 
     private CreatedUser getUser(String paytpvToken) throws CreditCardNotValid {

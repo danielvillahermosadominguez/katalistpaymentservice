@@ -51,6 +51,10 @@ public class HoldedBillAddress {
         return province;
     }
 
+    public String getCountryCode() {
+        return countryCode;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -63,4 +67,5 @@ public class HoldedBillAddress {
     public int hashCode() {
         return Objects.hash(address, postalCode, city, province, countryCode);
     }
+
 }

@@ -138,8 +138,11 @@ public class SubscribeToCourseShould {
         assertThat(purchase).isNotNull();
         assertThat(purchase.getOrder()).isEqualTo(expectedPaymentTransaction.getOrder());
         assertThatPurchaseDataIsEqualToCustomerData(purchase);
-        assertThat(purchase.isFinantialState()).isEqualTo(false);
-        assertThat(purchase.isLearningState()).isEqualTo(false);
+        assertThat(purchase.getConcept()).isEqualTo(RANDOM_COURSE_NAME);
+        assertThat(purchase.getDescription()).isEqualTo("");
+        assertThat(purchase.getPrice()).isEqualTo(PRICE);
+        assertThat(purchase.isProcessedInFinantialState()).isEqualTo(false);
+        assertThat(purchase.isProcessedInLearningState()).isEqualTo(false);
     }
 
     private void assertThatPurchaseDataIsEqualToCustomerData(Purchase purchase) {
@@ -159,12 +162,16 @@ public class SubscribeToCourseShould {
                 expectedPaymentTransaction.getId(),
                 expectedPaymentTransaction.getOrder(),
                 courseId,
+                RANDOM_COURSE_NAME,
+                "",
+                PRICE,
                 customerData.getEmail(),
                 customerData.getName(),
                 customerData.getSurname(),
                 customerData.getDnicif(),
                 customerData.getIsCompany(),
                 customerData.getCompany(),
+                customerData.getPhoneNumber(),
                 customerData.getAddress(),
                 customerData.getPostalCode(),
                 customerData.getCity(),
