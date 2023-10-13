@@ -9,7 +9,7 @@ import com.codurance.katalyst.payment.application.actions.exception.LearningPlat
 import com.codurance.katalyst.payment.application.actions.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.actions.exception.UserIsEnroledInTheCourse;
-import com.codurance.katalyst.payment.application.apirest.payment.dto.CustomerData;
+import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
 import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;

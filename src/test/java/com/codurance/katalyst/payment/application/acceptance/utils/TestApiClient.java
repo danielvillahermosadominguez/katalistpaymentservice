@@ -3,7 +3,7 @@ package com.codurance.katalyst.payment.application.acceptance.utils;
 import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.apirest.payment.dto.Error;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
-import com.codurance.katalyst.payment.application.apirest.payment.dto.CustomerData;
+import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;

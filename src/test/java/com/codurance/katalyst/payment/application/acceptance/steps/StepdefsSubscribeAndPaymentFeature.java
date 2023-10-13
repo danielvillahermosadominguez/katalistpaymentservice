@@ -5,7 +5,7 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.TransactionRepositoryFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
-import com.codurance.katalyst.payment.application.apirest.payment.dto.CustomerData;
+import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;

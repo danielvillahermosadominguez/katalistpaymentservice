@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.apirest;
 
-import com.codurance.katalyst.payment.application.apirest.payment.dto.CustomerData;
+import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.apirest.payment.dto.Error;
 import com.codurance.katalyst.payment.application.apirest.payment.PaymentController;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
