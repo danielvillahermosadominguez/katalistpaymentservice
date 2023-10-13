@@ -19,5 +19,5 @@ Feature: As an user interested in Katalyst courses
       | JOHN DOE | 46842041D   | Person          | john@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | a9454f69cff66d9dd54b57369b9296096b28691e9878fb59da6992b1e3edafe8 |
     And the customer will receive an invoice to the recipients "john@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
-      | TDD in depth | 99.9  | 1     | 99.9     | 99.9  |
+      | TDD IN DEPTH | 99.9  | 1     | 99.9     | 99.9  |
     And the customer will receive access to the platform in the email "john@example.com" with the user "john" and fullname "John" "Doe"

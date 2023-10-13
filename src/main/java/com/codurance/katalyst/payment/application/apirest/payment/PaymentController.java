@@ -79,6 +79,9 @@ public class PaymentController {
         } catch (InvalidInputCustomerData e) {
             //TODO: manage this exception and return an error
             throw new RuntimeException(e);
+        } catch (LearningPlatformIsNotAvailable e) {
+            //TODO: manage this exception and return an error
+            throw new RuntimeException(e);
         }
         return ResponseEntity.ok("");
     }

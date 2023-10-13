@@ -3,32 +3,42 @@ package com.codurance.katalyst.payment.application.unit.model;
 import com.codurance.katalyst.payment.application.actions.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
+import com.codurance.katalyst.payment.application.model.learning.UserNameService;
 import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
+import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
+import com.codurance.katalyst.payment.application.unit.model.fixtures.PurchaseFixtures;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class LearningServiceShould {
 
     private LearningService learningService;
+    private UserNameService userNameService;
     private MoodleApiClient moodleApiClient;
+
+    private PurchaseFixtures fixtures = new PurchaseFixtures();
+
 
     @BeforeEach
     void beforeEach() {
         moodleApiClient = mock(MoodleApiClient.class);
-        learningService = new LearningService(moodleApiClient);
+        userNameService = mock(UserNameService.class);
+        learningService = new LearningService(moodleApiClient, userNameService);
     }
 
     @Test
@@ -63,7 +73,7 @@ public class LearningServiceShould {
     }
 
     @Test
-    void throw_an_learning_platform_not_respond_exception_if_moodle_not_respond() throws MoodleNotRespond {
+    void throw_an_learning_platform_not_respond_exception_if_moodle_not_respond_when_get_a_course() throws MoodleNotRespond {
         when(moodleApiClient.getCourse(any())).thenThrow(MoodleNotRespond.class);
         var exception = Assertions.assertThrows(LearningPlatformIsNotAvailable.class, () -> {
             learningService.getCourse("1");
@@ -119,5 +129,193 @@ public class LearningServiceShould {
         });
 
         assertThat(exception).isNotNull();
+    }
+
+    @Test
+    void create_a_new_user_for_person_in_moodle_when_not_exists() throws MoodleNotRespond, LearningPlatformIsNotAvailable {
+        var purchase = fixtures.createPurchase();
+        var username = "random_username_propose_for_service";
+        when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
+        var userId = "1";
+        var name = purchase.getName();
+        var email = purchase.getEmail();
+        var surname = purchase.getSurname();
+        var student = new MoodleUser(
+                userId,
+                name,
+                surname,
+                username,
+                email
+        );
+        when(moodleApiClient.getUserByMail(email)).thenReturn(null);
+        when(moodleApiClient.createUser(any())).thenReturn(student);
+
+        var result = learningService.acquireACourseFor(purchase);
+
+        verify(moodleApiClient).createUser(
+                new MoodleUser(
+                        name,
+                        surname,
+                        username,
+                        email
+                )
+        );
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void create_a_new_user_for_company_in_moodle_when_not_exists() throws MoodleNotRespond, LearningPlatformIsNotAvailable {
+        var purchase = fixtures.createPurchase();
+        purchase.setIsCompany(true);
+        purchase.setCompany("RANDOM_COMPANY_NAME");
+        purchase.setName("N/A");
+        purchase.setSurname("N/A");
+        var username = "random_username_propose_for_service";
+        when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
+        var userId = "1";
+        var name = purchase.getCompany();
+        var email = purchase.getEmail();
+        var surname = "";
+        var student = new MoodleUser(
+                userId,
+                name,
+                surname,
+                username,
+                email
+        );
+        when(moodleApiClient.getUserByMail(email)).thenReturn(null);
+        when(moodleApiClient.createUser(any())).thenReturn(student);
+
+        var result = learningService.acquireACourseFor(purchase);
+
+        verify(moodleApiClient).createUser(
+                new MoodleUser(
+                        name,
+                        surname,
+                        username,
+                        email
+                )
+        );
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void not_to_create_a_new_user_in_moodle_when_exists() throws MoodleNotRespond, LearningPlatformIsNotAvailable {
+        var purchase = fixtures.createPurchase();
+        var username = "random_username_propose_for_service";
+        when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
+        var userId = "1";
+        var name = purchase.getName();
+        var email = purchase.getEmail();
+        var surname = purchase.getSurname();
+        var student = new MoodleUser(
+                userId,
+                name,
+                surname,
+                username,
+                email
+        );
+        when(moodleApiClient.getUserByMail(email)).thenReturn(student);
+
+        var result = learningService.acquireACourseFor(purchase);
+
+        verify(moodleApiClient, never()).createUser(any());
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void enrolle_a_new_user_in_moodle_when_is_person() throws MoodleNotRespond, LearningPlatformIsNotAvailable, CustomFieldNotExists {
+        var purchase = fixtures.createPurchase();
+        var username = "random_username_propose_for_service";
+        when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
+        var userId = "1";
+        var courseId = Integer.parseInt(purchase.getCourseId());
+        var name = purchase.getName();
+        var email = purchase.getEmail();
+        var surname = purchase.getName();
+        var student = new MoodleUser(
+                userId,
+                name,
+                surname,
+                username,
+                email
+        );
+
+        var course = new MoodleCourse(Integer.parseInt(courseId + ""),
+                purchase.getConcept(),
+                new MoodlePrice(purchase.getPrice() + "")
+        );
+
+        when(moodleApiClient.getCourse(courseId + "")).thenReturn(course);
+        when(moodleApiClient.getUserByMail(email)).thenReturn(student);
+        var captorCourse = ArgumentCaptor.forClass(MoodleCourse.class);
+        var captorUser = ArgumentCaptor.forClass(MoodleUser.class);
+
+        var result = learningService.acquireACourseFor(purchase);
+
+        verify(moodleApiClient).enrolToTheCourse(
+                captorCourse.capture(),
+                captorUser.capture()
+        );
+
+        var enrolledUser = captorUser.getValue();
+        var enrolledCourse = captorCourse.getValue();
+        assertThat(enrolledCourse.getId()).isEqualTo(courseId);
+        assertThat(enrolledUser.getId()).isEqualTo(userId);
+        assertThat(enrolledUser.getName()).isEqualTo(name);
+        assertThat(enrolledUser.getLastName()).isEqualTo(surname);
+        assertThat(enrolledUser.getUserName()).isEqualTo(username);
+        assertThat(enrolledUser.getEmail()).isEqualTo(email);
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void enrolle_a_new_user_in_moodle_when_is_company() throws MoodleNotRespond, LearningPlatformIsNotAvailable, CustomFieldNotExists {
+        var purchase = fixtures.createPurchase();
+        purchase.setIsCompany(true);
+        purchase.setCompany("RANDOM_COMPANY_NAME");
+        purchase.setName("N/A");
+        purchase.setSurname("N/A");
+        var username = "random_username_propose_for_service";
+        when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
+        var userId = "1";
+        var courseId = Integer.parseInt(purchase.getCourseId());
+        var name = purchase.getName();
+        var email = purchase.getEmail();
+        var surname = "";
+        var student = new MoodleUser(
+                userId,
+                name,
+                surname,
+                username,
+                email
+        );
+
+        var course = new MoodleCourse(Integer.parseInt(courseId + ""),
+                purchase.getConcept(),
+                new MoodlePrice(purchase.getPrice() + "")
+        );
+
+        when(moodleApiClient.getCourse(courseId + "")).thenReturn(course);
+        when(moodleApiClient.getUserByMail(email)).thenReturn(student);
+        var captorCourse = ArgumentCaptor.forClass(MoodleCourse.class);
+        var captorUser = ArgumentCaptor.forClass(MoodleUser.class);
+
+        var result = learningService.acquireACourseFor(purchase);
+
+        verify(moodleApiClient).enrolToTheCourse(
+                captorCourse.capture(),
+                captorUser.capture()
+        );
+
+        var enrolledUser = captorUser.getValue();
+        var enrolledCourse = captorCourse.getValue();
+        assertThat(enrolledCourse.getId()).isEqualTo(courseId);
+        assertThat(enrolledUser.getId()).isEqualTo(userId);
+        assertThat(enrolledUser.getName()).isEqualTo(name);
+        assertThat(enrolledUser.getLastName()).isEqualTo(surname);
+        assertThat(enrolledUser.getUserName()).isEqualTo(username);
+        assertThat(enrolledUser.getEmail()).isEqualTo(email);
+        assertThat(result).isTrue();
     }
 }

@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.actions;
 
 import com.codurance.katalyst.payment.application.actions.exception.FinancialPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.actions.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.model.financial.FinancialService;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
@@ -31,7 +32,7 @@ public class ConfirmPayment {
         this.learningService = learningService;
     }
 
-    public void confirm(PaymentNotification notification) throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
+    public void confirm(PaymentNotification notification) throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
         var paymentTransaction = paymentService.confirmPayment(notification);
         var purchase = purchaseService.getPurchase(paymentTransaction.getId());
         if (purchase == null) {

@@ -3,6 +3,7 @@ package com.codurance.katalyst.payment.application.unit.actions;
 import com.codurance.katalyst.payment.application.actions.ConfirmPayment;
 import com.codurance.katalyst.payment.application.actions.exception.FinancialPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.actions.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.model.financial.FinancialService;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
@@ -65,7 +66,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void confirm_the_payment() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
+    void confirm_the_payment() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
         confirmPayment.confirm(notification);
 
         verify(paymentService, times(1)).confirmPayment(any());
@@ -82,7 +83,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void obtain_the_customer_related_to_the_payment_transaction() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
+    void obtain_the_customer_related_to_the_payment_transaction() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
         var idTransaction = paymentTransaction.getId();
         confirmPayment.confirm(notification);
 
@@ -100,7 +101,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void emit_an_invoice_from_the_financial_service() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
+    void emit_an_invoice_from_the_financial_service() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
         when(financialService.emitInvoice(any())).thenReturn(true);
 
         confirmPayment.confirm(notification);
@@ -110,7 +111,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void update_purchase_financial_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
+    void update_purchase_financial_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
         when(financialService.emitInvoice(any())).thenReturn(false);
 
         confirmPayment.confirm(notification);
@@ -120,7 +121,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void acquire_a_course_with_the_purchase() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
+    void acquire_a_course_with_the_purchase() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
         when(learningService.acquireACourseFor(any())).thenReturn(true);
 
         confirmPayment.confirm(notification);
@@ -130,7 +131,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void update_purchase_learning_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
+    void update_purchase_learning_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
         when(learningService.acquireACourseFor(any())).thenReturn(false);
 
         confirmPayment.confirm(notification);
