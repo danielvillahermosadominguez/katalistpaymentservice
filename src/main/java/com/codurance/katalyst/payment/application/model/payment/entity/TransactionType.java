@@ -19,8 +19,18 @@ public enum TransactionType {
     WITHDRAWAL_DENIAL(116);
 
     private int value;
+
     TransactionType(int value) {
         this.value = value;
+    }
+
+    public static TransactionType fromInt(int value) {
+        for (TransactionType transactionType : TransactionType.values()) {
+            if (transactionType.getValue() == value) {
+                return transactionType;
+            }
+        }
+        return null;
     }
 
     @JsonValue

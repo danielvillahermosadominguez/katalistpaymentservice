@@ -19,8 +19,9 @@ public class TransactionRepositoryFake implements TransactionRepository {
     }
 
     @Override
-    public void save(PaymentTransaction paymentTransaction) {
+    public PaymentTransaction save(PaymentTransaction paymentTransaction) {
         paymenTransactions.put(paymentTransaction.getOrder(), paymentTransaction);
+        return paymentTransaction;
     }
 
     public void reset() {

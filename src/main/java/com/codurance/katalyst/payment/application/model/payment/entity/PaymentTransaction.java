@@ -53,6 +53,7 @@ public class PaymentTransaction {
         this.transactionType = transactionType;
         this.paymentStatus = paymentStatus;
     }
+
     public int getId() {
         return id;
     }
@@ -116,5 +117,13 @@ public class PaymentTransaction {
 
     public void setPaymentStatus(PaymentStatus value) {
         paymentStatus = value;
+    }
+
+    public void setIp(String value) {
+        ip = value;
+    }
+
+    public PaymentTransactionState getTransactionState() {
+        return state;
     }
 }

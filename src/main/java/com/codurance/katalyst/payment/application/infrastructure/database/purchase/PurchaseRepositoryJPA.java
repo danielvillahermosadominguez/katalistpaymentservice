@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.infrastructure.database;
+package com.codurance.katalyst.payment.application.infrastructure.database.purchase;
 
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseRepository;

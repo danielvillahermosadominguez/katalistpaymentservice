@@ -40,4 +40,12 @@ public class PaymentStatus {
     public void setChallengeUrl(String challengeUrl) {
         this.challengeUrl = challengeUrl;
     }
+
+    public void setOrder(String value) {
+        this.order = value;
+    }
+
+    public String getOrder() {
+        return order;
+    }
 }
