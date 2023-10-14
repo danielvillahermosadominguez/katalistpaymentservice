@@ -41,4 +41,13 @@ public enum PaymentMethod {
     public int getValue() {
         return this.value;
     }
+
+    public static PaymentMethod fromInt(int value) {
+        for (PaymentMethod method : PaymentMethod.values()) {
+            if(method.getValue() == value) {
+                return method;
+            }
+        }
+        return null;
+    }
 }

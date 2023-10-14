@@ -1,12 +1,13 @@
 package com.codurance.katalyst.payment.application.infrastructure.adapters.paycomet;
 
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
-import com.codurance.katalyst.payment.application.infrastructure.adapters.paycomet.dto.PaymentParams;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
-import com.codurance.katalyst.payment.application.infrastructure.adapters.paycomet.dto.PaymentBody;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 import com.codurance.katalyst.payment.application.infrastructure.adapters.common.APIClient;
+import com.codurance.katalyst.payment.application.infrastructure.adapters.paycomet.dto.PaymentBody;
+import com.codurance.katalyst.payment.application.infrastructure.adapters.paycomet.dto.PaymentParams;
 import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +21,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
 
 import java.text.DecimalFormat;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 
 @Component
 public class PayCometApiClientAdapter extends APIClient implements PayCometApiClient {
@@ -70,7 +69,7 @@ public class PayCometApiClientAdapter extends APIClient implements PayCometApiCl
     }
 
     @Override
-    public PaymentStatus payment(double amount, String currency, int idUser, String methodId, String order, String originalIp, String tokenUser) {
+    public PaymentStatus payment(PaymentOrder paymentData) {
         String error = "";
         PaymentStatus result = null;
         try {
@@ -84,23 +83,21 @@ public class PayCometApiClientAdapter extends APIClient implements PayCometApiCl
             //Eliminar de los controlles los endpoints que ya no se utilizan y eliminar
             //Del HTML también
             //21/09/2023 - We stop the development
+            //12/10/2023 - Se ha continuado. Sigue siendo aun temporal
             //---------------------------------------------------------
-            var strAmount = new DecimalFormat("#.00#").format(amount);
-            strAmount = strAmount.replace(".","");
-            strAmount = strAmount.replace(",","");
-            var instant = dateService.getInstant();
-            var formatter = DateTimeFormatter.ofPattern("yyyyMMddhhmmss").withZone(ZoneId.systemDefault());
-            var orderStr = "PAY" +formatter.format(instant)+"1";
+            var strAmount = new DecimalFormat("#.00#").format(paymentData.getAmount());
+            strAmount = strAmount.replace(".", "");
+            strAmount = strAmount.replace(",", "");
             var url = generateEndPoint("/v1/payments");
             var requestJSON = new PaymentBody();
             var requestBody = new PaymentParams();
             requestJSON.setPayment(requestBody);
             requestBody.setTerminal(terminal);
-            requestBody.setOriginalIp(originalIp);
+            requestBody.setOriginalIp(paymentData.getOriginalIp());
             requestBody.setAmount(strAmount);
-            requestBody.setIdUser(idUser);
-            requestBody.setOrder(orderStr);
-            requestBody.setTokenUser(tokenUser);
+            requestBody.setIdUser(paymentData.getIdUser());
+            requestBody.setOrder(paymentData.getOrder());
+            requestBody.setTokenUser(paymentData.getTokenUser());
             Gson gson = new Gson();
             var paymentBody = gson.toJson(requestJSON, PaymentBody.class);
 

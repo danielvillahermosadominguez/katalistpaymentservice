@@ -1,13 +1,18 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PayCometApiClientFake implements PayCometApiClient {
 
     public static String URL_CHALLENGE_OK ="URL_CHALLENGE_OK";
 
+    List<PaymentOrder> paymentOrders = new ArrayList<>();
     public String generateTemporalToken() {
         return "RANDOM_TOKEN";
     }
@@ -21,9 +26,17 @@ public class PayCometApiClientFake implements PayCometApiClient {
     }
 
     @Override
-    public PaymentStatus payment(double amount, String currency, int idUser, String methodId, String order, String originalIp, String tokenUser) {
+    public PaymentStatus payment(PaymentOrder paymentData) {
+        paymentOrders.add(paymentData);
         var paymentStatus = new PaymentStatus();
         paymentStatus.setChallengeUrl(URL_CHALLENGE_OK);
         return paymentStatus;
+    }
+
+    public List<PaymentOrder> getLastPaymentOrders() {
+        return paymentOrders;
+    }
+    public void reset() {
+        paymentOrders.clear();;
     }
 }

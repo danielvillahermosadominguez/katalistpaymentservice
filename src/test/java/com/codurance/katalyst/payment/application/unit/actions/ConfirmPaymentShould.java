@@ -1,15 +1,21 @@
 package com.codurance.katalyst.payment.application.unit.actions;
 
-import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
-import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
-import com.codurance.katalyst.payment.application.model.payment.PaymentTransaction;
-import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.actions.ConfirmPayment;
+import com.codurance.katalyst.payment.application.actions.exception.FinancialPlatformIsNotAvailable;
+import com.codurance.katalyst.payment.application.actions.exception.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.actions.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.model.financial.FinancialService;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
+import com.codurance.katalyst.payment.application.model.payment.PaymentService;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
+import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
-import com.codurance.katalyst.payment.application.model.payment.PaymentService;
+import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +25,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -26,10 +33,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ConfirmPaymentShould {
-
-    public static final int TPV_ID = 1234;
     public static final int NOT_VALID_TRANSACTION = 4453;
-    public static final int NOT_MY_TPV_ID = 44444;
+
     private PaymentNotification notification;
     private PaymentTransaction paymentTransaction;
     private PaymentService paymentService;
@@ -43,43 +48,49 @@ public class ConfirmPaymentShould {
     private Purchase purchase;
 
     @BeforeEach
-    void beforeEach() {
-        notification = new PaymentNotification(
-                PaymentMethod.CARDS,
-                TransactionType.AUTHORIZATION,
-                TPV_ID,
-                "RANDOM_ORDER",
-                "RANDOM_AMOUNT",
-                "OK"
-        );
-        int idTransaction = 12345;
-        paymentTransaction = new PaymentTransaction(idTransaction);
+    void beforeEach() throws NotValidNotification, PaymentTransactionNotFound {
+        int transactionId = 12345;
+        notification = createNotificationFixture();
+        paymentTransaction = createPaymentTransactionFixture(transactionId);
+        purchase = createPurchaseFixture(transactionId);
         paymentService = mock(PaymentService.class);
         purchaseService = mock(PurchaseService.class);
         financialService = mock(FinancialService.class);
         learningService = mock(LearningService.class);
-        when(paymentService.confirmPayment(notification)).thenReturn(paymentTransaction);
-        purchase = new Purchase(idTransaction);
-        when(purchaseService.getPurchase(idTransaction)).thenReturn(purchase);
         confirmPayment = new ConfirmPayment(
                 paymentService,
                 purchaseService,
                 financialService,
-                learningService,
-                TPV_ID
+                learningService
         );
+        when(paymentService.confirmPayment(notification)).thenReturn(paymentTransaction);
+        when(purchaseService.getPurchase(transactionId)).thenReturn(purchase);
     }
 
     @Test
-    void confirm_the_payment() throws NotValidNotification, NoCustomerData {
+    void confirm_the_payment() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         confirmPayment.confirm(notification);
 
         verify(paymentService, times(1)).confirmPayment(any());
     }
 
     @Test
-    void throw_not_valid_notification_when_transaction_type_is_not_authorization() {
-        notification.setTransactionType(TransactionType.CHARGEBACK);
+    void ignore_payment_notification_not_pending() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
+        when(paymentService.confirmPayment(any())).thenThrow(PaymentTransactionNotFound.class);
+
+        confirmPayment.confirm(notification);
+
+        verify(paymentService, times(1)).confirmPayment(any());
+        verify(purchaseService, never()).getPurchase(anyInt());
+        verify(purchaseService, never()).updateLearningStepFor(any(),anyBoolean());
+        verify(purchaseService, never()).updateFinantialStepFor(any(),anyBoolean());
+        verify(financialService, never()).emitInvoice(any());
+        verify(learningService, never()).acquireACourseFor(any());
+    }
+
+    @Test
+    void throw_not_valid_notification_when_payment_service_detect_is_not_valid() throws NotValidNotification, PaymentTransactionNotFound {
+        when(paymentService.confirmPayment(notification)).thenThrow(NotValidNotification.class);
         var exception = assertThrows(NotValidNotification.class, () -> {
             confirmPayment.confirm(notification);
         });
@@ -88,27 +99,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void throw_not_valid_notification_when_method_is_not_card() {
-        notification.setMethod(PaymentMethod.BIZUM);
-        var exception = assertThrows(NotValidNotification.class, () -> {
-            confirmPayment.confirm(notification);
-        });
-
-        assertThat(exception).isNotNull();
-    }
-
-    @Test
-    void throw_not_valid_notification_when_tpv_is_not_correct() {
-        notification.setTpvID(NOT_MY_TPV_ID);
-        var exception = assertThrows(NotValidNotification.class, () -> {
-            confirmPayment.confirm(notification);
-        });
-
-        assertThat(exception).isNotNull();
-    }
-
-    @Test
-    void obtain_the_customer_related_to_the_payment_transaction() throws NotValidNotification, NoCustomerData {
+    void obtain_the_customer_related_to_the_payment_transaction() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         var idTransaction = paymentTransaction.getId();
         confirmPayment.confirm(notification);
 
@@ -126,7 +117,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void emit_an_invoice_from_the_financial_service() throws NotValidNotification, NoCustomerData {
+    void emit_an_invoice_from_the_financial_service() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         when(financialService.emitInvoice(any())).thenReturn(true);
 
         confirmPayment.confirm(notification);
@@ -136,7 +127,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void update_purchase_financial_step_not_passed() throws NotValidNotification, NoCustomerData {
+    void update_purchase_financial_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         when(financialService.emitInvoice(any())).thenReturn(false);
 
         confirmPayment.confirm(notification);
@@ -146,7 +137,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void acquire_a_course_with_the_purchase() throws NotValidNotification, NoCustomerData {
+    void acquire_a_course_with_the_purchase() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         when(learningService.acquireACourseFor(any())).thenReturn(true);
 
         confirmPayment.confirm(notification);
@@ -156,12 +147,41 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void update_purchase_learning_step_not_passed() throws NotValidNotification, NoCustomerData {
+    void update_purchase_learning_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         when(learningService.acquireACourseFor(any())).thenReturn(false);
 
         confirmPayment.confirm(notification);
 
         verify(learningService, times(1)).acquireACourseFor(purchase);
         verify(purchaseService, never()).updateLearningStepFor(any(), anyBoolean());
+    }
+
+    private Purchase createPurchaseFixture(int transactionId) {
+        return new Purchase(transactionId, "RANDOM_ORDER_NAME");
+    }
+
+    private PaymentTransaction createPaymentTransactionFixture(int transactionId) {
+        return new PaymentTransaction(
+                transactionId,
+                "RANDOM_IP",
+                PaymentMethod.CARDS,
+                TransactionType.AUTHORIZATION, "RANDOM_TPV_TOKEN",
+                1,
+                "RANDOM_ORDER_NAME",
+                34.56,
+                "20231205103259",
+                PaymentTransactionState.PENDING,
+                new PaymentStatus());
+    }
+
+    private PaymentNotification createNotificationFixture() {
+        return new PaymentNotification(
+                PaymentMethod.CARDS,
+                TransactionType.AUTHORIZATION,
+                1234567,
+                "RANDOM_ORDER",
+                "RANDOM_AMOUNT",
+                "OK"
+        );
     }
 }

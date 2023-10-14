@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.apirest.payment.dto;
+package com.codurance.katalyst.payment.application.model.customer;
 
 public class CustomerData {
     private String courseId = "";

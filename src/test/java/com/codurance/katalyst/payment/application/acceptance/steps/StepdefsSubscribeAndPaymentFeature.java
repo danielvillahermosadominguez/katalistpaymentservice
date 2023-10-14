@@ -3,13 +3,13 @@ package com.codurance.katalyst.payment.application.acceptance.steps;
 import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
+import com.codurance.katalyst.payment.application.acceptance.doubles.PurchaseRepositoryFake;
+import com.codurance.katalyst.payment.application.acceptance.doubles.TransactionRepositoryFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
-import com.codurance.katalyst.payment.application.apirest.payment.dto.CustomerData;
+import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
-import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
@@ -18,7 +18,10 @@ import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
+import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -48,11 +51,17 @@ public class StepdefsSubscribeAndPaymentFeature {
     private TestApiClient apiClient;
 
     @Autowired
-    MoodleApiClientFake moodleApiClient;
+    private MoodleApiClientFake moodleApiClient;
     @Autowired
-    HoldedApiClientFake holdedApiClient;
+    private HoldedApiClientFake holdedApiClient;
     @Autowired
     private PayCometApiClientFake payCometApiClient;
+
+    @Autowired
+    private TransactionRepositoryFake transactionRepositoryFake;
+
+    @Autowired
+    private PurchaseRepositoryFake purchaseRepositoryFake;
     @Value("${paycomet.terminal}")
     int tpvId;
     private int subscriptionResult = NO_ANSWER;
@@ -74,6 +83,9 @@ public class StepdefsSubscribeAndPaymentFeature {
 
         moodleApiClient.reset();
         holdedApiClient.reset();
+        payCometApiClient.reset();
+        transactionRepositoryFake.reset();
+        purchaseRepositoryFake.reset();
         subscriptionResult = NO_ANSWER;
     }
 
@@ -186,22 +198,27 @@ public class StepdefsSubscribeAndPaymentFeature {
 
     @When("the customer receives a challenge URL and decide to {string} the payment")
     public void the_customer_receives_a_challenge_url_and_decide_to_the_payment(String decision) {
+        var orders= payCometApiClient.getLastPaymentOrders();
+        assertThat(orders.size()).isEqualTo(1);
+        var order = orders.get(0);
         if(decision.equals("Accept")) {
             assertThat(paymentStatus).isNotNull();
             assertThat(apiClient.getLastErrors().size()).isNotNull();
             assertThat(paymentStatus.getChallengeUrl()).isEqualTo(PayCometApiClientFake.URL_CHALLENGE_OK);
-            var notification = createOKNotification();
+            var notification = createOKNotification(order);
             assertThat(apiClient.confirmPayment(notification)).isTrue();
         }
     }
 
-    private PaymentNotification createOKNotification() {
+    private PaymentNotification createOKNotification(PaymentOrder order) {
+
+        var amount = String.valueOf(order.getAmount());
         var notification = new PaymentNotification(
-                PaymentMethod.CARDS,
+                PaymentMethod.fromInt(order.getMethodId()),
                 TransactionType.AUTHORIZATION,
                 tpvId,
-                "RANDOM_ORDER",
-                "RANDOM_AMOUNT",
+                order.getOrder(),
+                amount,
                 "OK"
         );
         return notification;

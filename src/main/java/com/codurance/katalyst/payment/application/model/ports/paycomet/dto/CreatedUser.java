@@ -5,6 +5,16 @@ public class CreatedUser {
     private String tokenUser;
     private int errorCode;
 
+    public CreatedUser() {
+
+    }
+
+    public CreatedUser(int idUser, String tokenUSer, int errorCode) {
+        this.idUser = idUser;
+        this.tokenUser = tokenUSer;
+        this.errorCode = errorCode;
+    }
+
     public int getIdUser() {
         return idUser;
     }

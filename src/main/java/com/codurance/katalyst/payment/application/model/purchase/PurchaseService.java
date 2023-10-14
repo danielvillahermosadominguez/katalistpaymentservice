@@ -1,19 +1,37 @@
 package com.codurance.katalyst.payment.application.model.purchase;
 
-import com.codurance.katalyst.payment.application.model.purchase.Purchase;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class PurchaseService {
+
+    private final PurchaseRepository purchaseRepository;
+
+    @Autowired
+    public PurchaseService(PurchaseRepository purchaseRepository) {
+        this.purchaseRepository = purchaseRepository;
+    }
+
     public Purchase getPurchase(int transactionId) {
-        throw new UnsupportedOperationException();
+        return purchaseRepository.findPurchaseByTransactionId(transactionId);
     }
 
-    public void updateFinantialStepFor(Purchase purchase, boolean stepOvercome) {
-        throw new UnsupportedOperationException();
+    public Purchase updateFinantialStepFor(Purchase purchase, boolean stepOvercome) {
+        var originalPurchase = purchaseRepository.findPurchaseById(purchase.getId());
+        originalPurchase.setFinantialStepOvercome(stepOvercome);
+        purchaseRepository.save(originalPurchase);
+        return originalPurchase;
     }
 
-    public void updateLearningStepFor(Purchase purchase, boolean setpOvercome) {
-        throw new UnsupportedOperationException();
+    public Purchase updateLearningStepFor(Purchase purchase, boolean septOvercome) {
+        var originalPurchase = purchaseRepository.findPurchaseById(purchase.getId());
+        originalPurchase.setLearningStepOvercome(septOvercome);
+        purchaseRepository.save(originalPurchase);
+        return originalPurchase;
+    }
+
+    public Purchase save(Purchase purchase) {
+        return purchaseRepository.save(purchase);
     }
 }

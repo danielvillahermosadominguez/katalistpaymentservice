@@ -1,12 +1,6 @@
 package com.codurance.katalyst.payment.application.apirest.payment;
 
-import com.codurance.katalyst.payment.application.apirest.payment.dto.CustomerData;
-import com.codurance.katalyst.payment.application.apirest.payment.dto.Error;
-import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.actions.ConfirmPayment;
-import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
-import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
 import com.codurance.katalyst.payment.application.actions.SubscribeToCourse;
 import com.codurance.katalyst.payment.application.actions.exception.CourseNotExists;
 import com.codurance.katalyst.payment.application.actions.exception.CreditCardNotValid;
@@ -16,6 +10,12 @@ import com.codurance.katalyst.payment.application.actions.exception.LearningPlat
 import com.codurance.katalyst.payment.application.actions.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.actions.exception.UserIsEnroledInTheCourse;
+import com.codurance.katalyst.payment.application.apirest.payment.dto.Error;
+import com.codurance.katalyst.payment.application.model.customer.CustomerData;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
+import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
+import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -73,6 +73,15 @@ public class PaymentController {
                     HttpStatus.BAD_REQUEST
             );
             //TODO: Include log
+        } catch (FinancialPlatformIsNotAvailable e) {
+            //TODO: manage this exception and return an error
+            throw new RuntimeException(e);
+        } catch (InvalidInputCustomerData e) {
+            //TODO: manage this exception and return an error
+            throw new RuntimeException(e);
+        } catch (LearningPlatformIsNotAvailable e) {
+            //TODO: manage this exception and return an error
+            throw new RuntimeException(e);
         }
         return ResponseEntity.ok("");
     }
@@ -96,6 +105,7 @@ public class PaymentController {
                             "We have had a problem with the creation of the contact and the invoicing"),
                     HttpStatus.BAD_REQUEST
             );
+            //TODO: manage this exception and return an error
         } catch (NoPriceAvailable exception) {
             return new ResponseEntity<>(
                     new Error(
@@ -104,6 +114,7 @@ public class PaymentController {
                     ),
                     HttpStatus.BAD_REQUEST
             );
+            //TODO: manage this exception and return an error
         } catch (UserIsEnroledInTheCourse exception) {
             return new ResponseEntity<>(
                     new Error(
@@ -112,6 +123,7 @@ public class PaymentController {
                     ),
                     HttpStatus.UNPROCESSABLE_ENTITY
             );
+            //TODO: manage this exception and return an error
         } catch (CourseNotExists exception) {
             return new ResponseEntity<>(
                     new Error(
@@ -120,10 +132,13 @@ public class PaymentController {
                     ),
                     HttpStatus.BAD_REQUEST
             );
-        } catch (TPVTokenIsRequired e) {
-            throw new RuntimeException(e);
-        } catch (CreditCardNotValid e) {
-            throw new RuntimeException(e);
+            //TODO: manage this exception and return an error
+        } catch (CreditCardNotValid | TPVTokenIsRequired e) {
+            new Error(
+                    Error.ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD,
+                    "The payment platform cannot to process this credit card. Payment platform error: " + e.getMessage()
+            );
+            //TODO: manage this exception and return an error
         }
 
         return new ResponseEntity<>(paymentStatus,

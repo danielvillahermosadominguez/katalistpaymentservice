@@ -1,11 +1,11 @@
-package com.codurance.katalyst.payment.application.integration;
+package com.codurance.katalyst.payment.application.integration.holded;
 
 import com.codurance.katalyst.payment.application.acceptance.doubles.ClockStub;
 import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.HoldedApiClientAdapter;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedTypeContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
