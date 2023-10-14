@@ -2,27 +2,40 @@ package com.codurance.katalyst.payment.application.infrastructure.database.purch
 
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseRepository;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class PurchaseRepositoryJPA implements PurchaseRepository {
+    private final DBPurchaseRepository jpaRepository;
+
+    public PurchaseRepositoryJPA(DBPurchaseRepository jpaRepository) {
+        this.jpaRepository = jpaRepository;
+    }
+
     @Override
     public Purchase save(Purchase purchase) {
-        throw new UnsupportedOperationException();
+        var dbPurchase = new DBPurchase(purchase);
+        dbPurchase = jpaRepository.save(dbPurchase);
+        return dbPurchase.toPurchase();
     }
 
     @Override
     public Purchase findPurchaseByTransactionId(int transactionId) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Purchase update(Purchase capture) {
-        throw new UnsupportedOperationException();
+        var result = jpaRepository.findByTransactionId(transactionId);
+        if (!result.isPresent()) {
+            return null;
+        }
+        var dbPurchase = result.get();
+        return dbPurchase.toPurchase();
     }
 
     @Override
     public Purchase findPurchaseById(int id) {
-        throw new UnsupportedOperationException();
+        var result = jpaRepository.findById(id);
+        if (!result.isPresent()) {
+            return null;
+        }
+        var dbPurchase = result.get();
+        return dbPurchase.toPurchase();
     }
 }

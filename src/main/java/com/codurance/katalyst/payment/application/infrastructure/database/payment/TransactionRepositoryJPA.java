@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.infrastructure.database.payme
 
 import com.codurance.katalyst.payment.application.model.payment.TransactionRepository;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +17,12 @@ public class TransactionRepositoryJPA implements TransactionRepository {
     }
 
     @Override
-    public PaymentTransaction getOpenTransactionBasedOn(String orderCode) {
-        var found = jpaRepository.findByOrderCode(orderCode);
+    public PaymentTransaction getPendingPaymentTransactionBasedOn(String orderCode) {
+        var found = jpaRepository.findByOrderCodeAndTransactionState(
+                orderCode,
+                PaymentTransactionState.PENDING.getValue()
+        );
+
         if (!found.isPresent()) {
             return null;
         }
@@ -27,16 +32,8 @@ public class TransactionRepositoryJPA implements TransactionRepository {
 
     @Override
     public PaymentTransaction save(PaymentTransaction paymentData) {
-        DBPaymentTransaction dbPaymentTransaction = null;
-        var found = jpaRepository.findById((long) paymentData.getId());
-        if (found.isPresent()) {
-            dbPaymentTransaction = found.get();
-            dbPaymentTransaction.update(paymentData);
-        } else {
-            dbPaymentTransaction = new DBPaymentTransaction(paymentData);
-        }
+        var dbPaymentTransaction = new DBPaymentTransaction(paymentData);
         dbPaymentTransaction = jpaRepository.save(dbPaymentTransaction);
-        paymentData.setId(dbPaymentTransaction.getId());
-        return paymentData;
+        return dbPaymentTransaction.toPaymentTransaction();
     }
 }

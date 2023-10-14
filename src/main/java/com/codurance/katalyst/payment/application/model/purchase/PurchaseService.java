@@ -19,15 +19,15 @@ public class PurchaseService {
 
     public Purchase updateFinantialStepFor(Purchase purchase, boolean stepOvercome) {
         var originalPurchase = purchaseRepository.findPurchaseById(purchase.getId());
-        originalPurchase.setFinantialState(stepOvercome);
-        purchaseRepository.update(purchase);
+        originalPurchase.setFinantialStepOvercome(stepOvercome);
+        purchaseRepository.save(originalPurchase);
         return originalPurchase;
     }
 
     public Purchase updateLearningStepFor(Purchase purchase, boolean septOvercome) {
         var originalPurchase = purchaseRepository.findPurchaseById(purchase.getId());
-        originalPurchase.setLearningState(septOvercome);
-        purchaseRepository.update(purchase);
+        originalPurchase.setLearningStepOvercome(septOvercome);
+        purchaseRepository.save(originalPurchase);
         return originalPurchase;
     }
 

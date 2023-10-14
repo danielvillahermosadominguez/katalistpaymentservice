@@ -7,5 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface DBPaymentTransactionRepository extends CrudRepository<DBPaymentTransaction, Long> {
-    Optional<DBPaymentTransaction> findByOrderCode(String orderCode);
+    Optional<DBPaymentTransaction> findByOrderCodeAndTransactionState(String orderCode, String transactionState);
 }

@@ -14,6 +14,7 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTr
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
+import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
@@ -24,6 +25,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -46,7 +48,7 @@ public class ConfirmPaymentShould {
     private Purchase purchase;
 
     @BeforeEach
-    void beforeEach() throws NotValidNotification {
+    void beforeEach() throws NotValidNotification, PaymentTransactionNotFound {
         int transactionId = 12345;
         notification = createNotificationFixture();
         paymentTransaction = createPaymentTransactionFixture(transactionId);
@@ -66,14 +68,28 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void confirm_the_payment() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+    void confirm_the_payment() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         confirmPayment.confirm(notification);
 
         verify(paymentService, times(1)).confirmPayment(any());
     }
 
     @Test
-    void throw_not_valid_notification_when_payment_service_detect_is_not_valid() throws NotValidNotification {
+    void ignore_payment_notification_not_pending() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
+        when(paymentService.confirmPayment(any())).thenThrow(PaymentTransactionNotFound.class);
+
+        confirmPayment.confirm(notification);
+
+        verify(paymentService, times(1)).confirmPayment(any());
+        verify(purchaseService, never()).getPurchase(anyInt());
+        verify(purchaseService, never()).updateLearningStepFor(any(),anyBoolean());
+        verify(purchaseService, never()).updateFinantialStepFor(any(),anyBoolean());
+        verify(financialService, never()).emitInvoice(any());
+        verify(learningService, never()).acquireACourseFor(any());
+    }
+
+    @Test
+    void throw_not_valid_notification_when_payment_service_detect_is_not_valid() throws NotValidNotification, PaymentTransactionNotFound {
         when(paymentService.confirmPayment(notification)).thenThrow(NotValidNotification.class);
         var exception = assertThrows(NotValidNotification.class, () -> {
             confirmPayment.confirm(notification);
@@ -83,7 +99,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void obtain_the_customer_related_to_the_payment_transaction() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+    void obtain_the_customer_related_to_the_payment_transaction() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         var idTransaction = paymentTransaction.getId();
         confirmPayment.confirm(notification);
 
@@ -101,7 +117,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void emit_an_invoice_from_the_financial_service() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+    void emit_an_invoice_from_the_financial_service() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         when(financialService.emitInvoice(any())).thenReturn(true);
 
         confirmPayment.confirm(notification);
@@ -111,7 +127,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void update_purchase_financial_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+    void update_purchase_financial_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         when(financialService.emitInvoice(any())).thenReturn(false);
 
         confirmPayment.confirm(notification);
@@ -121,7 +137,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void acquire_a_course_with_the_purchase() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+    void acquire_a_course_with_the_purchase() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         when(learningService.acquireACourseFor(any())).thenReturn(true);
 
         confirmPayment.confirm(notification);
@@ -131,7 +147,7 @@ public class ConfirmPaymentShould {
     }
 
     @Test
-    void update_purchase_learning_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+    void update_purchase_learning_step_not_passed() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable, PaymentTransactionNotFound {
         when(learningService.acquireACourseFor(any())).thenReturn(false);
 
         confirmPayment.confirm(notification);

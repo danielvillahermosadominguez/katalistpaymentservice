@@ -5,7 +5,5 @@ public interface PurchaseRepository {
 
     Purchase findPurchaseByTransactionId(int transactionId);
 
-    Purchase update(Purchase capture);
-
     Purchase findPurchaseById(int id);
 }

@@ -126,4 +126,8 @@ public class PaymentTransaction {
     public PaymentTransactionState getTransactionState() {
         return state;
     }
+
+    public void setTransactionState(PaymentTransactionState value) {
+        state = value;
+    }
 }

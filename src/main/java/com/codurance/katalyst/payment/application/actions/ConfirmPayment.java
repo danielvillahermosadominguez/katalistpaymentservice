@@ -7,8 +7,10 @@ import com.codurance.katalyst.payment.application.model.financial.FinancialServi
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
+import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,10 +35,17 @@ public class ConfirmPayment {
     }
 
     public void confirm(PaymentNotification notification) throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
-        var paymentTransaction = paymentService.confirmPayment(notification);
+        PaymentTransaction paymentTransaction = null;
+        try {
+            paymentTransaction = paymentService.confirmPayment(notification);
+        } catch (PaymentTransactionNotFound exception) {
+            //TODO: put a log
+            return;
+        }
         var purchase = purchaseService.getPurchase(paymentTransaction.getId());
         if (purchase == null) {
             throw new NoCustomerData();
+            //TODO: put a log
         }
 
         if (financialService.emitInvoice(purchase)) {

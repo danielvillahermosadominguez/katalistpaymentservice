@@ -5,6 +5,7 @@ public class Error {
     public static final int CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE = 2;
     public static final int CODE_ERROR_GENERAL_SUBSCRIPTION = 3;
     public static final int CODE_ERROR_PRICE_NOT_FOUND = 4;
+    public static final int ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD = 5;
 
     private int code;
     private String message;

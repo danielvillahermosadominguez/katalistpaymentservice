@@ -11,7 +11,7 @@ public class TransactionRepositoryFake implements TransactionRepository {
     private Map<String, PaymentTransaction> paymenTransactions = new HashMap<>();
 
     @Override
-    public PaymentTransaction getOpenTransactionBasedOn(String orderName) {
+    public PaymentTransaction getPendingPaymentTransactionBasedOn(String orderName) {
         if (!paymenTransactions.containsKey(orderName)) {
             return null;
         }

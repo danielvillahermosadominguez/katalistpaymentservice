@@ -8,6 +8,7 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTr
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
+import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
 import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
@@ -40,9 +41,14 @@ public class PaymentService {
         this.clock = clock;
     }
 
-    public PaymentTransaction confirmPayment(PaymentNotification notification) throws NotValidNotification {
+    public PaymentTransaction confirmPayment(PaymentNotification notification) throws NotValidNotification, PaymentTransactionNotFound {
         checkValidNotification(notification);
-        var paymentTransaction = transactionRepository.getOpenTransactionBasedOn(notification.getOrder());
+        var paymentTransaction = transactionRepository.getPendingPaymentTransactionBasedOn(notification.getOrder());
+        if (paymentTransaction == null) {
+            throw new PaymentTransactionNotFound();
+        }
+        paymentTransaction.setTransactionState(PaymentTransactionState.DONE);
+        paymentTransaction = transactionRepository.save(paymentTransaction);
         return paymentTransaction;
     }
 
@@ -71,7 +77,7 @@ public class PaymentService {
                 tpvUser.getTokenUser()
         );
 
-        var paymentStatus = this.payCometApiClient.payment(paymentData);
+        var paymentStatus = payCometApiClient.payment(paymentData);
         var paymentTransaction = new PaymentTransaction(
                 ip,
                 PaymentMethod.CARDS,
@@ -84,8 +90,7 @@ public class PaymentService {
                 PaymentTransactionState.PENDING,
                 paymentStatus);
 
-        transactionRepository.save(paymentTransaction);
-        return paymentTransaction;
+        return transactionRepository.save(paymentTransaction);
     }
 
     private String generateNowInString() {

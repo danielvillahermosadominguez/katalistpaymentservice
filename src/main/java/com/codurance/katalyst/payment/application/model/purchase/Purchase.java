@@ -18,8 +18,8 @@ public class Purchase {
     private String city;
     private String region;
     private String country;
-    private boolean finantialState;
-    private boolean learningState;
+    private boolean finantialStepOvercome;
+    private boolean learningStepOvercome;
     private int transactionId;
     private int id;
 
@@ -41,8 +41,8 @@ public class Purchase {
                     String city,
                     String region,
                     String country,
-                    boolean finantialStep,
-                    boolean learningStep) {
+                    boolean finantialStepOvercome,
+                    boolean learningStepOvercome) {
         this.transactionId = transactionId;
         this.order = order;
         this.concept = concept;
@@ -61,8 +61,8 @@ public class Purchase {
         this.city = city;
         this.region = region;
         this.country = country;
-        this.finantialState = finantialStep;
-        this.learningState = learningStep;
+        this.finantialStepOvercome = finantialStepOvercome;
+        this.learningStepOvercome = learningStepOvercome;
     }
 
     public Purchase(int transactionId, String order) {
@@ -111,11 +111,11 @@ public class Purchase {
     }
 
     public boolean isProcessedInFinantialState() {
-        return finantialState;
+        return finantialStepOvercome;
     }
 
     public boolean isProcessedInLearningState() {
-        return learningState;
+        return learningStepOvercome;
     }
 
     public int getTransactionId() {
@@ -202,15 +202,19 @@ public class Purchase {
         city = value;
     }
 
-    public void setFinantialState(boolean value) {
-        finantialState = value;
+    public void setFinantialStepOvercome(boolean value) {
+        finantialStepOvercome = value;
     }
 
     public int getId() {
         return id;
     }
 
-    public void setLearningState(boolean value) {
-        this.learningState = value;
+    public void setLearningStepOvercome(boolean value) {
+        this.learningStepOvercome = value;
+    }
+
+    public void setTransactionId(int value) {
+        transactionId = value;
     }
 }

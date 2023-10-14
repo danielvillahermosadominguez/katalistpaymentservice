@@ -166,37 +166,71 @@ Tasks:
   - Activation of TPV with Paycomet and the bank
   - Optional: IP request, deployment in azure and create a backlog with user stories
 NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
+- [5.10.2023 ]  We started again with the objective to do a demo and a handover the next 24/10/2023
 
 # Task related with the POC
-- [In process ] New data in the forms: address, phone
-- [In progress] TPV interaction - basic uses cases
-- [ ] In the form, we should show name and surname if it is NIF, and company name if it is CIF
-- [ ] Azure Web App, delay when start after a long time. Something related to the configuration surely.
-- [ ] Create in holded person and company depending on the form. Include a checkbox "Company"
-- [ ] Default data in creation of contact + Uppercase in values
-- [ ] To use a hash for the key in holded
-- [ ] Problem with the automatic deployment of the service. User in azure to deploy.
-- [ ] Resend in case of error + to be sure the mail has been sent (invoice)
-- [ ] Private Data Policy in the form - People of Paycomet will help us to cover it
+- [ ] Logs and traceability
+- [ ] Builders o fixtures for the tests. Equals when it is neccesary.
+- [ ] Paycomet adapter -> test and refactor
+- [ ] BDD and retry for learning and financial
+  - [ ] Resend in case of error + to be sure the mail has been sent (invoice)
+- [ ] BDD and edge cases: error cases
+- [ ] Course with Zero price => we should allow to the user subscribe
+- [ ] WireMock - clean the code and avoid complexity
+- [ ] Handover approach - think about it
+- [ ] Manual tests - description of regression tests
+- [ ] Web: refactor paths in the tests
+- [ ] Web: refactor of code js - to many ifs for fields
+- [ ] Test the main changes of the refactor (split the two calls from paycomet) in Azure.
+- [ ] Integration test for getUserByUserName
+- [ ] BDD with database - it should be good to have it.
+- [ ] Sometimes the pipeline fail in bdd but github doesn't detect the fail. strange.
+- [ ] IP, get the ip from the request and prepare for development with a fixed IP
+- [ ] Errors from Payment review and include the CODE ERROR form backend ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD
 - [ ] Connection holded PRO
 - [ ] Connection moodle PRO + configuration of security
-- [ ] Repository migration to Codurance organization
-- [ ] Logs and traceability 
-- [ ] Send a email in case of error with the information 
-- [ ] Environments variables in HTML5. How not to harcode the url
-- [ ] Validation the correct input in the service. surely with tests
+- [ ] Deploy the bundle and avoid to use embebed library i18n
+- [ ] Validation of the format for NIF and CIF in web page
+- [ ] Review if we need all the countries that are shown in the selector in the web page
+- [ ] Confirmation page - Codurance confirmation and KO page
+- [ ] Messages in front for compliance with Paycomet
+- [ ] Review of the separation of classes between layers
+- [ ] Business Rules taxes, account, etc. See bussiness rules in miro
+- [ ] CSS styles in the payment web page
+- [ ] Mail and format in the website. Message in spanish
+- [ ] Send a email in case of error with the information (or monitoring, think about it). Surely we need to process it manually and correct the bug. Se cases in the test cases
 - [ ] Send a mail with an account. The idea it could be neccesary, at least to the edge cases
+- [ ] Azure Web App, delay when start after a long time. Something related to the configuration surely.
+- [ ] Default data in creation of contact
+- [ ] Problem with the automatic deployment of the service. User in azure to deploy.
+- [ ] Private Data Policy in the form - People of Paycomet will help us to cover it
+- [ ] Repository migration to Codurance organization
 - [ ] Service security in the backend
 - [ ] Documentation about the integrations.
   - [ ] Integration with Moodle and user, token, etc
+      - Some importants topics:
+        - Creation of contacts and trial. Point of contact in holded
+        - Configuration in Moodle
+        - Paycomet procedures
+        - Paycomet and configuration the router for the IP and configuration of the IP to develop
+        - Languages in holded and strange behaviours
   - [ ] Decisions in Holded integration + configuration
   - [ ] Deployment in Azure and improvements
   - [ ] Secrets in vaults and Bitlocker
+  - [ ] The solution and structure - IDD
 - [ ] Review the infrastructure and dockerization - use a docker container for the service
 - [ ] Transfer repositories to codurance organization in Github
 - [ ] Migration to AWS
-- [ ] Restrict connection with the service, only for the static form (cookies?) or with infrastructure
-- [ ] Evaluate to use MongoDB - Deprecated. Create an ADR for the PostgreeSQL decision
+- [x] New data in the forms: address, phone
+- [x] TPV interaction - basic uses cases
+- [x] In the form, we should show name and surname if it is NIF, and company name if it is CIF
+- [x] Create in holded person and company depending on the form. Include a checkbox "Company"
+- [x]  Uppercase in values
+- [x] To use a hash for the key in holded
+- [x] Environments variables in HTML5. How not to harcode the url
+- [x] Validation the correct input in the service. surely with tests
+- [x] Restrict connection with the service, only for the static form (cookies?) or with infrastructure
+- [x] Evaluate to use MongoDB - Deprecated. Create an ADR for the PostgreeSQL decision
 - [x] TPV and Sandbox (Paycomet) access
 - [x] Emulation of the TPV (temporary) - Optional and to evaluate
 - [x] Basic integration in azure with TPV. Test

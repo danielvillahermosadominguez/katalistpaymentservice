@@ -61,5 +61,4 @@ public class TestConfiguration {
     public PurchaseRepositoryFake getPurchaseRepositoryFake() {
         return purchaseRepositoryFake;
     }
-
 }

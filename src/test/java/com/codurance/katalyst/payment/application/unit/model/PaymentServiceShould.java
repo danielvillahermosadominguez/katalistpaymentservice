@@ -10,6 +10,7 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTr
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
+import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
 import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -33,6 +35,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -96,7 +99,8 @@ public class PaymentServiceShould {
     }
 
     @Test
-    void obtain_the_order_from_repository_when_order_exists() throws NotValidNotification {
+    void update_the_order_to_Done_State() throws NotValidNotification, PaymentTransactionNotFound {
+        var paymentTransactionCaptor = ArgumentCaptor.forClass(PaymentTransaction.class);
         var orderName = "RANDOM_ORDER_NAME";
         int id = 1;
         var ip = "RANDOM_IP";
@@ -117,11 +121,59 @@ public class PaymentServiceShould {
                 PaymentTransactionState.PENDING,
                 new PaymentStatus());
         notification.setOrder(orderName);
-        when(transactionRepository.getOpenTransactionBasedOn(orderName)).thenReturn(paymentTransactionExpected);
+        when(transactionRepository.getPendingPaymentTransactionBasedOn(orderName)).thenReturn(paymentTransactionExpected);
+        when(transactionRepository.save(any())).thenReturn(paymentTransactionExpected);
+        var paymentTransaction = paymentService.confirmPayment(notification);
+
+        verify(transactionRepository, times(1)).save(paymentTransactionCaptor.capture());
+        assertThat(paymentTransaction.getState()).isEqualTo(PaymentTransactionState.DONE);
+        assertThat(paymentTransactionCaptor.getValue()).isNotNull();
+        var savedPaymentTransaction = paymentTransactionCaptor.getValue();
+        assertThat(savedPaymentTransaction.getTransactionState()).isEqualTo(PaymentTransactionState.DONE);
+    }
+
+    @Test
+    void throw_a_payment_transaction_not_found_exception_when_there_is_not_a_pending_transaction_with_this_purchase_code() {
+        var orderCode = "NOT_PENDING_ORDER_NAME";
+        notification.setOrder(orderCode);
+        when(transactionRepository.getPendingPaymentTransactionBasedOn(orderCode)).thenReturn(null);
+
+        var exception = assertThrows(PaymentTransactionNotFound.class, () -> {
+            paymentService.confirmPayment(notification);
+        });
+
+        assertThat(exception).isNotNull();
+        verify(transactionRepository, never()).save(any());
+    }
+
+    @Test
+    void obtain_the_order_from_repository_when_order_exists() throws NotValidNotification, PaymentTransactionNotFound {
+        var orderName = "RANDOM_ORDER_NAME";
+        int id = 1;
+        var ip = "RANDOM_IP";
+        var tpvUser = 123;
+        var amount = 34.56;
+        var date = "20231205103259";
+        var tpvToken = "RANDOM_TPV_TOKEN";
+        var paymentTransactionExpected = new PaymentTransaction(
+                id,
+                ip,
+                PaymentMethod.CARDS,
+                TransactionType.AUTHORIZATION,
+                tpvToken,
+                tpvUser,
+                orderName,
+                amount,
+                date,
+                PaymentTransactionState.PENDING,
+                new PaymentStatus());
+        notification.setOrder(orderName);
+        when(transactionRepository.getPendingPaymentTransactionBasedOn(orderName)).thenReturn(paymentTransactionExpected);
+        when(transactionRepository.save(any())).thenReturn(paymentTransactionExpected);
 
         var paymentTransaction = paymentService.confirmPayment(notification);
 
-        verify(transactionRepository, times(1)).getOpenTransactionBasedOn(orderName);
+        verify(transactionRepository, times(1)).getPendingPaymentTransactionBasedOn(orderName);
         assertThat(paymentTransaction.getId()).isEqualTo(id);
         assertThat(paymentTransaction.getIp()).isEqualTo(ip);
         assertThat(paymentTransaction.getPaymentMethod()).isEqualTo(PaymentMethod.CARDS);
@@ -131,18 +183,8 @@ public class PaymentServiceShould {
         assertThat(paymentTransaction.getOrder()).isEqualTo(orderName);
         assertThat(paymentTransaction.getAmount()).isEqualTo(amount);
         assertThat(paymentTransaction.getDate()).isEqualTo(date);
-        assertThat(paymentTransaction.getState()).isEqualTo(PaymentTransactionState.PENDING);
+        assertThat(paymentTransaction.getState()).isEqualTo(PaymentTransactionState.DONE);
         assertThat(paymentTransaction.getPaymentStatus()).isNotNull();
-    }
-
-    @Test
-    void obtain_the_order_from_repository_when_order_not_exists() throws NotValidNotification {
-        var orderName = "RANDOM_ORDER_NAME";
-        notification.setOrder(orderName);
-        var paymentTransaction = paymentService.confirmPayment(notification);
-
-        verify(transactionRepository, times(1)).getOpenTransactionBasedOn(orderName);
-        assertThat(paymentTransaction).isNull();
     }
 
     @ParameterizedTest
@@ -175,6 +217,7 @@ public class PaymentServiceShould {
         var ip = "RANDOM_IP";
         var price = 14.4;
         var payCometUser = new CreatedUser(idUser, token, 0);
+        when(transactionRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
         when(clock.getInstant()).thenReturn(instant);
         when(payCometApiClient.createUser(token)).thenReturn(payCometUser);
         when(payCometApiClient.payment(any())
@@ -207,6 +250,7 @@ public class PaymentServiceShould {
         var price = 14.4;
         var payCommetUser = new CreatedUser(idUser, token, 0);
         when(clock.getInstant()).thenReturn(instant);
+        when(transactionRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
         when(payCometApiClient.createUser(token)).thenReturn(payCommetUser);
         when(payCometApiClient.payment(any())
         ).thenReturn(new PaymentStatus());

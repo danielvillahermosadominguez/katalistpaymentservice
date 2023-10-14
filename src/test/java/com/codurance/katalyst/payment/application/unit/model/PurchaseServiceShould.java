@@ -1,9 +1,9 @@
 package com.codurance.katalyst.payment.application.unit.model;
 
+import com.codurance.katalyst.payment.application.fixtures.PurchaseFixtures;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseRepository;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
-import com.codurance.katalyst.payment.application.unit.model.fixtures.PurchaseFixtures;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -62,14 +62,14 @@ public class PurchaseServiceShould {
     }
 
     @Test
-    void update_finantial_state() {
+    void update_financial_step_to_true_when_it_is_overcome() {
         var purchaseCaptor = ArgumentCaptor.forClass(Purchase.class);
-        when(purchaseRepository.update(any())).thenReturn(purchaseFixture);
+        when(purchaseRepository.save(any())).thenReturn(purchaseFixture);
         when(purchaseRepository.findPurchaseById(purchaseFixture.getId())).thenReturn(purchaseFixture);
 
         var purchase = purchaseService.updateFinantialStepFor(purchaseFixture, true);
 
-        verify(purchaseRepository, times(1)).update(purchaseCaptor.capture());
+        verify(purchaseRepository, times(1)).save(purchaseCaptor.capture());
         var savedPurchase = purchaseCaptor.getValue();
         assertThat(savedPurchase).isNotNull();
         assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseFixtures.TRANSACTION_ID);
@@ -99,13 +99,13 @@ public class PurchaseServiceShould {
     @Test
     void update_learning_state() {
         var purchaseCaptor = ArgumentCaptor.forClass(Purchase.class);
-        when(purchaseRepository.update(any())).thenReturn(purchaseFixture);
-        when(purchaseRepository.update(any())).thenReturn(purchaseFixture);
+        when(purchaseRepository.save(any())).thenReturn(purchaseFixture);
+        when(purchaseRepository.save(any())).thenReturn(purchaseFixture);
         when(purchaseRepository.findPurchaseById(purchaseFixture.getId())).thenReturn(purchaseFixture);
 
         var purchase = purchaseService.updateLearningStepFor(purchaseFixture, true);
 
-        verify(purchaseRepository, times(1)).update(purchaseCaptor.capture());
+        verify(purchaseRepository, times(1)).save(purchaseCaptor.capture());
 
         var savedPurchase = purchaseCaptor.getValue();
         assertThat(savedPurchase).isNotNull();

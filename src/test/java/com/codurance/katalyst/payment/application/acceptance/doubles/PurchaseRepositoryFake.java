@@ -19,10 +19,14 @@ public class PurchaseRepositoryFake implements PurchaseRepository {
 
     @Override
     public Purchase save(Purchase purchase) {
-        purchaseId++;
-        purchase.setId(purchaseId);
-        purchases.add(purchase);
-        return purchase;
+        var oldPurchase = findPurchaseById(purchase.getId());
+        if (oldPurchase == null) {
+            purchaseId++;
+            purchase.setId(purchaseId);
+            purchases.add(purchase);
+            return purchase;
+        }
+        return update(purchase);
     }
 
     @Override
@@ -39,8 +43,7 @@ public class PurchaseRepositoryFake implements PurchaseRepository {
         return list.get(0);
     }
 
-    @Override
-    public Purchase update(Purchase purchase) {
+    private Purchase update(Purchase purchase) {
         var oldPurchase = findPurchaseById(purchase.getId());
         if (oldPurchase == null) {
             throw new RuntimeException("ERROR: is there not a purchase with id = " + purchase.getId());

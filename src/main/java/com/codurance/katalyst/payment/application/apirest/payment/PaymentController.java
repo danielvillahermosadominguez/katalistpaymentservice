@@ -105,6 +105,7 @@ public class PaymentController {
                             "We have had a problem with the creation of the contact and the invoicing"),
                     HttpStatus.BAD_REQUEST
             );
+            //TODO: manage this exception and return an error
         } catch (NoPriceAvailable exception) {
             return new ResponseEntity<>(
                     new Error(
@@ -113,6 +114,7 @@ public class PaymentController {
                     ),
                     HttpStatus.BAD_REQUEST
             );
+            //TODO: manage this exception and return an error
         } catch (UserIsEnroledInTheCourse exception) {
             return new ResponseEntity<>(
                     new Error(
@@ -121,6 +123,7 @@ public class PaymentController {
                     ),
                     HttpStatus.UNPROCESSABLE_ENTITY
             );
+            //TODO: manage this exception and return an error
         } catch (CourseNotExists exception) {
             return new ResponseEntity<>(
                     new Error(
@@ -129,10 +132,13 @@ public class PaymentController {
                     ),
                     HttpStatus.BAD_REQUEST
             );
-        } catch (TPVTokenIsRequired e) {
-            throw new RuntimeException(e);
-        } catch (CreditCardNotValid e) {
-            throw new RuntimeException(e);
+            //TODO: manage this exception and return an error
+        } catch (CreditCardNotValid | TPVTokenIsRequired e) {
+            new Error(
+                    Error.ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD,
+                    "The payment platform cannot to process this credit card. Payment platform error: " + e.getMessage()
+            );
+            //TODO: manage this exception and return an error
         }
 
         return new ResponseEntity<>(paymentStatus,
