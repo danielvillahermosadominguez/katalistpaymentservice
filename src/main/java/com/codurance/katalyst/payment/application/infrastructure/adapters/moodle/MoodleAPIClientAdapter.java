@@ -1,10 +1,10 @@
 package com.codurance.katalyst.payment.application.infrastructure.adapters.moodle;
 
+import com.codurance.katalyst.payment.application.infrastructure.adapters.common.APIClient;
 import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
-import com.codurance.katalyst.payment.application.infrastructure.adapters.common.APIClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -75,7 +75,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
             throw new MoodleNotRespond(
                     function,
                     endPoint,
-                    requestBody.toString(),
+                    objectToJSON(requestBody),
                     httpException.getMessage()
             );
         }
@@ -117,7 +117,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
             throw new MoodleNotRespond(
                     function,
                     endPoint,
-                    requestBody.toString(),
+                    objectToJSON(requestBody),
                     httpException.getMessage()
             );
         }
@@ -147,7 +147,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
             throw new MoodleNotRespond(
                     function,
                     endPoint,
-                    requestBody.toString(),
+                    objectToJSON(requestBody),
                     httpException.getMessage()
             );
         }
@@ -176,7 +176,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
             throw new MoodleNotRespond(
                     function,
                     endPoint,
-                    requestBody.toString(),
+                    objectToJSON(requestBody),
                     httpException.getMessage()
             );
         }
@@ -202,7 +202,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
             throw new MoodleNotRespond(
                     function,
                     endPoint,
-                    requestBody.toString(),
+                    objectToJSON(requestBody),
                     httpException.getMessage()
             );
         }
@@ -230,7 +230,7 @@ public class MoodleAPIClientAdapter extends APIClient implements MoodleApiClient
             throw new MoodleNotRespond(
                     function,
                     endPoint,
-                    requestBody.toString(),
+                    objectToJSON(requestBody),
                     httpException.getMessage()
             );
         }

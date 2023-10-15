@@ -18,6 +18,7 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNo
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.exception.PayCometNotRespond;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -119,7 +120,7 @@ public class PaymentController {
                     Error.ERROR_CODE_COURSE_DOESNT_EXIST,
                     "The course with the id " + customer.getCourseId() + " doesn't exists"
             );
-        } catch (CreditCardNotValid | TPVTokenIsRequired e) {
+        } catch (CreditCardNotValid | TPVTokenIsRequired | PayCometNotRespond e) {
             return responseFactory.createBadRequest(
                     Error.ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD,
                     "The payment platform cannot to process this credit card. Payment platform error: " + e.getMessage()

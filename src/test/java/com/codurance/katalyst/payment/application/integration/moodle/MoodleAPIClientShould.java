@@ -6,11 +6,12 @@ import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
-import com.google.gson.Gson;
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.UnsupportedEncodingException;
@@ -25,7 +26,6 @@ import static org.mockito.Mockito.when;
 public class MoodleAPIClientShould {
     public static final int WIREMOCK_PORT = 9000;
     private String urlBase = "http://localhost:9000/webservice/rest/server.php?";
-    private Gson gson = new Gson();
     private String token = "RANDOM_TOKEN";
     private MoodleWireMockServer wireMock = null;
     public MoodleAPIClientAdapter apiAdapter = new MoodleAPIClientAdapter(new RestTemplate());
@@ -75,14 +75,20 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void throw_an_moodle_exception_when_get_courses_not_respond() {
+    public void throw_an_moodle_exception_when_get_courses_not_respond() throws JSONException {
         Integer courseId = 1;
+        var expectedBody = String.format("""
+                {
+                    "options[ids][0]":["%s"]
+                }
+                """, courseId.toString());
         var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
             apiAdapter.getCourse(courseId.toString());
         });
 
+
         assertThat(thrown).isNotNull();
-        assertThat(thrown.getRequestBody()).isEqualTo("{options[ids][0]=[1]}");
+        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, false);
         assertThat(thrown.getFunction()).isEqualTo("core_course_get_courses");
         assertThat(thrown.getEndPoint()).isEqualTo(
                 apiAdapter.generateEndPoint("core_course_get_courses")
@@ -90,7 +96,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_users_by_field_when_the_user_not_exist() throws MoodleNotRespond {
+    public void get_users_by_email_when_the_user_not_exist() throws MoodleNotRespond {
         wireMock.stubForGetUsersByFieldWithStatusOk(Arrays.asList());
 
         var user = apiAdapter.getUserByMail("random@example.com");
@@ -99,7 +105,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_users_by_field_when_the_user_exist() throws MoodleNotRespond {
+    public void get_users_by_email_when_the_user_exist() throws MoodleNotRespond {
         var email = "random@example.com";
         var responseBody = wireMock.createResponseBodyGetUserByFieldOk(
                 1,
@@ -114,14 +120,66 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void throw_an_moodle_exception_when_the_get_user_by_field_not_respond() {
-        Integer courseId = 1;
+    public void throw_an_moodle_exception_when_the_get_user_by_email_not_respond() throws JSONException {
+
+        var expectedBody = """
+                {
+                    "field":["email"],
+                    "values[0]":["random@example.com"]
+                }
+                """;
         var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
             apiAdapter.getUserByMail("random@example.com");
         });
 
         assertThat(thrown).isNotNull();
-        assertThat(thrown.getRequestBody()).isEqualTo("{field=[email], values[0]=[random@example.com]}");
+        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, true);
+        assertThat(thrown.getFunction()).isEqualTo("core_user_get_users_by_field");
+        assertThat(thrown.getEndPoint()).isEqualTo(
+                apiAdapter.generateEndPoint("core_user_get_users_by_field")
+        );
+    }
+
+    @Test
+    public void get_users_by_username_when_the_user_not_exist() throws MoodleNotRespond {
+        wireMock.stubForGetUsersByFieldWithStatusOk(Arrays.asList());
+
+        var user = apiAdapter.getUserByUserName("random_username");
+
+        assertThat(user).isNull();
+    }
+
+    @Test
+    public void get_users_by_username_when_the_user_exist() throws MoodleNotRespond {
+        var userName = "random_username";
+        var responseBody = wireMock.createResponseBodyGetUserByFieldOk(
+                1,
+                userName,
+                "random_email@email.com"
+        );
+
+        wireMock.stubForGetUsersByFieldWithStatusOk(Arrays.asList(responseBody));
+
+        var user = apiAdapter.getUserByUserName(userName);
+
+        assertThat(user).isNotNull();
+    }
+
+    @Test
+    public void throw_an_moodle_exception_when_the_get_user_by_username_not_respond() throws JSONException {
+
+        var expectedBody = """
+                {
+                    "field":["username"],
+                    "values[0]":["random_username"]
+                }
+                """;
+        var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
+            apiAdapter.getUserByUserName("random_username");
+        });
+
+        assertThat(thrown).isNotNull();
+        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, true);
         assertThat(thrown.getFunction()).isEqualTo("core_user_get_users_by_field");
         assertThat(thrown.getEndPoint()).isEqualTo(
                 apiAdapter.generateEndPoint("core_user_get_users_by_field")
@@ -160,18 +218,32 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void throw_an_moodle_exception_when_the_create_user_not_respond() {
-        Integer courseId = 1;
+    public void throw_an_moodle_exception_when_the_create_user_not_respond() throws JSONException {
+        var userName = "RANDOM_USERNAME";
+        var createPassword = "1";
+        var email = "RANDOM_EMAIL@EMAIL.COM";
+        var firstName = "RANDOM_NAME";
+        var lastName = "RANDOM SURNAME";
+
+        var expectedBody = String.format("""
+                {
+                    "users[0][username]":["%s"],
+                    "users[0][createpassword]":["%s"],
+                    "users[0][email]":["%s"],
+                    "users[0][firstname]":["%s"],
+                    "users[0][lastname]":["%s"]
+                }
+                """, userName, createPassword, email, firstName, lastName);
+
         var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
             apiAdapter.createUser(
-                    new MoodleUser("RANDOM_NAME", "RANDOM SURNAME", "RANDOM_USERNAME", "RANDOM_EMAIL@EMAIL.COM")
+                    new MoodleUser(firstName, lastName, userName, email)
             );
         });
 
         assertThat(thrown).isNotNull();
-        assertThat(thrown.getRequestBody()).isEqualTo(
-                "{users[0][username]=[RANDOM_USERNAME], users[0][createpassword]=[1], users[0][email]=[RANDOM_EMAIL@EMAIL.COM], users[0][firstname]=[RANDOM_NAME], users[0][lastname]=[RANDOM SURNAME]}"
-        );
+        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, true);
+
         assertThat(thrown.getFunction()).isEqualTo("core_user_create_users");
         assertThat(thrown.getEndPoint()).isEqualTo(
                 apiAdapter.generateEndPoint("core_user_create_users")
@@ -201,9 +273,17 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void throw_an_moodle_exception_when_enrol_an_user_not_respond() {
+    public void throw_an_moodle_exception_when_enrol_an_user_not_respond() throws JSONException {
         var courseId = 1;
         var userId = "1";
+        var expectedBody = String.format("""
+                {
+                   "enrolments[0][roleid]":["%s"],
+                   "enrolments[0][userid]":["%s"],
+                   "enrolments[0][courseid]":["%s"]
+                }
+                """, STUDENT_ROL_ID, userId, courseId);
+
         var course = mock(MoodleCourse.class);
         when(course.getId()).thenReturn(courseId);
         var user = mock(MoodleUser.class);
@@ -213,9 +293,8 @@ public class MoodleAPIClientShould {
         });
 
         assertThat(thrown).isNotNull();
-        assertThat(thrown.getRequestBody()).isEqualTo(
-                "{enrolments[0][roleid]=[5], enrolments[0][userid]=[1], enrolments[0][courseid]=[1]}"
-        );
+        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, true);
+
         assertThat(thrown.getFunction()).isEqualTo("enrol_manual_enrol_users");
         assertThat(thrown.getEndPoint()).isEqualTo(
                 apiAdapter.generateEndPoint("enrol_manual_enrol_users")
@@ -256,8 +335,12 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void throw_an_moodle_exception_when_get_enrolled_users_not_respond() {
-        Integer courseId = 1;
+    public void throw_an_moodle_exception_when_get_enrolled_users_not_respond() throws JSONException {
+        var expectedBody = """
+                {
+                "courseid":["RANDOM_COURSE_ID"]
+                }
+                        """;
         var thrown = Assertions.assertThrows(MoodleNotRespond.class, () -> {
             apiAdapter.existsAnUserinThisCourse(
                     "RANDOM_COURSE_ID",
@@ -266,7 +349,7 @@ public class MoodleAPIClientShould {
         });
 
         assertThat(thrown).isNotNull();
-        assertThat(thrown.getRequestBody()).isEqualTo("{courseid=[RANDOM_COURSE_ID]}");
+        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, true);
         assertThat(thrown.getFunction()).isEqualTo("core_enrol_get_enrolled_users");
         assertThat(thrown.getEndPoint()).isEqualTo(
                 apiAdapter.generateEndPoint("core_enrol_get_enrolled_users")

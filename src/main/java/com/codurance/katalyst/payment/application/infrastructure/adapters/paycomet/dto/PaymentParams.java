@@ -1,68 +1,79 @@
 package com.codurance.katalyst.payment.application.infrastructure.adapters.paycomet.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class PaymentParams {
-       private int terminal;
-       private String amount;
-       private String currency = "EUR";
-       private int idUser;
-       private String methodId="1";
-       private String originalIp;
-       private int secure =1; //1 = seguro 0 = no seguro
-       private String order;
-       private String tokenUser;
-       private String productDescription= "Katalyst subscription";
-       private String merchantDescriptor= "Katalyst subscription";
-       //private int userInteraction = 1;
-       //private int notifyDirectPayment = 1;
-       //private int tokenize = 1;
 
-        public int getTerminal() {
-                return terminal;
-        }
+    @JsonProperty("terminal")
+    private int terminal;
+    @JsonProperty("amount")
+    private String amount;
+    @JsonProperty("currency")
+    private String currency = "EUR";
+    @JsonProperty("idUser")
+    private int idUser;
+    @JsonProperty("methodId")
+    private String methodId = "1";
+    @JsonProperty("originalIp")
+    private String originalIp;
+    @JsonProperty("secure")
+    private int secure = 1; //1 = secure 0 = no secure
+    @JsonProperty("order")
+    private String order;
+    @JsonProperty("tokenUser")
+    private String tokenUser;
+    @JsonProperty("productDescription")
+    private String productDescription = "Katalyst subscription";
+    @JsonProperty("merchantDescriptor")
+    private String merchantDescriptor = "Katalyst subscription";
 
-        public void setTerminal(int terminal) {
-                this.terminal = terminal;
-        }
+    public int getTerminal() {
+        return terminal;
+    }
 
-        public String getAmount() {
-                return amount;
-        }
+    public void setTerminal(int terminal) {
+        this.terminal = terminal;
+    }
 
-        public void setAmount(String amount) {
-                this.amount = amount;
-        }
+    public String getAmount() {
+        return amount;
+    }
 
-        public int getIdUser() {
+    public void setAmount(String amount) {
+        this.amount = amount;
+    }
+
+    public int getIdUser() {
                 return idUser;
         }
 
-        public void setIdUser(int idUser) {
-                this.idUser = idUser;
-        }
+    public void setIdUser(int idUser) {
+        this.idUser = idUser;
+    }
 
-        public int getSecure() {
-                return secure;
-        }
+    public int getSecure() {
+        return secure;
+    }
 
-        public void setSecure(int secure) {
-                this.secure = secure;
-        }
+    public void setSecure(int secure) {
+        this.secure = secure;
+    }
 
-        public String getOrder() {
-                return order;
-        }
+    public String getOrder() {
+        return order;
+    }
 
-        public void setOrder(String order) {
-                this.order = order;
-        }
+    public void setOrder(String order) {
+        this.order = order;
+    }
 
-        public String getTokenUser() {
-                return tokenUser;
-        }
+    public String getTokenUser() {
+        return tokenUser;
+    }
 
-        public void setTokenUser(String tokenUser) {
-                this.tokenUser = tokenUser;
-        }
+    public void setTokenUser(String tokenUser) {
+        this.tokenUser = tokenUser;
+    }
 
     public String getOriginalIp() {
         return originalIp;

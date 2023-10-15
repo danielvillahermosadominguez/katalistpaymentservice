@@ -3,12 +3,13 @@ package com.codurance.katalyst.payment.application.infrastructure.adapters.payco
 import com.codurance.katalyst.payment.application.infrastructure.adapters.common.APIClient;
 import com.codurance.katalyst.payment.application.infrastructure.adapters.paycomet.dto.PaymentBody;
 import com.codurance.katalyst.payment.application.infrastructure.adapters.paycomet.dto.PaymentParams;
-import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
-import com.google.gson.Gson;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.exception.PayCometNotRespond;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
 
 import java.text.DecimalFormat;
 
@@ -35,8 +37,9 @@ public class PayCometApiClientAdapter extends APIClient implements PayCometApiCl
     @Value("${paycomet.terminal}")
     private int terminal;
 
-    @Autowired
-    Clock dateService;
+    public PayCometApiClientAdapter(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     @Override
     protected void getHeaderParameter(HttpHeaders headers) {
@@ -47,7 +50,9 @@ public class PayCometApiClientAdapter extends APIClient implements PayCometApiCl
         return URL_BASE + function;
     }
 
-    public CreatedUser createUser(String jetToken) {
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    public CreatedUser createUser(String jetToken) throws PayCometNotRespond {
         CreatedUser result = null;
         var url = generateEndPoint("/v1/cards");
         MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();
@@ -62,56 +67,79 @@ public class PayCometApiClientAdapter extends APIClient implements PayCometApiCl
                 result = response.getBody();
             }
         } catch (HttpStatusCodeException httpException) {
-
+            throw new PayCometNotRespond(
+                    url,
+                    "",
+                    objectToJSON(requestBody),
+                    httpException.getMessage()
+            );
         }
 
         return result;
     }
 
     @Override
-    public PaymentStatus payment(PaymentOrder paymentData) {
-        String error = "";
+    public PaymentStatus authorizePayment(PaymentOrder paymentOrder) throws PayCometNotRespond {
         PaymentStatus result = null;
+        String paymentBody = "";
+        var url = generateEndPoint("/v1/payments");
         try {
-            //---------------------------------------------------------
-            //CODIGO DE PRUEBA Y EXPLORACION DE LA API - FALTA REFACTOR
-            //Siguientes pasos:
-            //Revisar los parámetros que faltan y extraer logica al caso de uso
-            //Revisar el formato de la referencia y como la querria el PO
-            //Cubrir con test
-            //Reformular los DTOs que sean necesarios
-            //Eliminar de los controlles los endpoints que ya no se utilizan y eliminar
-            //Del HTML también
-            //21/09/2023 - We stop the development
-            //12/10/2023 - Se ha continuado. Sigue siendo aun temporal
-            //---------------------------------------------------------
-            var strAmount = new DecimalFormat("#.00#").format(paymentData.getAmount());
-            strAmount = strAmount.replace(".", "");
-            strAmount = strAmount.replace(",", "");
-            var url = generateEndPoint("/v1/payments");
-            var requestJSON = new PaymentBody();
-            var requestBody = new PaymentParams();
-            requestJSON.setPayment(requestBody);
-            requestBody.setTerminal(terminal);
-            requestBody.setOriginalIp(paymentData.getOriginalIp());
-            requestBody.setAmount(strAmount);
-            requestBody.setIdUser(paymentData.getIdUser());
-            requestBody.setOrder(paymentData.getOrder());
-            requestBody.setTokenUser(paymentData.getTokenUser());
-            Gson gson = new Gson();
-            var paymentBody = gson.toJson(requestJSON, PaymentBody.class);
+            paymentBody = createPaymentBody(paymentOrder);
+            var request = createRequestString(
+                    paymentBody,
+                    MediaType.APPLICATION_JSON_VALUE
+            );
+            var response = restTemplate.postForEntity(
+                    url,
+                    request,
+                    String.class
+            );
 
-            var request = createRequestString(paymentBody, MediaType.APPLICATION_JSON_VALUE);
-            ResponseEntity<String> response = null;
-
-            response = restTemplate.postForEntity(url, request, String.class);
             if (response.getStatusCode() == HttpStatus.OK) {
-                result = gson.fromJson(response.getBody(), PaymentStatus.class);
+                result = objectMapper.readValue(response.getBody(), PaymentStatus.class);
             }
-        } catch (HttpStatusCodeException httpException) {
-            error = httpException.getMessage();
+        } catch (JsonProcessingException | HttpStatusCodeException httpException) {
+            throw new PayCometNotRespond(
+                    url,
+                    "",
+                    paymentBody,
+                    httpException.getMessage()
+            );
         }
 
         return result;
+    }
+
+    private String createPaymentBody(PaymentOrder paymentOrder) throws JsonProcessingException {
+        var requestBody = new PaymentBody();
+        var requestParameters = new PaymentParams();
+        var amount = convertIntoStringFormat(paymentOrder.getAmount());
+        requestBody.setPayment(requestParameters);
+        requestParameters.setTerminal(terminal);
+        requestParameters.setOriginalIp(paymentOrder.getOriginalIp());
+        requestParameters.setAmount(amount);
+        requestParameters.setIdUser(paymentOrder.getIdUser());
+        requestParameters.setOrder(paymentOrder.getOrder());
+        requestParameters.setTokenUser(paymentOrder.getTokenUser());
+        return objectMapper.writeValueAsString(requestBody);
+    }
+
+    private String convertIntoStringFormat(double amount) {
+        var strAmount = new DecimalFormat("#.00#").format(amount);
+        strAmount = strAmount.replace(".", "");
+        strAmount = strAmount.replace(",", "");
+        return strAmount;
+    }
+
+    public void setURLBase(String urlBase) {
+        this.URL_BASE = urlBase;
+    }
+
+    public void setAPIKey(String apiKey) {
+        this.apyKey = apiKey;
+    }
+
+    public void setTerminal(int terminal) {
+        this.terminal = terminal;
     }
 }

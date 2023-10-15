@@ -260,7 +260,7 @@ public class HoldedAPIClientShould {
         });
 
         assertThat(thrown).isNotNull();
-        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, false);
+        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, true);
         assertThat(thrown.getUrl()).isEqualTo(apiAdapter.generateEndPoint("invoicing/v1/contacts"));
         assertThat(thrown.getUrlVariables()).isEqualTo("");
     }
@@ -340,7 +340,7 @@ public class HoldedAPIClientShould {
 
         assertThat(thrown).isNotNull();
 
-        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, false);
+        JSONAssert.assertEquals(thrown.getRequestBody(), expectedBody, true);
         assertThat(thrown.getUrl()).isEqualTo(apiAdapter.generateEndPoint("invoicing/v1/documents/invoice"));
         assertThat(thrown.getUrlVariables()).isEqualTo("");
     }
@@ -389,9 +389,14 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void throw_an_holded_exception_when_send_an_invoice_not_respond() throws NotValidEMailFormat {
+    public void throw_an_holded_exception_when_send_an_invoice_not_respond() throws NotValidEMailFormat, JSONException {
         var emails = Arrays.asList(new HoldedEmail("RANDOM_EMAIL@EMAIL.COM"));
         var invoice = mock(HoldedInvoiceInfo.class);
+        var expectedBody = String.format("""
+                {
+                    "emails":["RANDOM_EMAIL@EMAIL.COM"]
+                }
+                """);
         when(invoice.getId()).thenReturn("1");
 
         var thrown = Assertions.assertThrows(HoldedNotRespond.class, () -> {
@@ -399,9 +404,7 @@ public class HoldedAPIClientShould {
         });
 
         assertThat(thrown).isNotNull();
-        assertThat(thrown.getRequestBody()).isEqualTo(
-                "{emails=[RANDOM_EMAIL@EMAIL.COM]}"
-        );
+        JSONAssert.assertEquals(thrown.getRequestBody(),expectedBody, true);
         assertThat(thrown.getUrl()).isEqualTo(apiAdapter.generateEndPoint("invoicing/v1/documents/invoice/1/send"));
         assertThat(thrown.getUrlVariables()).isEqualTo("");
     }

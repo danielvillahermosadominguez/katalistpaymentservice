@@ -1,17 +1,17 @@
 package com.codurance.katalyst.payment.application.infrastructure.adapters.holded;
 
-import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.CreateInvoiceItemRequestBody;
-import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.HoldedInvoiceStatus;
+import com.codurance.katalyst.payment.application.infrastructure.adapters.common.APIClient;
 import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.CreateContactRequestBody;
+import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.CreateInvoiceItemRequestBody;
 import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.CreateInvoiceRequestBody;
+import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.HoldedInvoiceStatus;
+import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
-import com.codurance.katalyst.payment.application.infrastructure.adapters.common.APIClient;
-import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -202,7 +202,7 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
             throw new HoldedNotRespond(
                     url,
                     "",
-                    requestBody.toString(),
+                    objectToJSON(requestBody),
                     httpException.getMessage()
             );
         }

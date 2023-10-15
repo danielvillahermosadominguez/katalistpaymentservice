@@ -169,22 +169,17 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [5.10.2023 ]  We started again with the objective to do a demo and a handover the next 24/10/2023
 
 # Task related with the POC
-- [x] Logs and traceability
-- [ git ] Remove gson as a dependency and use object mapper for serialization
-- [ ] Builders o fixtures for the tests. Equals when it is neccesary.
-- [ ] Paycomet adapter -> test and refactor
+- [In progress ] Remove gson as a dependency and use object mapper for serialization
+- [ ] Builders o fixtures for the tests. Equals when it is necessary.
 - [ ] BDD and retry for learning and financial
   - [ ] Resend in case of error + to be sure the mail has been sent (invoice)
 - [ ] BDD and edge cases: error cases
 - [ ] Course with Zero price => we should allow to the user subscribe
-- [ ] WireMock - clean the code and avoid complexity
 - [ ] Handover approach - think about it
 - [ ] Manual tests - description of regression tests
 - [ ] Web: refactor paths in the tests
 - [ ] Web: refactor of code js - to many ifs for fields
 - [ ] Test the main changes of the refactor (split the two calls from paycomet) in Azure.
-- [ ] Integration test for getUserByUserName
-- [ ] BDD with database - it should be good to have it.
 - [ ] Sometimes the pipeline fail in bdd but github doesn't detect the fail. strange.
 - [ ] IP, get the ip from the request and prepare for development with a fixed IP
 - [ ] Errors from Payment review and include the CODE ERROR form backend ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD
@@ -223,6 +218,11 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [ ] Review the infrastructure and dockerization - use a docker container for the service
 - [ ] Transfer repositories to codurance organization in Github
 - [ ] Migration to AWS
+- [x] WireMock - clean the code and avoid complexity
+- [x] Logs and traceability
+- [x] Paycomet adapter -> test and refactor
+- [x] Integration test for getUserByUserName
+- [x] BDD with database - it should be good to have it.
 - [x] New data in the forms: address, phone
 - [x] TPV interaction - basic uses cases
 - [x] In the form, we should show name and surname if it is NIF, and company name if it is CIF

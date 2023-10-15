@@ -19,6 +19,7 @@ import com.codurance.katalyst.payment.application.model.payment.exceptions.NotVa
 import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.exception.PayCometNotRespond;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,7 @@ public class PaymentControllerShould {
     private AbstractLog log;
 
     @Test
-    void return_Ok_200_when_subscribe_is_called_and_the_subscription_is_success() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
+    void return_Ok_200_when_subscribe_is_called_and_the_subscription_is_success() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         var customerData = new CustomerData();
         var body = objectMapper.writeValueAsString(customerData);
         when(this.subscription.subscribe(any())).thenReturn(new PaymentStatus());
@@ -92,7 +93,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_bad_request_when_the_course_not_exist() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
+    void return_bad_request_when_the_course_not_exist() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         var customerData = new CustomerData();
         doThrow(CourseNotExists.class).when(this.subscription).subscribe(any());
         var body = objectMapper.writeValueAsString(customerData);
@@ -113,7 +114,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_unprocesable_entity_when_the_customer_is_enroled() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
+    void return_unprocesable_entity_when_the_customer_is_enroled() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         var customerData = new CustomerData();
         doThrow(UserIsEnroledInTheCourse.class).when(this.subscription).subscribe(any());
         var body = objectMapper.writeValueAsString(customerData);
@@ -133,7 +134,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_bad_request_when_the_price_is_not_available() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
+    void return_bad_request_when_the_price_is_not_available() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         var customerData = new CustomerData();
         doThrow(NoPriceAvailable.class).when(this.subscription).subscribe(any());
         var body = objectMapper.writeValueAsString(customerData);
@@ -153,7 +154,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_general_error_when_the_customer_data_is_invalid() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
+    void return_general_error_when_the_customer_data_is_invalid() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         var customerData = new CustomerData();
         doThrow(InvalidInputCustomerData.class).when(this.subscription).subscribe(any());
         var body = objectMapper.writeValueAsString(customerData);
@@ -173,7 +174,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_general_error_when_the_moodle_is_not_available() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
+    void return_general_error_when_the_moodle_is_not_available() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         var customerData = new CustomerData();
         doThrow(LearningPlatformIsNotAvailable.class).when(this.subscription).subscribe(any());
         var body = objectMapper.writeValueAsString(customerData);
@@ -193,7 +194,7 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_general_error_when_the_holded_is_not_available() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
+    void return_general_error_when_the_holded_is_not_available() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         var customerData = new CustomerData();
         doThrow(FinancialPlatformIsNotAvailable.class).when(this.subscription).subscribe(any());
         var body = objectMapper.writeValueAsString(customerData);

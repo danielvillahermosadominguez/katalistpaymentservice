@@ -14,13 +14,13 @@ public class PaymentOrder {
                         int idUser,
                         int methodId,
                         String order,
-                        String originalIPm,
+                        String originalIP,
                         String tokenUser) {
         this.amount = amount;
         this.currency = currency;
         this.idUser = idUser;
         this.order = order;
-        this.originalIp = originalIPm;
+        this.originalIp = originalIP;
         this.tokenUser = tokenUser;
         this.methodId = methodId;
     }

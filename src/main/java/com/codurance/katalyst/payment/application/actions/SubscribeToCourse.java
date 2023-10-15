@@ -15,6 +15,7 @@ import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.exception.PayCometNotRespond;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -40,7 +41,7 @@ public class SubscribeToCourse {
         this.log = log;
     }
 
-    public PaymentStatus subscribe(CustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid {
+    public PaymentStatus subscribe(CustomerData customerData) throws CourseNotExists, InvalidInputCustomerData, NoPriceAvailable, UserIsEnroledInTheCourse, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         var course = learningService.getCourse(customerData.getCourseId());
         if (course == null) {
             throw new CourseNotExists();

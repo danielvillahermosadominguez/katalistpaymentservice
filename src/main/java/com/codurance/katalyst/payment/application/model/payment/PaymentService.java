@@ -13,6 +13,7 @@ import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometApiClient;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.exception.PayCometNotRespond;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -62,7 +63,7 @@ public class PaymentService {
         }
     }
 
-    public PaymentTransaction authorizeTransaction(String ip, String paytpvToken, double price) throws TPVTokenIsRequired, CreditCardNotValid {
+    public PaymentTransaction authorizeTransaction(String ip, String paytpvToken, double price) throws TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         checkToken(paytpvToken);
         var tpvUser = getUser(paytpvToken);
         var date = generateNowInString();
@@ -77,7 +78,7 @@ public class PaymentService {
                 tpvUser.getTokenUser()
         );
 
-        var paymentStatus = payCometApiClient.payment(paymentData);
+        var paymentStatus = payCometApiClient.authorizePayment(paymentData);
         var paymentTransaction = new PaymentTransaction(
                 ip,
                 PaymentMethod.CARDS,
@@ -104,7 +105,7 @@ public class PaymentService {
         return ORDER_PREFIX + date + ORDER_SUFIX;
     }
 
-    private CreatedUser getUser(String paytpvToken) throws CreditCardNotValid {
+    private CreatedUser getUser(String paytpvToken) throws CreditCardNotValid, PayCometNotRespond {
         var tpvUser = payCometApiClient.createUser(paytpvToken);
         if (tpvUser == null) {
             throw new CreditCardNotValid();

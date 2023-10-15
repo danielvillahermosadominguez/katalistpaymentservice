@@ -51,6 +51,7 @@ public class MoodleWireMockServer extends WireMockServerExtension {
         return responseBody;
     }
 
+
     public Map<String, Object> createResponseBodyCreateUserOk(Integer userId, String userName, String email) {
         Map<String, Object> responseBody = new LinkedHashMap<>();
         responseBody.put("id", userId);

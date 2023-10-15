@@ -21,6 +21,7 @@ import com.codurance.katalyst.payment.application.model.payment.entity.Transacti
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.exception.PayCometNotRespond;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import org.junit.Assert;
@@ -71,7 +72,7 @@ public class SubscribeToCourseShould {
     }
 
     @Test
-    void be_sure_the_course_is_available() throws CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
+    void be_sure_the_course_is_available() throws CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {
         var courseId = "1";
         customerData.setCourseId(courseId);
         prepareStubsForNormalFlow(courseId);
@@ -95,7 +96,7 @@ public class SubscribeToCourseShould {
     }
 
     @Test
-    void check_availability_for_this_customer() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid {
+    void check_availability_for_this_customer() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid, PayCometNotRespond {
         var courseId = "1";
         customerData.setCourseId(courseId);
         prepareStubsForNormalFlow(courseId);
@@ -109,7 +110,7 @@ public class SubscribeToCourseShould {
     }
 
     @Test
-    void authorize_the_payment_transaction() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid, CustomFieldNotExists, MoodleNotRespond {
+    void authorize_the_payment_transaction() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid, CustomFieldNotExists, MoodleNotRespond, PayCometNotRespond {
         var courseId = "1";
         customerData.setCourseId(courseId);
         expectedPaymentTransaction.setPaymentStatus(new PaymentStatus());
@@ -123,7 +124,7 @@ public class SubscribeToCourseShould {
     }
 
     @Test
-    void save_customer_data_when_payment_status_is_not_null() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid {
+    void save_customer_data_when_payment_status_is_not_null() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid, PayCometNotRespond {
         var courseId = "1";
         var purchaseCaptor = ArgumentCaptor.forClass(Purchase.class);
         customerData.setCourseId(courseId);
@@ -187,7 +188,7 @@ public class SubscribeToCourseShould {
     }
 
     @Test
-    void not_save_customer_data_when_payment_status_is_null() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid {
+    void not_save_customer_data_when_payment_status_is_null() throws TPVTokenIsRequired, CourseNotExists, NoPriceAvailable, LearningPlatformIsNotAvailable, FinancialPlatformIsNotAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, CreditCardNotValid, PayCometNotRespond {
         var courseId = "1";
         customerData.setCourseId(courseId);
         expectedPaymentTransaction.setPaymentStatus(null);
@@ -200,7 +201,7 @@ public class SubscribeToCourseShould {
         assertThat(paymentStatus).isNull();
     }
 
-    private void prepareStubsForNormalFlow(String courseId) throws TPVTokenIsRequired, CreditCardNotValid, NoPriceAvailable, LearningPlatformIsNotAvailable {
+    private void prepareStubsForNormalFlow(String courseId) throws TPVTokenIsRequired, CreditCardNotValid, NoPriceAvailable, LearningPlatformIsNotAvailable, PayCometNotRespond {
         when(learningService.isThereASeatFor(anyString(), anyString()))
                 .thenReturn(true);
         when(learningService.getCourse(any())).thenReturn(

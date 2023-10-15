@@ -26,7 +26,7 @@ public class PayCometApiClientFake implements PayCometApiClient {
     }
 
     @Override
-    public PaymentStatus payment(PaymentOrder paymentOrder) {
+    public PaymentStatus authorizePayment(PaymentOrder paymentOrder) {
         paymentOrders.add(paymentOrder);
         var paymentStatus = new PaymentStatus();
         paymentStatus.setOrder(paymentOrder.getOrder());

@@ -16,6 +16,7 @@ import com.codurance.katalyst.payment.application.model.ports.paycomet.PayCometA
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.CreatedUser;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.exception.PayCometNotRespond;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -209,7 +210,7 @@ public class PaymentServiceShould {
     }
 
     @Test
-    void authorize_the_payment() throws TPVTokenIsRequired, CreditCardNotValid, ParseException {
+    void authorize_the_payment() throws TPVTokenIsRequired, CreditCardNotValid, ParseException, PayCometNotRespond {
         var paymentDataCatcher = ArgumentCaptor.forClass(PaymentOrder.class);
         var instant = createInstant("26-09-2023 18:00:00");
         var idUser = 3;
@@ -220,12 +221,12 @@ public class PaymentServiceShould {
         when(transactionRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
         when(clock.getInstant()).thenReturn(instant);
         when(payCometApiClient.createUser(token)).thenReturn(payCometUser);
-        when(payCometApiClient.payment(any())
+        when(payCometApiClient.authorizePayment(any())
         ).thenReturn(new PaymentStatus());
 
         var paymentTransaction = paymentService.authorizeTransaction(ip, token, price);
 
-        verify(payCometApiClient, times(1)).payment(
+        verify(payCometApiClient, times(1)).authorizePayment(
                 paymentDataCatcher.capture()
         );
 
@@ -241,7 +242,7 @@ public class PaymentServiceShould {
     }
 
     @Test
-    void save_payment_transaction() throws TPVTokenIsRequired, CreditCardNotValid, ParseException {
+    void save_payment_transaction() throws TPVTokenIsRequired, CreditCardNotValid, ParseException, PayCometNotRespond {
         var paymentTransactionCatcher = ArgumentCaptor.forClass(PaymentTransaction.class);
         var instant = createInstant("26-09-2023 18:00:00");
         var idUser = 3;
@@ -252,7 +253,7 @@ public class PaymentServiceShould {
         when(clock.getInstant()).thenReturn(instant);
         when(transactionRepository.save(any())).then(AdditionalAnswers.returnsFirstArg());
         when(payCometApiClient.createUser(token)).thenReturn(payCommetUser);
-        when(payCometApiClient.payment(any())
+        when(payCometApiClient.authorizePayment(any())
         ).thenReturn(new PaymentStatus());
 
         var paymentTransaction = paymentService.authorizeTransaction(ip, token, price);
