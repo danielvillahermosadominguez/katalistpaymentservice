@@ -2,22 +2,18 @@ package com.codurance.katalyst.payment.application.acceptance.steps;
 
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
-import com.codurance.katalyst.payment.application.apirest.dto.ErrorResponseFactory;
-import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
-import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.apirest.dto.Error;
-import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
+import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
+import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.junit.experimental.categories.Categories;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Map;

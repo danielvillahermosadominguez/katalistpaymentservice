@@ -3,9 +3,9 @@ package com.codurance.katalyst.payment.application.acceptance.steps;
 import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
-import com.codurance.katalyst.payment.application.acceptance.doubles.PurchaseRepositoryFake;
-import com.codurance.katalyst.payment.application.acceptance.doubles.TransactionRepositoryFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
+import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
+import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
@@ -58,10 +58,10 @@ public class StepdefsSubscribeAndPaymentFeature {
     private PayCometApiClientFake payCometApiClient;
 
     @Autowired
-    private TransactionRepositoryFake transactionRepositoryFake;
+    private DBPaymentTransactionRepository dbPaymentTransactionRepository;
 
     @Autowired
-    private PurchaseRepositoryFake purchaseRepositoryFake;
+    private DBPurchaseRepository dbPurchaseRepository;
     @Value("${paycomet.terminal}")
     int tpvId;
     private int subscriptionResult = NO_ANSWER;
@@ -84,8 +84,8 @@ public class StepdefsSubscribeAndPaymentFeature {
         moodleApiClient.reset();
         holdedApiClient.reset();
         payCometApiClient.reset();
-        transactionRepositoryFake.reset();
-        purchaseRepositoryFake.reset();
+        dbPurchaseRepository.deleteAll();
+        dbPaymentTransactionRepository.deleteAll();
         subscriptionResult = NO_ANSWER;
     }
 
@@ -269,6 +269,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         customData.setRegion(this.userData.get("REGION"));
         customData.setCountry(this.userData.get("COUNTRY"));
         customData.setUsername(this.creditDebitCardData.get("NAME"));
+        customData.setIp("127.0.0.1");
         customData.setPaytpvToken(this.temporalPayCometToken);
         return customData;
     }

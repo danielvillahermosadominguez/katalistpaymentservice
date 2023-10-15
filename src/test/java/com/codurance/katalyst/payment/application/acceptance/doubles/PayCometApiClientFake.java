@@ -26,9 +26,14 @@ public class PayCometApiClientFake implements PayCometApiClient {
     }
 
     @Override
-    public PaymentStatus payment(PaymentOrder paymentData) {
-        paymentOrders.add(paymentData);
+    public PaymentStatus payment(PaymentOrder paymentOrder) {
+        paymentOrders.add(paymentOrder);
         var paymentStatus = new PaymentStatus();
+        paymentStatus.setOrder(paymentOrder.getOrder());
+        paymentStatus.setCurrency("EUR");
+        var toConvert = Double.valueOf((paymentOrder.getAmount() * 10));
+        paymentStatus.setAmount(toConvert.intValue());
+        paymentStatus.setErrorCode(0);
         paymentStatus.setChallengeUrl(URL_CHALLENGE_OK);
         return paymentStatus;
     }

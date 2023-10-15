@@ -52,6 +52,7 @@ public class DBPaymentTransaction {
     private String statusChallengeUrl;
 
     public DBPaymentTransaction(PaymentTransaction paymentTransaction) {
+        this.id = paymentTransaction.getId();
         update(paymentTransaction);
     }
 
