@@ -1,17 +1,20 @@
 package com.codurance.katalyst.payment.application.apirest;
 
-import com.codurance.katalyst.payment.application.model.learning.entity.Course;
-import com.codurance.katalyst.payment.application.apirest.courses.CourseController;
-import com.codurance.katalyst.payment.application.apirest.payment.dto.Error;
 import com.codurance.katalyst.payment.application.actions.ObtainTheCourse;
 import com.codurance.katalyst.payment.application.actions.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.NoPriceAvailable;
+import com.codurance.katalyst.payment.application.apirest.courses.CourseController;
+import com.codurance.katalyst.payment.application.apirest.dto.Error;
+import com.codurance.katalyst.payment.application.apirest.dto.ErrorResponseFactory;
+import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
+import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = CourseController.class)
+@Import(ErrorResponseFactory.class)
 public class CourseControllerShould {
     public static final String ID_COURSE_EXIST = "1";
     public static final String ID_COURSE_DOESNT_EXIST = "2";
@@ -30,6 +34,9 @@ public class CourseControllerShould {
 
     @MockBean
     private ObtainTheCourse obtainTheCourseUseCase;
+
+    @MockBean
+    private AbstractLog log;
 
     @Autowired
     private ObjectMapper objectMapper;

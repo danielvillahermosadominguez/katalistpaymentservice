@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.apirest.payment.dto;
+package com.codurance.katalyst.payment.application.apirest.dto;
 
 public class Error {
     public static final int ERROR_CODE_COURSE_DOESNT_EXIST = 1;
@@ -20,5 +20,9 @@ public class Error {
 
     public String getMessage() {
         return message;
+    }
+
+    public String getFullMessage() {
+        return String.format("[ERROR CODE] = %s, [MESSAGE] = %s",code,message );
     }
 }

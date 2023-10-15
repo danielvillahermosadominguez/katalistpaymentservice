@@ -169,7 +169,8 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [5.10.2023 ]  We started again with the objective to do a demo and a handover the next 24/10/2023
 
 # Task related with the POC
-- [ ] Logs and traceability
+- [x] Logs and traceability
+- [ git ] Remove gson as a dependency and use object mapper for serialization
 - [ ] Builders o fixtures for the tests. Equals when it is neccesary.
 - [ ] Paycomet adapter -> test and refactor
 - [ ] BDD and retry for learning and financial
@@ -196,6 +197,7 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [ ] Messages in front for compliance with Paycomet
 - [ ] Review of the separation of classes between layers
 - [ ] Business Rules taxes, account, etc. See bussiness rules in miro
+- [ ] Check the IP confirmation from Paycomet servers
 - [ ] CSS styles in the payment web page
 - [ ] Mail and format in the website. Message in spanish
 - [ ] Send a email in case of error with the information (or monitoring, think about it). Surely we need to process it manually and correct the bug. Se cases in the test cases

@@ -10,7 +10,9 @@ import com.codurance.katalyst.payment.application.actions.exception.LearningPlat
 import com.codurance.katalyst.payment.application.actions.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.actions.exception.UserIsEnroledInTheCourse;
-import com.codurance.katalyst.payment.application.apirest.payment.dto.Error;
+import com.codurance.katalyst.payment.application.apirest.dto.Error;
+import com.codurance.katalyst.payment.application.apirest.dto.ErrorResponseFactory;
+import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
@@ -40,9 +42,16 @@ public class PaymentController {
     private ConfirmPayment confirmPayment;
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private AbstractLog log;
+
+    @Autowired
+    private ErrorResponseFactory responseFactory;
+
     @RequestMapping(value = "/confirmation", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity webhook(@RequestParam Map<String, Object> payload, HttpServletRequest request)  {
+    public ResponseEntity webhook(@RequestParam Map<String, Object> payload, HttpServletRequest request) {
         //we could check the IPs
         //99.81.26.182
         //99.80.172.90
@@ -53,36 +62,28 @@ public class PaymentController {
             var paymentNotification = objectMapper.readValue(json, PaymentNotification.class);
             confirmPayment.confirm(paymentNotification);
         } catch (NotValidNotification e) {
-            return new ResponseEntity<>(
-                    new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
-                            "The payload is not correct for this service"),
-                    HttpStatus.BAD_REQUEST
+            return responseFactory.createBadRequest(
+                    Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
+                    "The payload is not correct for this service"
             );
-            //TODO: Include log
         } catch (NoCustomerData e) {
-            return new ResponseEntity<>(
-                    new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
-                            "We don't have any customer data related to this transaction"),
-                    HttpStatus.BAD_REQUEST
-            );
-            //TODO: Include log
+            return responseFactory.createBadRequest(
+                    Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
+                    "We don't have any customer data related to this transaction");
         } catch (JsonProcessingException e) {
-            return new ResponseEntity<>(
-                    new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
-                            "We have had problems with the format of the payload"),
-                    HttpStatus.BAD_REQUEST
+            return responseFactory.createBadRequest(
+                    Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
+                    "We have had problems with the format of the payload"
             );
-            //TODO: Include log
-        } catch (FinancialPlatformIsNotAvailable e) {
-            //TODO: manage this exception and return an error
-            throw new RuntimeException(e);
-        } catch (InvalidInputCustomerData e) {
-            //TODO: manage this exception and return an error
-            throw new RuntimeException(e);
-        } catch (LearningPlatformIsNotAvailable e) {
-            //TODO: manage this exception and return an error
-            throw new RuntimeException(e);
+        } catch (InvalidInputCustomerData | FinancialPlatformIsNotAvailable | LearningPlatformIsNotAvailable e) {
+            return responseFactory.createBadRequest(
+                    Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
+                    "We have had a problem with the creation of the contact and the invoicing"
+            );
+        } catch (Exception e) {
+            log.error(PaymentController.class, "Not controlled exception. error: " + e.getMessage());
         }
+
         return ResponseEntity.ok("");
     }
 
@@ -92,53 +93,39 @@ public class PaymentController {
         PaymentStatus paymentStatus = null;
         try {
             paymentStatus = this.subscription.subscribe(customer);
-            if(paymentStatus == null) {
-                return new ResponseEntity<>(
-                        new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
-                                "We have had a problem with the payment"),
-                        HttpStatus.BAD_REQUEST
+            if (paymentStatus == null) {
+                return responseFactory.createBadRequest(
+                        Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
+                        "We have had a problem with the payment"
                 );
             }
         } catch (InvalidInputCustomerData | FinancialPlatformIsNotAvailable | LearningPlatformIsNotAvailable exception) {
-            return new ResponseEntity<>(
-                    new Error(Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
-                            "We have had a problem with the creation of the contact and the invoicing"),
-                    HttpStatus.BAD_REQUEST
+            return responseFactory.createBadRequest(
+                    Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
+                    "We have had a problem with the creation of the contact and the invoicing"
             );
-            //TODO: manage this exception and return an error
         } catch (NoPriceAvailable exception) {
-            return new ResponseEntity<>(
-                    new Error(
-                            Error.CODE_ERROR_PRICE_NOT_FOUND,
-                            "Price custom field not found in Moodle. Please, contact with the administrator to create this custom field"
-                    ),
-                    HttpStatus.BAD_REQUEST
+            return responseFactory.createBadRequest(
+                    Error.CODE_ERROR_PRICE_NOT_FOUND,
+                    "Price custom field not found in Moodle. Please, contact with the administrator to create this custom field"
             );
-            //TODO: manage this exception and return an error
         } catch (UserIsEnroledInTheCourse exception) {
-            return new ResponseEntity<>(
-                    new Error(
-                            Error.CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE,
-                            "The user has a subscription for this course"
-                    ),
-                    HttpStatus.UNPROCESSABLE_ENTITY
+            return responseFactory.createUnprocessableRequest(
+                    Error.CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE,
+                    "The user has a subscription for this course"
             );
-            //TODO: manage this exception and return an error
         } catch (CourseNotExists exception) {
-            return new ResponseEntity<>(
-                    new Error(
-                            Error.ERROR_CODE_COURSE_DOESNT_EXIST,
-                            "The course with the id " + customer.getCourseId() + " doesn't exists"
-                    ),
-                    HttpStatus.BAD_REQUEST
+            return responseFactory.createBadRequest(
+                    Error.ERROR_CODE_COURSE_DOESNT_EXIST,
+                    "The course with the id " + customer.getCourseId() + " doesn't exists"
             );
-            //TODO: manage this exception and return an error
         } catch (CreditCardNotValid | TPVTokenIsRequired e) {
-            new Error(
+            return responseFactory.createBadRequest(
                     Error.ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD,
                     "The payment platform cannot to process this credit card. Payment platform error: " + e.getMessage()
             );
-            //TODO: manage this exception and return an error
+        } catch (Exception e) {
+            log.error(PaymentController.class, "Not controlled exception. error: " + e.getMessage());
         }
 
         return new ResponseEntity<>(paymentStatus,

@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.acceptance.utils;
 
-import com.codurance.katalyst.payment.application.apirest.payment.dto.Error;
+import com.codurance.katalyst.payment.application.apirest.dto.Error;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;

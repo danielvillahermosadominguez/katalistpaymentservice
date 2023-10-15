@@ -1,13 +1,6 @@
 package com.codurance.katalyst.payment.application.apirest;
 
-import com.codurance.katalyst.payment.application.model.customer.CustomerData;
-import com.codurance.katalyst.payment.application.apirest.payment.dto.Error;
-import com.codurance.katalyst.payment.application.apirest.payment.PaymentController;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
-import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
-import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
 import com.codurance.katalyst.payment.application.actions.ConfirmPayment;
-import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
 import com.codurance.katalyst.payment.application.actions.SubscribeToCourse;
 import com.codurance.katalyst.payment.application.actions.exception.CourseNotExists;
 import com.codurance.katalyst.payment.application.actions.exception.CreditCardNotValid;
@@ -17,12 +10,21 @@ import com.codurance.katalyst.payment.application.actions.exception.LearningPlat
 import com.codurance.katalyst.payment.application.actions.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.actions.exception.UserIsEnroledInTheCourse;
+import com.codurance.katalyst.payment.application.apirest.dto.Error;
+import com.codurance.katalyst.payment.application.apirest.dto.ErrorResponseFactory;
+import com.codurance.katalyst.payment.application.apirest.payment.PaymentController;
+import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
+import com.codurance.katalyst.payment.application.model.customer.CustomerData;
+import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
+import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
+import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
+import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,6 +36,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = PaymentController.class)
+@Import(ErrorResponseFactory.class)
 public class PaymentControllerShould {
 
     private static final String ENDPOINT_SUBSCRIPTION = "/subscription";
@@ -53,11 +56,13 @@ public class PaymentControllerShould {
     @MockBean
     private ConfirmPayment confirmPayment;
 
+    @MockBean
+    private AbstractLog log;
+
     @Test
     void return_Ok_200_when_subscribe_is_called_and_the_subscription_is_success() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
         var customerData = new CustomerData();
-        var gson = new Gson();
-        var body = gson.toJson(customerData);
+        var body = objectMapper.writeValueAsString(customerData);
         when(this.subscription.subscribe(any())).thenReturn(new PaymentStatus());
         var request = post(ENDPOINT_SUBSCRIPTION)
                 .accept(MediaType.APPLICATION_JSON)
@@ -90,8 +95,7 @@ public class PaymentControllerShould {
     void return_bad_request_when_the_course_not_exist() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
         var customerData = new CustomerData();
         doThrow(CourseNotExists.class).when(this.subscription).subscribe(any());
-        var gson = new Gson();
-        var body = gson.toJson(customerData);
+        var body = objectMapper.writeValueAsString(customerData);
         var request = post(ENDPOINT_SUBSCRIPTION)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -103,7 +107,8 @@ public class PaymentControllerShould {
                 )
                 .andReturn();
         var json = result.getResponse().getContentAsString();
-        var error = gson.fromJson(json, Error.class);
+
+        var error = objectMapper.readValue(json, Error.class);
         assertThat(error.getCode()).isEqualTo(Error.ERROR_CODE_COURSE_DOESNT_EXIST);
     }
 
@@ -111,8 +116,7 @@ public class PaymentControllerShould {
     void return_unprocesable_entity_when_the_customer_is_enroled() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
         var customerData = new CustomerData();
         doThrow(UserIsEnroledInTheCourse.class).when(this.subscription).subscribe(any());
-        var gson = new Gson();
-        var body = gson.toJson(customerData);
+        var body = objectMapper.writeValueAsString(customerData);
         var request = post(ENDPOINT_SUBSCRIPTION)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -124,7 +128,7 @@ public class PaymentControllerShould {
                 )
                 .andReturn();
         var json = result.getResponse().getContentAsString();
-        var error = gson.fromJson(json, Error.class);
+        var error = objectMapper.readValue(json, Error.class);
         assertThat(error.getCode()).isEqualTo(Error.CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE);
     }
 
@@ -132,8 +136,7 @@ public class PaymentControllerShould {
     void return_bad_request_when_the_price_is_not_available() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
         var customerData = new CustomerData();
         doThrow(NoPriceAvailable.class).when(this.subscription).subscribe(any());
-        var gson = new Gson();
-        var body = gson.toJson(customerData);
+        var body = objectMapper.writeValueAsString(customerData);
         var request = post(ENDPOINT_SUBSCRIPTION)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -145,7 +148,7 @@ public class PaymentControllerShould {
                 )
                 .andReturn();
         var json = result.getResponse().getContentAsString();
-        var error = gson.fromJson(json, Error.class);
+        var error = objectMapper.readValue(json, Error.class);
         assertThat(error.getCode()).isEqualTo(Error.CODE_ERROR_PRICE_NOT_FOUND);
     }
 
@@ -153,8 +156,7 @@ public class PaymentControllerShould {
     void return_general_error_when_the_customer_data_is_invalid() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
         var customerData = new CustomerData();
         doThrow(InvalidInputCustomerData.class).when(this.subscription).subscribe(any());
-        var gson = new Gson();
-        var body = gson.toJson(customerData);
+        var body = objectMapper.writeValueAsString(customerData);
         var request = post(ENDPOINT_SUBSCRIPTION)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -166,7 +168,7 @@ public class PaymentControllerShould {
                 )
                 .andReturn();
         var json = result.getResponse().getContentAsString();
-        var error = gson.fromJson(json, Error.class);
+        var error = objectMapper.readValue(json, Error.class);
         assertThat(error.getCode()).isEqualTo(Error.CODE_ERROR_GENERAL_SUBSCRIPTION);
     }
 
@@ -174,8 +176,7 @@ public class PaymentControllerShould {
     void return_general_error_when_the_moodle_is_not_available() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
         var customerData = new CustomerData();
         doThrow(LearningPlatformIsNotAvailable.class).when(this.subscription).subscribe(any());
-        var gson = new Gson();
-        var body = gson.toJson(customerData);
+        var body = objectMapper.writeValueAsString(customerData);
         var request = post(ENDPOINT_SUBSCRIPTION)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -187,7 +188,7 @@ public class PaymentControllerShould {
                 )
                 .andReturn();
         var json = result.getResponse().getContentAsString();
-        var error = gson.fromJson(json, Error.class);
+        var error = objectMapper.readValue(json, Error.class);
         assertThat(error.getCode()).isEqualTo(Error.CODE_ERROR_GENERAL_SUBSCRIPTION);
     }
 
@@ -195,8 +196,7 @@ public class PaymentControllerShould {
     void return_general_error_when_the_holded_is_not_available() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid {
         var customerData = new CustomerData();
         doThrow(FinancialPlatformIsNotAvailable.class).when(this.subscription).subscribe(any());
-        var gson = new Gson();
-        var body = gson.toJson(customerData);
+        var body = objectMapper.writeValueAsString(customerData);
         var request = post(ENDPOINT_SUBSCRIPTION)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -208,7 +208,7 @@ public class PaymentControllerShould {
                 )
                 .andReturn();
         var json = result.getResponse().getContentAsString();
-        var error = gson.fromJson(json, Error.class);
+        var error = objectMapper.readValue(json, Error.class);
         assertThat(error.getCode()).isEqualTo(Error.CODE_ERROR_GENERAL_SUBSCRIPTION);
     }
 }

@@ -6,6 +6,8 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PurchaseRepositoryFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.TransactionRepositoryFake;
+import com.codurance.katalyst.payment.application.apirest.dto.ErrorResponseFactory;
+import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
 import com.codurance.katalyst.payment.application.model.payment.TransactionRepository;
 import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
 import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
