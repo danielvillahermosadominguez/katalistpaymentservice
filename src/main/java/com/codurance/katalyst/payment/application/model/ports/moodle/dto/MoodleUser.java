@@ -78,4 +78,12 @@ public class MoodleUser {
     public int hashCode() {
         return Objects.hash(id, userName, email, name, lastName);
     }
+
+    public boolean haveSameMainData(MoodleUser currentUser) {
+        var result = userName.equals(currentUser.getUserName());
+        result &= name.equals(currentUser.getName());
+        result &= lastName.equals(currentUser.getLastName());
+        result &= email.equals(currentUser.getEmail());
+        return result;
+    }
 }

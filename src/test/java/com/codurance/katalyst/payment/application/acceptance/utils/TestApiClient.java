@@ -51,7 +51,7 @@ public class TestApiClient {
 
     private List<Error> errorList = new ArrayList<>();
     private ResponseEntity<String> sendRequest(HttpMethod method, String endpoint) {
-        HttpHeaders header = new HttpHeaders();
+        var header = new HttpHeaders();
         header.set("Accept", MediaType.APPLICATION_JSON_VALUE);
         ResponseEntity<String> response;
         try {

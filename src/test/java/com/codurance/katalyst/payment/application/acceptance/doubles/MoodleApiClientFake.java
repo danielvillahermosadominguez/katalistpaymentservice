@@ -16,7 +16,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
     public static int idMoodleCourseCounter = 0;
     public static int idMoodleUserCounter = 0;
 
-    public boolean available = true;
+    private boolean available = true;
 
     private Map<Integer, MoodleCourse> courses = new HashMap<>();
 
@@ -52,10 +52,12 @@ public class MoodleApiClientFake implements MoodleApiClient {
     @Override
     public boolean existsAnUserinThisCourse(String courseId, String email) throws MoodleNotRespond {
         checkAvailability();
-        if (!studentsPerCourse.containsKey(courseId)) {
+        var courseIdAsInteger = Integer.parseInt(courseId); //TODO: We need to homogenize all the courseId in integers
+        if (!studentsPerCourse.containsKey(Integer.parseInt(courseId))) {
             return false;
         }
-        var userList = studentsPerCourse.get(courseId);
+
+        var userList = studentsPerCourse.get(courseIdAsInteger);
         return existInThisList(email, userList);
     }
 

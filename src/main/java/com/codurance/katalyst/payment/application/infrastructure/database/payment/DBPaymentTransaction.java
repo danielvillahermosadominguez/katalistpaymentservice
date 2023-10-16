@@ -108,4 +108,8 @@ public class DBPaymentTransaction {
                 paymentStatus
         );
     }
+
+    public String getTransactionState() {
+        return this.transactionState;
+    }
 }

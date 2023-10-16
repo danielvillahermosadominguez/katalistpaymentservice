@@ -4,11 +4,14 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
+import com.codurance.katalyst.payment.application.apirest.dto.Error;
+import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
@@ -244,9 +247,51 @@ public class StepdefsSubscribeAndPaymentFeature {
         }
     }
 
+
+    @Then("the customer is informed about the fail of the subscription")
+    public void the_customer_is_informed_about_the_fail_of_the_subscription(DataTable dataTable) {
+        var errorDescriptionData = dataTable.asMaps(String.class, String.class);
+        var lastErrors = apiClient.getLastErrors();
+        assertThat(errorDescriptionData.size()).isEqualTo(1);
+        assertThat(lastErrors.size()).isEqualTo(1);
+        var lastError = lastErrors.get(0);
+        var expectedError = createError(errorDescriptionData.get(0));
+        assertThat(lastError.getCode()).isEqualTo(expectedError.getCode());
+        assertThat(lastError.getMessage()).isEqualTo(expectedError.getMessage());
+    }
+
+    @Then("There are not pending authorized payments")
+    public void there_are_not_pending_authorized_payments() {
+        var paymentTransactions = dbPaymentTransactionRepository.findAll();
+        var existPendingTransactions = existPendingTransactions(paymentTransactions);
+        var lastPaymentOrders = payCometApiClient.getLastPaymentOrders();
+        assertThat(existPendingTransactions).isFalse();
+        assertThat(lastPaymentOrders.size()).isEqualTo(0);
+    }
+    @Then("Moodle has the following users")
+    public void moodle_has_the_following_users(DataTable dataTable) {
+        var userList = dataTable.asMaps(String.class, String.class);
+        var expectedUserList= createUserList(userList);
+        var currentUsersList = moodleApiClient.getAllUsers();
+        assertThat(expectedUserList.size()).isEqualTo(currentUsersList.size());
+        for (var user : expectedUserList) {
+             assertThat(existInTheList(user, currentUsersList));
+        }
+    }
+
+
     private boolean existInTheList(HoldedContact contact, List<HoldedContact> currentContactList) {
         for (var currentContact : currentContactList) {
             if (contact.haveSameMainData(currentContact)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean existInTheList(MoodleUser user, List<MoodleUser> currentMoodleContactList) {
+        for (var currentUser : currentMoodleContactList) {
+            if (user.haveSameMainData(currentUser)) {
                 return true;
             }
         }
@@ -339,4 +384,23 @@ public class StepdefsSubscribeAndPaymentFeature {
         var email = data.get("EMAIL");
         return new MoodleUser(name, surname, userName, email);
     }
+
+    private Error createError(Map<String, String> errorDescriptionData) {
+        var errorCode  = errorDescriptionData.get("ERROR CODE");
+        var errorMessage  = errorDescriptionData.get("ERROR MESSAGE");
+
+        return new Error(Integer.parseInt(errorCode), errorMessage);
+    }
+
+    private boolean existPendingTransactions(Iterable<DBPaymentTransaction> paymentTransactions) {
+        boolean existPendingTransactions = false;
+        for (DBPaymentTransaction paymentTransaction: paymentTransactions) {
+            if(paymentTransaction.getTransactionState().equals(PaymentTransactionState.PENDING.getValue())) {
+                existPendingTransactions = true;
+                break;
+            }
+        }
+        return existPendingTransactions;
+    }
+
 }
