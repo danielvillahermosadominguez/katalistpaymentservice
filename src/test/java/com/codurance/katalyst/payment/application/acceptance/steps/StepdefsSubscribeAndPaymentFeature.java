@@ -4,6 +4,8 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
+import com.codurance.katalyst.payment.application.apirest.dto.Error;
+import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
@@ -244,6 +246,38 @@ public class StepdefsSubscribeAndPaymentFeature {
         }
     }
 
+
+    @Then("the customer is informed about the fail of the subscription")
+    public void the_customer_is_informed_about_the_fail_of_the_subscription(DataTable dataTable) {
+        var errorDescriptionData = dataTable.asMaps(String.class, String.class);
+        var lastErrors = apiClient.getLastErrors();
+        assertThat(errorDescriptionData.size()).isEqualTo(1);
+        assertThat(lastErrors.size()).isEqualTo(1);
+        var lastError = lastErrors.get(0);
+        var expectedError = createError(errorDescriptionData.get(0));
+        assertThat(lastError.getCode()).isEqualTo(expectedError.getCode());
+        assertThat(lastError.getMessage()).isEqualTo(expectedError.getMessage());
+    }
+
+    @Then("There is not pending authorized payments")
+    public void there_is_not_pending_authorized_payments() {
+        var paymentTransactions = dbPaymentTransactionRepository.findAll();
+        var existPendingTransactions = existPendingTransactions(paymentTransactions);
+        var lastPaymentOrders = payCometApiClient.getLastPaymentOrders();
+        assertThat(existPendingTransactions).isFalse();
+        assertThat(lastPaymentOrders.size()).isEqualTo(0);
+    }
+
+    @Then("There is not changes in moodle")
+    public void there_is_not_changes_in_moodle() {
+        assertThat(moodleApiClient.getInteractions()).isEqualTo(0);
+    }
+    @Then("There is not changes in holded")
+    public void there_is_not_changes_in_holded() {
+        assertThat(holdedApiClient.getInteractions()).isEqualTo(0);
+    }
+
+
     private boolean existInTheList(HoldedContact contact, List<HoldedContact> currentContactList) {
         for (var currentContact : currentContactList) {
             if (contact.haveSameMainData(currentContact)) {
@@ -339,4 +373,24 @@ public class StepdefsSubscribeAndPaymentFeature {
         var email = data.get("EMAIL");
         return new MoodleUser(name, surname, userName, email);
     }
+
+    private Error createError(Map<String, String> errorDescriptionData) {
+        var errorCode  = errorDescriptionData.get("ERROR CODE");
+        var errorMessage  = errorDescriptionData.get("ERROR MESSAGE");
+
+        return new Error(Integer.parseInt(errorCode), errorMessage);
+    }
+
+
+    private boolean existPendingTransactions(Iterable<DBPaymentTransaction> paymentTransactions) {
+        boolean existPendingTransactions = false;
+        for (DBPaymentTransaction paymentTransaction: paymentTransactions) {
+            if(paymentTransaction.getTransactionState().equals("Pending")) {
+                existPendingTransactions = true;
+                break;
+            }
+        }
+        return existPendingTransactions;
+    }
+
 }

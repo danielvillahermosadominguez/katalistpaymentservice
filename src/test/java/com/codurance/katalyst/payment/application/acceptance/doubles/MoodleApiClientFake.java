@@ -16,7 +16,9 @@ public class MoodleApiClientFake implements MoodleApiClient {
     public static int idMoodleCourseCounter = 0;
     public static int idMoodleUserCounter = 0;
 
-    public boolean available = true;
+    private boolean available = true;
+
+    private int interactions = 0;
 
     private Map<Integer, MoodleCourse> courses = new HashMap<>();
 
@@ -29,6 +31,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
         users.clear();
         studentsPerCourse.clear();
         available = true;
+        interactions = 0;
     }
 
     public MoodleCourse addCourse(String fixtureDisplayName, MoodlePrice price) throws CustomFieldNotExists {
@@ -75,6 +78,7 @@ public class MoodleApiClientFake implements MoodleApiClient {
                     "MoodleApiClientFake"
             );
         }
+        interactions++;
     }
 
     @Override
@@ -156,5 +160,9 @@ public class MoodleApiClientFake implements MoodleApiClient {
 
     public void notAvailable() {
         available = false;
+    }
+
+    public int getInteractions() {
+        return interactions;
     }
 }

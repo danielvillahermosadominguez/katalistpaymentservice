@@ -180,9 +180,7 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [ ] Web: refactor paths in the tests
 - [ ] Web: refactor of code js - to many ifs for fields
 - [ ] Test the main changes of the refactor (split the two calls from paycomet) in Azure.
-- [ ] Sometimes the pipeline fail in bdd but github doesn't detect the fail. strange.
 - [ ] IP, get the ip from the request and prepare for development with a fixed IP
-- [ ] Errors from Payment review and include the CODE ERROR form backend ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD
 - [ ] Connection holded PRO
 - [ ] Connection moodle PRO + configuration of security
 - [ ] Deploy the bundle and avoid to use embebed library i18n
@@ -218,6 +216,8 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [ ] Review the infrastructure and dockerization - use a docker container for the service
 - [ ] Transfer repositories to codurance organization in Github
 - [ ] Migration to AWS
+- [x] Sometimes the pipeline fail in bdd but github doesn't detect the fail. strange.
+- [x] Errors from Payment review and include the CODE ERROR form backend ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD
 - [x] WireMock - clean the code and avoid complexity
 - [x] Logs and traceability
 - [x] Paycomet adapter -> test and refactor

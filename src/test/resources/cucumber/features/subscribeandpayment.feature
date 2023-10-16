@@ -107,3 +107,30 @@ Feature: As an user interested in Katalyst courses
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
       | TDD IN DEPTH | 99.9  | 1     | 99.9     | 99.9  |
     And the customer will receive access to the platform in the email "john.doe@domain2.com" with the user "johndoe1" and fullname "John" "Doe"
+
+  Scenario: The customer subscribes to a course, however, this customer is enrolled already in the course. He/She receives a message explaining it.
+    Given Holded which has these previous contacts
+      | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
+      | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |
+      | JANE DOE | 46842041X   | Person          | jane.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d0b2e6cfdd64aed23e91362089620464ff874e5da81ca233cf12b20ac22a8088 |
+    And Moodle which has these previous users
+      | NAME | SURNAME | USERNAME | EMAIL                |
+      | John | Doe     | johndoe  | john.doe@example.com |
+      | Jane | Doe     | janedoe  | jane.doe@example.com |
+    And a previous course called "TDD in depth" exists which has the following students
+      | NAME | SURNAME | USERNAME | EMAIL                |
+      | Jane | Doe     | janedoe  | jane.doe@example.com |
+      | John | Doe     | johndoe  | john.doe@example.com |
+    And An customer who has chosen the following course the course "TDD in depth" with a price of "99.9"
+    And the customer has filled the following data
+      | FIRST NAME | SURNAME | EMAIL                | COMPANY NAME | IS COMPANY | NIF/CIF   | PHONE NUMBER  | ADDRESS              | POSTAL CODE | REGION | COUNTRY | CITY               |
+      | John       | Doe     | john.doe@example.com | N/A          | NO         | 46842041D | +34 636737337 | Avd. RedStone 45, 2B | 28081       | Madrid | Spain   | Boadilla del Monte |
+    When the customer pays the subscription with credit/debit card with the following data
+      | NAME     | NUMBER           | MONTH | YEAR | CVV | RESULT |
+      | John Doe | 4273682057894021 | 05    | 24   | 123 | OK     |
+    Then the customer is informed about the fail of the subscription
+      | ERROR CODE | ERROR MESSAGE                               |
+      | 2          | The user has a subscription for this course |
+    And There is not pending authorized payments
+    And There is not changes in moodle
+    And There is not changes in holded
