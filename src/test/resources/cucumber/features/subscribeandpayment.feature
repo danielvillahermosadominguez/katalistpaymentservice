@@ -130,7 +130,7 @@ Feature: As an user interested in Katalyst courses
     Then the customer is informed about the fail of the subscription
       | ERROR CODE | ERROR MESSAGE                               |
       | 2          | The user has a subscription for this course |
-    And There is not pending authorized payments
+    And There are not pending authorized payments
     And Holded has the following contacts
       | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
       | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |

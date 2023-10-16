@@ -260,8 +260,8 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(lastError.getMessage()).isEqualTo(expectedError.getMessage());
     }
 
-    @Then("There is not pending authorized payments")
-    public void there_is_not_pending_authorized_payments() {
+    @Then("There are not pending authorized payments")
+    public void there_are_not_pending_authorized_payments() {
         var paymentTransactions = dbPaymentTransactionRepository.findAll();
         var existPendingTransactions = existPendingTransactions(paymentTransactions);
         var lastPaymentOrders = payCometApiClient.getLastPaymentOrders();
