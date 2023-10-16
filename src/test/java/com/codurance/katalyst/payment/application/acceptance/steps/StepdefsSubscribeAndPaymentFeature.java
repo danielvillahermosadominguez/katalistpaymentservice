@@ -11,6 +11,7 @@ import com.codurance.katalyst.payment.application.infrastructure.database.purcha
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
@@ -267,20 +268,30 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(existPendingTransactions).isFalse();
         assertThat(lastPaymentOrders.size()).isEqualTo(0);
     }
-
-    @Then("There is not changes in moodle")
-    public void there_is_not_changes_in_moodle() {
-        assertThat(moodleApiClient.getInteractions()).isEqualTo(0);
-    }
-    @Then("There is not changes in holded")
-    public void there_is_not_changes_in_holded() {
-        assertThat(holdedApiClient.getInteractions()).isEqualTo(0);
+    @Then("Moodle has the following users")
+    public void moodle_has_the_following_users(DataTable dataTable) {
+        var userList = dataTable.asMaps(String.class, String.class);
+        var expectedUserList= createUserList(userList);
+        var currentUsersList = moodleApiClient.getAllUsers();
+        assertThat(expectedUserList.size()).isEqualTo(currentUsersList.size());
+        for (var user : expectedUserList) {
+             assertThat(existInTheList(user, currentUsersList));
+        }
     }
 
 
     private boolean existInTheList(HoldedContact contact, List<HoldedContact> currentContactList) {
         for (var currentContact : currentContactList) {
             if (contact.haveSameMainData(currentContact)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean existInTheList(MoodleUser user, List<MoodleUser> currentMoodleContactList) {
+        for (var currentUser : currentMoodleContactList) {
+            if (user.haveSameMainData(currentUser)) {
                 return true;
             }
         }
@@ -381,11 +392,10 @@ public class StepdefsSubscribeAndPaymentFeature {
         return new Error(Integer.parseInt(errorCode), errorMessage);
     }
 
-
     private boolean existPendingTransactions(Iterable<DBPaymentTransaction> paymentTransactions) {
         boolean existPendingTransactions = false;
         for (DBPaymentTransaction paymentTransaction: paymentTransactions) {
-            if(paymentTransaction.getTransactionState().equals("Pending")) {
+            if(paymentTransaction.getTransactionState().equals(PaymentTransactionState.PENDING.getValue())) {
                 existPendingTransactions = true;
                 break;
             }

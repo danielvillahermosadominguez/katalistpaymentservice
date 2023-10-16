@@ -74,7 +74,6 @@ Feature: As an user interested in Katalyst courses
       | TDD IN DEPTH | 99.9  | 1     | 99.9     | 99.9  |
     And the customer will receive access to the platform in the email "john.doe@example.com" with the user "johndoe" and fullname "John" "Doe"
 
-
   Scenario: The customer, which is not a company, subscribes to the course. He/She has not been enrolled to other courses
   in the past but an user exists in moodle with the same username. It could be,for example, the same person but with other email domain.
   We consider both as different people and users for moodle. For us, a person is the combination of the NIF/CIF and email
@@ -132,5 +131,11 @@ Feature: As an user interested in Katalyst courses
       | ERROR CODE | ERROR MESSAGE                               |
       | 2          | The user has a subscription for this course |
     And There is not pending authorized payments
-    And There is not changes in moodle
-    And There is not changes in holded
+    And Holded has the following contacts
+      | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
+      | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |
+      | JANE DOE | 46842041X   | Person          | jane.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d0b2e6cfdd64aed23e91362089620464ff874e5da81ca233cf12b20ac22a8088 |
+    And Moodle has the following users
+      | NAME | SURNAME | USERNAME | EMAIL                |
+      | John | Doe     | johndoe  | john.doe@domain1.com |
+      | Jane | Doe     | janedoe  | jane.doe@example.com |

@@ -18,8 +18,6 @@ public class MoodleApiClientFake implements MoodleApiClient {
 
     private boolean available = true;
 
-    private int interactions = 0;
-
     private Map<Integer, MoodleCourse> courses = new HashMap<>();
 
     private List<MoodleUser> users = new ArrayList<>();
@@ -31,7 +29,6 @@ public class MoodleApiClientFake implements MoodleApiClient {
         users.clear();
         studentsPerCourse.clear();
         available = true;
-        interactions = 0;
     }
 
     public MoodleCourse addCourse(String fixtureDisplayName, MoodlePrice price) throws CustomFieldNotExists {
@@ -55,10 +52,12 @@ public class MoodleApiClientFake implements MoodleApiClient {
     @Override
     public boolean existsAnUserinThisCourse(String courseId, String email) throws MoodleNotRespond {
         checkAvailability();
-        if (!studentsPerCourse.containsKey(courseId)) {
+        var courseIdAsInteger = Integer.parseInt(courseId); //TODO: We need to homogenize all the courseId in integers
+        if (!studentsPerCourse.containsKey(Integer.parseInt(courseId))) {
             return false;
         }
-        var userList = studentsPerCourse.get(courseId);
+
+        var userList = studentsPerCourse.get(courseIdAsInteger);
         return existInThisList(email, userList);
     }
 
@@ -78,7 +77,6 @@ public class MoodleApiClientFake implements MoodleApiClient {
                     "MoodleApiClientFake"
             );
         }
-        interactions++;
     }
 
     @Override
@@ -160,9 +158,5 @@ public class MoodleApiClientFake implements MoodleApiClient {
 
     public void notAvailable() {
         available = false;
-    }
-
-    public int getInteractions() {
-        return interactions;
     }
 }
