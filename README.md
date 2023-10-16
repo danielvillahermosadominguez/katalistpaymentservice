@@ -173,9 +173,7 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [ ] Builders o fixtures for the tests. Equals when it is necessary.
 - [ ] BDD and retry for learning and financial
   - [ ] Resend in case of error + to be sure the mail has been sent (invoice)
-- [ ] BDD and edge cases: error cases
 - [ ] Course with Zero price => we should allow to the user subscribe
-- [ ] Handover approach - think about it
 - [ ] Manual tests - description of regression tests
 - [ ] Web: refactor paths in the tests
 - [ ] Web: refactor of code js - to many ifs for fields
@@ -216,6 +214,8 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [ ] Review the infrastructure and dockerization - use a docker container for the service
 - [ ] Transfer repositories to codurance organization in Github
 - [ ] Migration to AWS
+- [x] Handover approach - think about it
+- [x] BDD and edge cases: error cases
 - [x] Sometimes the pipeline fail in bdd but github doesn't detect the fail. strange.
 - [x] Errors from Payment review and include the CODE ERROR form backend ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD
 - [x] WireMock - clean the code and avoid complexity
