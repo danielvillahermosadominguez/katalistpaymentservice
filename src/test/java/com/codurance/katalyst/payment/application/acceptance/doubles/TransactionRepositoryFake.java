@@ -4,6 +4,7 @@ import com.codurance.katalyst.payment.application.model.payment.TransactionRepos
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class TransactionRepositoryFake implements TransactionRepository {
@@ -22,6 +23,11 @@ public class TransactionRepositoryFake implements TransactionRepository {
     public PaymentTransaction save(PaymentTransaction paymentTransaction) {
         paymenTransactions.put(paymentTransaction.getOrder(), paymentTransaction);
         return paymentTransaction;
+    }
+
+    @Override
+    public List<PaymentTransaction> getPaymentTransactionForRetry() {
+        throw new UnsupportedOperationException();
     }
 
     public void reset() {

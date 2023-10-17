@@ -8,4 +8,6 @@ import java.util.Optional;
 @Repository
 public interface DBPaymentTransactionRepository extends CrudRepository<DBPaymentTransaction, Long> {
     Optional<DBPaymentTransaction> findByOrderCodeAndTransactionState(String orderCode, String transactionState);
+
+    Optional<Iterable<DBPaymentTransaction>> findAllByTransactionState(String transactionState);
 }

@@ -9,14 +9,15 @@ import com.codurance.katalyst.payment.application.model.learning.LearningService
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
+import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -50,6 +51,11 @@ public class ConfirmPayment {
             logIgnoredNotification(notification);
             return;
         }
+        process(paymentTransaction);
+    }
+
+    public void process(PaymentTransaction paymentTransaction) throws NoCustomerData {
+        var nextTransactionState = PaymentTransactionState.DONE;
         var purchase = purchaseService.getPurchase(paymentTransaction.getId());
         if (purchase == null) {
             log.error(ConfirmPayment.class, String.format("[NOT PURCHASE DATA AVAILABLE]: for transaction id = %s", paymentTransaction.getId()));
@@ -57,18 +63,30 @@ public class ConfirmPayment {
         }
         try {
             if (financialService.emitInvoice(purchase)) {
-                purchaseService.updateFinantialStepFor(purchase, true);
+                purchase = purchaseService.updateFinantialStepFor(purchase, true);
             }
 
             if (learningService.acquireACourseFor(purchase)) {
-                purchaseService.updateLearningStepFor(purchase, true);
+                purchase = purchaseService.updateLearningStepFor(purchase, true);
             }
         } catch (Exception exception) {
-            logNotProcessablePurchase(notification);
+            nextTransactionState = PaymentTransactionState.RETRY;
+            logNotProcessablePurchase(purchase); //TODO: Here the transaction is in retry mode but we should launch an special alert
+        } catch (LearningPlatformIsNotAvailable e) {
+            nextTransactionState = PaymentTransactionState.RETRY;
+             //TODO: Here the transaction is in retry mode
+        } catch (FinancialPlatformIsNotAvailable e) {
+            nextTransactionState = PaymentTransactionState.RETRY;
+            //TODO: Here the transaction is in retry mode
+        } catch (InvalidInputCustomerData e) {
+            nextTransactionState = PaymentTransactionState.RETRY;
+             //TODO: Here the transaction is in retry mode mode but we should launch an special alert
         }
+        paymentTransaction.setTransactionState(nextTransactionState);
+        paymentService.updateTransaction(paymentTransaction);
     }
 
-    private void logNotProcessablePurchase(PaymentNotification notification) {
+    private void logNotProcessablePurchase(Purchase notification) {
         var objectMapper = new ObjectMapper();
         try {
             var json = objectMapper.writeValueAsString(notification);

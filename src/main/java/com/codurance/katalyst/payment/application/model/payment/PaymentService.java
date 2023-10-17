@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 public class PaymentService {
@@ -117,5 +118,13 @@ public class PaymentService {
         if (paytpvToken == null || paytpvToken.trim().isEmpty()) {
             throw new TPVTokenIsRequired();
         }
+    }
+
+    public List<PaymentTransaction> getRetryPaiments() {
+        return transactionRepository.getPaymentTransactionForRetry();
+    }
+
+    public void updateTransaction(PaymentTransaction paymentTransaction) {
+        transactionRepository.save(paymentTransaction);
     }
 }

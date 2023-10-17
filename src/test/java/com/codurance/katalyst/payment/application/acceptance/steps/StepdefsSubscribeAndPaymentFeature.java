@@ -52,7 +52,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class StepdefsSubscribeAndPaymentFeature {
     public static final int NO_ANSWER = -10;
-    public static final int WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS = 1;
+    public static final int WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS = 5;
     public static MoodleCourse FIXTURE_COURSE = null;
 
     private int subscriptionOutputCode = -1;
