@@ -21,6 +21,9 @@ public class RetryPendingPayments {
     @Value("${payments.retry.active:false}")
     private boolean active;
 
+    public void setActive(boolean value) {
+        active = true;
+    }
     @Autowired
     public RetryPendingPayments(PaymentService paymentService,
                           PurchaseService purchaseService,

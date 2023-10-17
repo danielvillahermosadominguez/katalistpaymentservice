@@ -2,9 +2,11 @@ package com.codurance.katalyst.payment.application.fixtures;
 
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PurchaseFixtures {
+public class PurchaseBuilder {
     public static final int TRANSACTION_ID = 123456;
     public static final String CONCEPT = "RANDOM_CONCEPT_NAME";
     public static final String DESCRIPTION = "RANDOM_DESCRIPTION";
@@ -22,7 +24,59 @@ public class PurchaseFixtures {
     public static final String EMAIL = "RANDOM_EMAIL@EMAIL.COM";
     public static final String ORDER = "RANDOM_ORDER";
 
-    public Purchase createPurchase() {
+    Purchase item;
+
+    public PurchaseBuilder create(Map<String, String> purchaseMap) {
+        var order = purchaseMap.get("ORDER CODE");
+        var courseId = purchaseMap.get("COURSE ID");
+        var concept = purchaseMap.get("CONCEPT");
+        var description = purchaseMap.get("DESCRIPTION");
+        var price = Double.parseDouble(purchaseMap.get("PRICE"));
+        var email = purchaseMap.get("EMAIL");
+        var name = purchaseMap.get("FIRST NAME");
+        var surname = purchaseMap.get("SURNAME");
+        var nifCif = purchaseMap.get("NIF/CIF");
+        var isCompany = purchaseMap.get("IS COMPANY").equals("YES");
+        var company = purchaseMap.get("COMPANY NAME");
+        var phone = purchaseMap.get("PHONE NUMBER");
+        var address = purchaseMap.get("ADDRESS");
+        var postalCode = purchaseMap.get("POSTAL CODE");
+        var city = purchaseMap.get("CITY");
+        var region = purchaseMap.get("REGION");
+        var country = purchaseMap.get("COUNTRY");
+        var finantialStepOvercome = false;
+        var learningStepOvercome = false;
+
+        item = new Purchase(
+                0,
+                order,
+                courseId,
+                concept,
+                description,
+                price,
+                email,
+                name,
+                surname,
+                nifCif,
+                isCompany,
+                company,
+                phone,
+                address,
+                postalCode,
+                city,
+                region,
+                country,
+                finantialStepOvercome,
+                learningStepOvercome
+        );
+        return this;
+    }
+
+    public Purchase getItem() {
+        return item;
+    }
+
+    public Purchase createPurchaseWithValuesByDefault() {
         return new Purchase(
                 TRANSACTION_ID,
                 ORDER,
@@ -94,5 +148,20 @@ public class PurchaseFixtures {
         assertThat(savedPurchase.getCountry()).isEqualTo(COUNTRY_CODE);
         assertThat(savedPurchase.isProcessedInLearningState()).isFalse();
         assertThat(savedPurchase.isProcessedInFinantialState()).isFalse();
+    }
+
+    public PurchaseBuilder transactionId(int transactionId) {
+        this.item.setTransactionId(transactionId);
+        return this;
+    }
+
+    public PurchaseBuilder financialStepOvercome(boolean financialStepOvercome) {
+        this.item.setFinantialStepOvercome(financialStepOvercome);
+        return this;
+    }
+
+    public PurchaseBuilder learningStepOvercome(boolean learningStepOvercome) {
+        this.item.setLearningStepOvercome(learningStepOvercome);
+        return this;
     }
 }

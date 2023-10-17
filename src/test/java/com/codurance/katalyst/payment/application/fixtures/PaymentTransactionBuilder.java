@@ -8,7 +8,18 @@ import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.Payme
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PaymentTransactionFixtures {
+public class PaymentTransactionBuilder {
+    PaymentTransaction item;
+
+    public PaymentTransactionBuilder createWithDefaultValues() {
+        item = createPaymentTransaction();
+        return this;
+    }
+
+    public PaymentTransaction getItem() {
+        return item;
+    }
+
     public PaymentTransaction createPaymentTransaction() {
         var paymentStatus = new PaymentStatus();
         paymentStatus.setErrorCode(1);

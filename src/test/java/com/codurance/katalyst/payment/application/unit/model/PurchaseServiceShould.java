@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.unit.model;
 
-import com.codurance.katalyst.payment.application.fixtures.PurchaseFixtures;
+import com.codurance.katalyst.payment.application.fixtures.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseRepository;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
@@ -19,13 +19,13 @@ public class PurchaseServiceShould {
     private PurchaseService purchaseService;
     private PurchaseRepository purchaseRepository;
     private Purchase purchaseFixture;
-    private PurchaseFixtures fixtures = new PurchaseFixtures();
+    private PurchaseBuilder fixtures = new PurchaseBuilder();
 
     @BeforeEach
     void beforeEach() {
         purchaseRepository = mock(PurchaseRepository.class);
         purchaseService = new PurchaseService(purchaseRepository);
-        purchaseFixture = fixtures.createPurchase();
+        purchaseFixture = fixtures.createPurchaseWithValuesByDefault();
     }
 
     @Test
@@ -37,25 +37,25 @@ public class PurchaseServiceShould {
         verify(purchaseRepository, times(1)).save(purchaseCaptor.capture());
         var savedPurchase = purchaseCaptor.getValue();
         assertThat(savedPurchase).isNotNull();
-        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseFixtures.TRANSACTION_ID);
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseBuilder.TRANSACTION_ID);
         assertThat(savedPurchase.getCourseId()).isEqualTo("1");
-        assertThat(savedPurchase.getConcept()).isEqualTo(PurchaseFixtures.CONCEPT);
-        assertThat(savedPurchase.getDescription()).isEqualTo(PurchaseFixtures.DESCRIPTION);
-        assertThat(savedPurchase.getPrice()).isEqualTo(PurchaseFixtures.PRICE);
-        assertThat(savedPurchase.getName()).isEqualTo(PurchaseFixtures.NAME);
-        assertThat(savedPurchase.getSurname()).isEqualTo(PurchaseFixtures.SURNAME);
-        assertThat(savedPurchase.getNifCif()).isEqualTo(PurchaseFixtures.NIF_CIF);
+        assertThat(savedPurchase.getConcept()).isEqualTo(PurchaseBuilder.CONCEPT);
+        assertThat(savedPurchase.getDescription()).isEqualTo(PurchaseBuilder.DESCRIPTION);
+        assertThat(savedPurchase.getPrice()).isEqualTo(PurchaseBuilder.PRICE);
+        assertThat(savedPurchase.getName()).isEqualTo(PurchaseBuilder.NAME);
+        assertThat(savedPurchase.getSurname()).isEqualTo(PurchaseBuilder.SURNAME);
+        assertThat(savedPurchase.getNifCif()).isEqualTo(PurchaseBuilder.NIF_CIF);
         assertThat(savedPurchase.isCompany()).isEqualTo(false);
-        assertThat(savedPurchase.getCompany()).isEqualTo(PurchaseFixtures.COMPANY_NAME);
-        assertThat(savedPurchase.getEmail()).isEqualTo(PurchaseFixtures.EMAIL);
-        assertThat(savedPurchase.getPhone()).isEqualTo(PurchaseFixtures.PHONE_NUMBER);
-        assertThat(savedPurchase.getOrder()).isEqualTo(PurchaseFixtures.ORDER);
-        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseFixtures.TRANSACTION_ID);
-        assertThat(savedPurchase.getAddress()).isEqualTo(PurchaseFixtures.ADDRESS);
-        assertThat(savedPurchase.getPostalCode()).isEqualTo(PurchaseFixtures.POSTAL_CODE);
-        assertThat(savedPurchase.getCity()).isEqualTo(PurchaseFixtures.CITY);
-        assertThat(savedPurchase.getRegion()).isEqualTo(PurchaseFixtures.REGION);
-        assertThat(savedPurchase.getCountry()).isEqualTo(PurchaseFixtures.COUNTRY_CODE);
+        assertThat(savedPurchase.getCompany()).isEqualTo(PurchaseBuilder.COMPANY_NAME);
+        assertThat(savedPurchase.getEmail()).isEqualTo(PurchaseBuilder.EMAIL);
+        assertThat(savedPurchase.getPhone()).isEqualTo(PurchaseBuilder.PHONE_NUMBER);
+        assertThat(savedPurchase.getOrder()).isEqualTo(PurchaseBuilder.ORDER);
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseBuilder.TRANSACTION_ID);
+        assertThat(savedPurchase.getAddress()).isEqualTo(PurchaseBuilder.ADDRESS);
+        assertThat(savedPurchase.getPostalCode()).isEqualTo(PurchaseBuilder.POSTAL_CODE);
+        assertThat(savedPurchase.getCity()).isEqualTo(PurchaseBuilder.CITY);
+        assertThat(savedPurchase.getRegion()).isEqualTo(PurchaseBuilder.REGION);
+        assertThat(savedPurchase.getCountry()).isEqualTo(PurchaseBuilder.COUNTRY_CODE);
         assertThat(savedPurchase.isProcessedInLearningState()).isEqualTo(false);
         assertThat(savedPurchase.isCompany()).isEqualTo(false);
         assertThat(savedPurchase.isProcessedInFinantialState()).isEqualTo(false);
@@ -72,25 +72,25 @@ public class PurchaseServiceShould {
         verify(purchaseRepository, times(1)).save(purchaseCaptor.capture());
         var savedPurchase = purchaseCaptor.getValue();
         assertThat(savedPurchase).isNotNull();
-        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseFixtures.TRANSACTION_ID);
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseBuilder.TRANSACTION_ID);
         assertThat(savedPurchase.getCourseId()).isEqualTo("1");
-        assertThat(savedPurchase.getConcept()).isEqualTo(PurchaseFixtures.CONCEPT);
-        assertThat(savedPurchase.getDescription()).isEqualTo(PurchaseFixtures.DESCRIPTION);
-        assertThat(savedPurchase.getPrice()).isEqualTo(PurchaseFixtures.PRICE);
-        assertThat(savedPurchase.getName()).isEqualTo(PurchaseFixtures.NAME);
-        assertThat(savedPurchase.getSurname()).isEqualTo(PurchaseFixtures.SURNAME);
-        assertThat(savedPurchase.getNifCif()).isEqualTo(PurchaseFixtures.NIF_CIF);
+        assertThat(savedPurchase.getConcept()).isEqualTo(PurchaseBuilder.CONCEPT);
+        assertThat(savedPurchase.getDescription()).isEqualTo(PurchaseBuilder.DESCRIPTION);
+        assertThat(savedPurchase.getPrice()).isEqualTo(PurchaseBuilder.PRICE);
+        assertThat(savedPurchase.getName()).isEqualTo(PurchaseBuilder.NAME);
+        assertThat(savedPurchase.getSurname()).isEqualTo(PurchaseBuilder.SURNAME);
+        assertThat(savedPurchase.getNifCif()).isEqualTo(PurchaseBuilder.NIF_CIF);
         assertThat(savedPurchase.isCompany()).isFalse();
-        assertThat(savedPurchase.getCompany()).isEqualTo(PurchaseFixtures.COMPANY_NAME);
-        assertThat(savedPurchase.getEmail()).isEqualTo(PurchaseFixtures.EMAIL);
-        assertThat(savedPurchase.getPhone()).isEqualTo(PurchaseFixtures.PHONE_NUMBER);
-        assertThat(savedPurchase.getOrder()).isEqualTo(PurchaseFixtures.ORDER);
-        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseFixtures.TRANSACTION_ID);
-        assertThat(savedPurchase.getAddress()).isEqualTo(PurchaseFixtures.ADDRESS);
-        assertThat(savedPurchase.getPostalCode()).isEqualTo(PurchaseFixtures.POSTAL_CODE);
-        assertThat(savedPurchase.getCity()).isEqualTo(PurchaseFixtures.CITY);
-        assertThat(savedPurchase.getRegion()).isEqualTo(PurchaseFixtures.REGION);
-        assertThat(savedPurchase.getCountry()).isEqualTo(PurchaseFixtures.COUNTRY_CODE);
+        assertThat(savedPurchase.getCompany()).isEqualTo(PurchaseBuilder.COMPANY_NAME);
+        assertThat(savedPurchase.getEmail()).isEqualTo(PurchaseBuilder.EMAIL);
+        assertThat(savedPurchase.getPhone()).isEqualTo(PurchaseBuilder.PHONE_NUMBER);
+        assertThat(savedPurchase.getOrder()).isEqualTo(PurchaseBuilder.ORDER);
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseBuilder.TRANSACTION_ID);
+        assertThat(savedPurchase.getAddress()).isEqualTo(PurchaseBuilder.ADDRESS);
+        assertThat(savedPurchase.getPostalCode()).isEqualTo(PurchaseBuilder.POSTAL_CODE);
+        assertThat(savedPurchase.getCity()).isEqualTo(PurchaseBuilder.CITY);
+        assertThat(savedPurchase.getRegion()).isEqualTo(PurchaseBuilder.REGION);
+        assertThat(savedPurchase.getCountry()).isEqualTo(PurchaseBuilder.COUNTRY_CODE);
         assertThat(savedPurchase.isProcessedInLearningState()).isFalse();
         assertThat(purchase.isProcessedInFinantialState()).isTrue();
         assertThat(savedPurchase.isProcessedInFinantialState()).isTrue();
@@ -109,42 +109,41 @@ public class PurchaseServiceShould {
 
         var savedPurchase = purchaseCaptor.getValue();
         assertThat(savedPurchase).isNotNull();
-        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseFixtures.TRANSACTION_ID);
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseBuilder.TRANSACTION_ID);
         assertThat(savedPurchase.getCourseId()).isEqualTo("1");
-        assertThat(savedPurchase.getConcept()).isEqualTo(PurchaseFixtures.CONCEPT);
-        assertThat(savedPurchase.getDescription()).isEqualTo(PurchaseFixtures.DESCRIPTION);
-        assertThat(savedPurchase.getPrice()).isEqualTo(PurchaseFixtures.PRICE);
-        assertThat(savedPurchase.getName()).isEqualTo(PurchaseFixtures.NAME);
-        assertThat(savedPurchase.getSurname()).isEqualTo(PurchaseFixtures.SURNAME);
-        assertThat(savedPurchase.getNifCif()).isEqualTo(PurchaseFixtures.NIF_CIF);
+        assertThat(savedPurchase.getConcept()).isEqualTo(PurchaseBuilder.CONCEPT);
+        assertThat(savedPurchase.getDescription()).isEqualTo(PurchaseBuilder.DESCRIPTION);
+        assertThat(savedPurchase.getPrice()).isEqualTo(PurchaseBuilder.PRICE);
+        assertThat(savedPurchase.getName()).isEqualTo(PurchaseBuilder.NAME);
+        assertThat(savedPurchase.getSurname()).isEqualTo(PurchaseBuilder.SURNAME);
+        assertThat(savedPurchase.getNifCif()).isEqualTo(PurchaseBuilder.NIF_CIF);
         assertThat(savedPurchase.isCompany()).isFalse();
-        assertThat(savedPurchase.getCompany()).isEqualTo(PurchaseFixtures.COMPANY_NAME);
-        assertThat(savedPurchase.getEmail()).isEqualTo(PurchaseFixtures.EMAIL);
-        assertThat(savedPurchase.getPhone()).isEqualTo(PurchaseFixtures.PHONE_NUMBER);
-        assertThat(savedPurchase.getOrder()).isEqualTo(PurchaseFixtures.ORDER);
-        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseFixtures.TRANSACTION_ID);
-        assertThat(savedPurchase.getAddress()).isEqualTo(PurchaseFixtures.ADDRESS);
-        assertThat(savedPurchase.getPostalCode()).isEqualTo(PurchaseFixtures.POSTAL_CODE);
-        assertThat(savedPurchase.getCity()).isEqualTo(PurchaseFixtures.CITY);
-        assertThat(savedPurchase.getRegion()).isEqualTo(PurchaseFixtures.REGION);
-        assertThat(savedPurchase.getCountry()).isEqualTo(PurchaseFixtures.COUNTRY_CODE);
+        assertThat(savedPurchase.getCompany()).isEqualTo(PurchaseBuilder.COMPANY_NAME);
+        assertThat(savedPurchase.getEmail()).isEqualTo(PurchaseBuilder.EMAIL);
+        assertThat(savedPurchase.getPhone()).isEqualTo(PurchaseBuilder.PHONE_NUMBER);
+        assertThat(savedPurchase.getOrder()).isEqualTo(PurchaseBuilder.ORDER);
+        assertThat(savedPurchase.getTransactionId()).isEqualTo(PurchaseBuilder.TRANSACTION_ID);
+        assertThat(savedPurchase.getAddress()).isEqualTo(PurchaseBuilder.ADDRESS);
+        assertThat(savedPurchase.getPostalCode()).isEqualTo(PurchaseBuilder.POSTAL_CODE);
+        assertThat(savedPurchase.getCity()).isEqualTo(PurchaseBuilder.CITY);
+        assertThat(savedPurchase.getRegion()).isEqualTo(PurchaseBuilder.REGION);
+        assertThat(savedPurchase.getCountry()).isEqualTo(PurchaseBuilder.COUNTRY_CODE);
         assertThat(savedPurchase.isProcessedInLearningState()).isTrue();
         assertThat(purchase.isProcessedInFinantialState()).isFalse();
     }
 
     @Test
     void recover_a_purchase_based_on_transaction_id_and_it_exists() {
-        when(purchaseRepository.findPurchaseByTransactionId(PurchaseFixtures.TRANSACTION_ID)).thenReturn(purchaseFixture);
-        var purchase = purchaseService.getPurchase(PurchaseFixtures.TRANSACTION_ID);
-        verify(purchaseRepository, times(1)).findPurchaseByTransactionId(PurchaseFixtures.TRANSACTION_ID);
+        when(purchaseRepository.findPurchaseByTransactionId(PurchaseBuilder.TRANSACTION_ID)).thenReturn(purchaseFixture);
+        var purchase = purchaseService.getPurchase(PurchaseBuilder.TRANSACTION_ID);
+        verify(purchaseRepository, times(1)).findPurchaseByTransactionId(PurchaseBuilder.TRANSACTION_ID);
         assertThat(purchase).isNotNull();
     }
 
     @Test
     void recover_a_null_purchase_based_on_transaction_id_and_it_not_exists() {
-        var purchase = purchaseService.getPurchase(PurchaseFixtures.TRANSACTION_ID);
-        verify(purchaseRepository, times(1)).findPurchaseByTransactionId(PurchaseFixtures.TRANSACTION_ID);
+        var purchase = purchaseService.getPurchase(PurchaseBuilder.TRANSACTION_ID);
+        verify(purchaseRepository, times(1)).findPurchaseByTransactionId(PurchaseBuilder.TRANSACTION_ID);
         assertThat(purchase).isNull();
     }
-
 }

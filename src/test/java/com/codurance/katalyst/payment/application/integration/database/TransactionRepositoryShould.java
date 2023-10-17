@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.integration.database;
 
-import com.codurance.katalyst.payment.application.fixtures.PaymentTransactionFixtures;
+import com.codurance.katalyst.payment.application.fixtures.PaymentTransactionBuilder;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.TransactionRepositoryJPA;
@@ -34,12 +34,12 @@ public class TransactionRepositoryShould {
     public TransactionRepositoryJPA paymentTransactionRepository;
     private PaymentTransaction paymentTransaction;
 
-    private PaymentTransactionFixtures paymentTransactionFixture;
+    private PaymentTransactionBuilder paymentTransactionFixture;
 
     @Before
     public void beforeEach() {
         paymentTransactionRepository = new TransactionRepositoryJPA(jpaRepository);
-        paymentTransactionFixture = new PaymentTransactionFixtures();
+        paymentTransactionFixture = new PaymentTransactionBuilder();
         paymentTransaction = paymentTransactionFixture.createPaymentTransaction();
     }
 

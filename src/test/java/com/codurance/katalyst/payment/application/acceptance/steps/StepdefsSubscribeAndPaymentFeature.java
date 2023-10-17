@@ -4,7 +4,10 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
+import com.codurance.katalyst.payment.application.actions.RetryPendingPayments;
 import com.codurance.katalyst.payment.application.apirest.dto.Error;
+import com.codurance.katalyst.payment.application.fixtures.PaymentTransactionBuilder;
+import com.codurance.katalyst.payment.application.fixtures.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchase;
@@ -37,17 +40,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.in;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
 
 public class StepdefsSubscribeAndPaymentFeature {
     public static final int NO_ANSWER = -10;
+    public static final int WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS = 1;
     public static MoodleCourse FIXTURE_COURSE = null;
 
     private int subscriptionOutputCode = -1;
@@ -69,6 +74,10 @@ public class StepdefsSubscribeAndPaymentFeature {
 
     @Autowired
     private DBPurchaseRepository dbPurchaseRepository;
+
+
+    @Autowired
+    private RetryPendingPayments retryPendingPayments;
     @Value("${paycomet.terminal}")
     int tpvId;
     private int subscriptionResult = NO_ANSWER;
@@ -93,6 +102,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         payCometApiClient.reset();
         dbPurchaseRepository.deleteAll();
         dbPaymentTransactionRepository.deleteAll();
+        retryPendingPayments.setActive(false);
         subscriptionResult = NO_ANSWER;
     }
 
@@ -173,31 +183,43 @@ public class StepdefsSubscribeAndPaymentFeature {
         paymentTransaction.setTransactionState(PaymentTransactionState.PENDING);
         var dbPaymentTransaction = new DBPaymentTransaction(paymentTransaction);
         dbPaymentTransaction = dbPaymentTransactionRepository.save(dbPaymentTransaction);
-        var purchase  = convertToPurchase(purchaseRows.get(0));
-        purchase.setTransactionId(dbPaymentTransaction.getId());
+        var transactionId = dbPaymentTransaction.getId();
+        var purchase = convertToPurchase(purchaseRows.get(0), transactionId);
         var dbPurchase = new DBPurchase(purchase);
         dbPurchaseRepository.save(dbPurchase);
     }
 
-    private PaymentTransaction createPaymentTransaction() {
-        throw new UnsupportedOperationException();
+    @Given("during the payment notification process, the learning platform didn't respond, but now is available")
+    public void during_the_payment_notification_process_the_learning_platform_didn_t_respond_but_now_is_available() {
+        setRetryStateAllPaymentTransactions();
+        var dbPurchases = dbPurchaseRepository.findAll();
+        for (var dbPurchase : dbPurchases) {
+            dbPurchase.setLearningStepOvercome(false);
+        }
+        dbPurchaseRepository.saveAll(dbPurchases);
     }
 
-    private Purchase convertToPurchase(Map<String, String> stringStringMap) {
-        throw new UnsupportedOperationException();
+    @Given("the retry process is active")
+    public void the_retry_process_is_active() {
+        retryPendingPayments.setActive(true);
     }
 
     @Given("during the payment notification process, the financial platform didn't respond, but now is available")
     public void during_the_payment_notification_process_the_financial_platform_didn_t_respond_but_now_is_available() {
-        var dbPaymentTransactions = dbPaymentTransactionRepository.findAll();
-        for (var dbPaymentTransaction:dbPaymentTransactions) {
-            dbPaymentTransaction.setTransactionState(PaymentTransactionState.RETRY.getValue());
-        }
-
+        setRetryStateAllPaymentTransactions();
         var dbPurchases = dbPurchaseRepository.findAll();
-        for (var dbPurchase:dbPurchases) {
+        for (var dbPurchase : dbPurchases) {
             dbPurchase.setFinantialStepOvercome(false);
         }
+        dbPurchaseRepository.saveAll(dbPurchases);
+    }
+
+    private void setRetryStateAllPaymentTransactions() {
+        var dbPaymentTransactions = dbPaymentTransactionRepository.findAll();
+        for (var dbPaymentTransaction : dbPaymentTransactions) {
+            dbPaymentTransaction.setTransactionState(PaymentTransactionState.RETRY.getValue());
+        }
+        dbPaymentTransactionRepository.saveAll(dbPaymentTransactions);
     }
 
     @Then("the customer is informed about the success of the subscription")
@@ -278,11 +300,7 @@ public class StepdefsSubscribeAndPaymentFeature {
     public void holded_has_the_following_contacts(DataTable dtContacts) {
         var contactList = dtContacts.asMaps(String.class, String.class);
         var expectedContactList = createContactList(contactList);
-        var currentContactList = holdedApiClient.getAllContacts();
-        assertThat(currentContactList.size()).isEqualTo(expectedContactList.size());
-        for (var contact : expectedContactList) {
-            assertThat(existInTheList(contact, currentContactList)).isTrue();
-        }
+        assertThat(holdedHasTheFollowingContacts(expectedContactList)).isTrue();
     }
 
     @Then("the customer is informed about the fail of the subscription")
@@ -305,27 +323,32 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(existPendingTransactions).isFalse();
         assertThat(lastPaymentOrders.size()).isEqualTo(0);
     }
+
     @Then("Moodle has the following users")
     public void moodle_has_the_following_users(DataTable dataTable) {
         var userList = dataTable.asMaps(String.class, String.class);
-        var expectedUserList= createUserList(userList);
-        var currentUsersList = moodleApiClient.getAllUsers();
-        assertThat(expectedUserList.size()).isEqualTo(currentUsersList.size());
-        for (var user : expectedUserList) {
-             assertThat(existInTheList(user, currentUsersList));
-        }
+        var expectedUserList = createUserList(userList);
+        assertThat(moodleHasTheFolowingUsers(expectedUserList)).isTrue();
     }
 
+
     @Then("the retry process finishes the notification process with the following contacts in holded")
-    public void the_retry_process_finishes_the_notification_process_with_the_following_contacts_in_holded(io.cucumber.datatable.DataTable dataTable) {
-        // Write code here that turns the phrase above into concrete actions
-        // For automatic transformation, change DataTable to one of
-        // E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
-        // Map<K, List<V>>. E,K,V must be a String, Integer, Float,
-        // Double, Byte, Short, Long, BigInteger or BigDecimal.
-        //
-        // For other transformations you can register a DataTableType.
-        throw new io.cucumber.java.PendingException();
+    public void the_retry_process_finishes_the_notification_process_with_the_following_contacts_in_holded(DataTable dtContacts) {
+        var contactList = dtContacts.asMaps(String.class, String.class);
+        var expectedContactList = createContactList(contactList);
+        await()
+                .timeout(Duration.ofSeconds(WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS))
+                .untilAsserted(() -> assertThat(holdedHasTheFollowingContacts(expectedContactList)).isTrue());
+
+    }
+
+    @Then("the retry process finishes the notification process with the following users in Moodle")
+    public void the_retry_process_finishes_the_notification_process_with_the_following_users_in_moodle(DataTable dataTable) {
+        var userList = dataTable.asMaps(String.class, String.class);
+        var expectedUserList = createUserList(userList);
+        await()
+                .timeout(Duration.ofSeconds(WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS))
+                .untilAsserted(() -> assertThat(moodleHasTheFolowingUsers(expectedUserList)).isTrue());
     }
 
     private boolean existInTheList(HoldedContact contact, List<HoldedContact> currentContactList) {
@@ -442,8 +465,8 @@ public class StepdefsSubscribeAndPaymentFeature {
 
     private boolean existPendingTransactions(Iterable<DBPaymentTransaction> paymentTransactions) {
         boolean existPendingTransactions = false;
-        for (DBPaymentTransaction paymentTransaction: paymentTransactions) {
-            if(paymentTransaction.getTransactionState().equals(PaymentTransactionState.PENDING.getValue())) {
+        for (DBPaymentTransaction paymentTransaction : paymentTransactions) {
+            if (paymentTransaction.getTransactionState().equals(PaymentTransactionState.PENDING.getValue())) {
                 existPendingTransactions = true;
                 break;
             }
@@ -451,4 +474,46 @@ public class StepdefsSubscribeAndPaymentFeature {
         return existPendingTransactions;
     }
 
+    private PaymentTransaction createPaymentTransaction() {
+        var builder = new PaymentTransactionBuilder();
+        return builder
+                .createWithDefaultValues()
+                .getItem();
+    }
+
+    private Purchase convertToPurchase(Map<String, String> purchaseMap, int transactionId) {
+        var builder = new PurchaseBuilder();
+        return builder
+                .create(purchaseMap)
+                .transactionId(transactionId)
+                .financialStepOvercome(true)
+                .learningStepOvercome(true)
+                .getItem();
+    }
+
+    private boolean holdedHasTheFollowingContacts(List<HoldedContact> expectedContactList) {
+        var currentContactList = holdedApiClient.getAllContacts();
+        if (currentContactList.size() != expectedContactList.size()) {
+            return false;
+        }
+        for (var contact : expectedContactList) {
+            if (!existInTheList(contact, currentContactList)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean moodleHasTheFolowingUsers(List<MoodleUser> expectedUserList) {
+        var currentUsersList = moodleApiClient.getAllUsers();
+        if (expectedUserList.size() != currentUsersList.size()) {
+            return false;
+        }
+        for (var user : expectedUserList) {
+            if (!existInTheList(user, currentUsersList)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

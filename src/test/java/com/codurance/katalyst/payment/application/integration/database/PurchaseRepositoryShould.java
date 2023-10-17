@@ -1,7 +1,7 @@
 package com.codurance.katalyst.payment.application.integration.database;
 
-import com.codurance.katalyst.payment.application.fixtures.PaymentTransactionFixtures;
-import com.codurance.katalyst.payment.application.fixtures.PurchaseFixtures;
+import com.codurance.katalyst.payment.application.fixtures.PaymentTransactionBuilder;
+import com.codurance.katalyst.payment.application.fixtures.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchase;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
@@ -34,15 +34,15 @@ public class PurchaseRepositoryShould {
 
     public PurchaseRepositoryJPA purchaseRepository;
     private Purchase purchase;
-    private PurchaseFixtures purchaseFixtures = new PurchaseFixtures();
+    private PurchaseBuilder purchaseFixtures = new PurchaseBuilder();
 
-    private PaymentTransactionFixtures paymentTransactionFixtures = new PaymentTransactionFixtures();
+    private PaymentTransactionBuilder paymentTransactionFixtures = new PaymentTransactionBuilder();
     private int transactionId;
 
     @Before
     public void beforeEach() {
         purchaseRepository = new PurchaseRepositoryJPA(jpaRepository);
-        purchase = purchaseFixtures.createPurchase();
+        purchase = purchaseFixtures.createPurchaseWithValuesByDefault();
         transactionId = persistADefaultPaymentTransaction();
         purchase.setTransactionId(transactionId);
     }
