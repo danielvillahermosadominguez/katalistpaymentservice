@@ -139,3 +139,43 @@ Feature: As an user interested in Katalyst courses
       | NAME | SURNAME | USERNAME | EMAIL                |
       | John | Doe     | johndoe  | john.doe@domain1.com |
       | Jane | Doe     | janedoe  | jane.doe@example.com |
+
+  Scenario: The customer has subscribed to a course and payed the price. The Payment platform confirmed the payment but it
+  had some problems to comunicate with the financial platform. So, it should retry and finish the process.
+    Given Holded has no contacts
+    And Moodle has not students
+    And the customer made a purchase with the following data
+      | FIRST NAME | SURNAME | EMAIL                | COMPANY NAME | IS COMPANY | NIF/CIF   | PHONE NUMBER  | ADDRESS              | POSTAL CODE | REGION | COUNTRY | CITY               |
+      | John       | Doe     | john.doe@example.com | N/A          | NO         | 46842041D | +34 636737337 | Avd. RedStone 45, 2B | 28081       | Madrid | Spain   | Boadilla del Monte |
+    And during the payment notification process, the financial platform didn't respond, but now is available
+    Then the retry process finishes the notification process with the following contacts in holded
+      | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
+      | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |
+
+  Scenario: The customer has subscribed to a course and payed the price. The Payment platform confirmed the payment but it
+  had some problems to comunicate with the learning platform. So, it should retry and finish the process.
+    Given Holded has no contacts
+    And Moodle has not students
+    And the customer made a purchase with the following data
+      | FIRST NAME | SURNAME | EMAIL                | COMPANY NAME | IS COMPANY | NIF/CIF   | PHONE NUMBER  | ADDRESS              | POSTAL CODE | REGION | COUNTRY | CITY               |
+      | John       | Doe     | john.doe@example.com | N/A          | NO         | 46842041D | +34 636737337 | Avd. RedStone 45, 2B | 28081       | Madrid | Spain   | Boadilla del Monte |
+    And during the payment notification process, the learning platform didn't respond, but now is available
+    Then the retry process finishes the notification process with the following users in Moodle
+      | NAME | SURNAME | USERNAME | EMAIL                |
+      | John | Doe     | johndoe  | john.doe@domain1.com |
+
+  Scenario: The customer has subscribed to a course and payed the price. The Payment platform confirmed the payment but it
+  had some problems to comunicate with both the learning platform and financial platform. So, it should retry and finish the process.
+    Given Holded has no contacts
+    And Moodle has not students
+    And the customer made a purchase with the following data
+      | FIRST NAME | SURNAME | EMAIL                | COMPANY NAME | IS COMPANY | NIF/CIF   | PHONE NUMBER  | ADDRESS              | POSTAL CODE | REGION | COUNTRY | CITY               |
+      | John       | Doe     | john.doe@example.com | N/A          | NO         | 46842041D | +34 636737337 | Avd. RedStone 45, 2B | 28081       | Madrid | Spain   | Boadilla del Monte |
+    And during the payment notification process, the financial platform didn't respond, but now is available
+    And during the payment notification process, the learning platform didn't respond, but now is available
+    Then the retry process finishes the notification process with the following users in Moodle
+      | NAME | SURNAME | USERNAME | EMAIL                |
+      | John | Doe     | johndoe  | john.doe@domain1.com |
+    And the retry process finishes the notification process with the following contacts in holded
+      | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
+      | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |

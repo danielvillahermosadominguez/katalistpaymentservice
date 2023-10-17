@@ -112,4 +112,8 @@ public class DBPaymentTransaction {
     public String getTransactionState() {
         return this.transactionState;
     }
+
+    public void setTransactionState(String value) {
+        this.transactionState = value;
+    }
 }

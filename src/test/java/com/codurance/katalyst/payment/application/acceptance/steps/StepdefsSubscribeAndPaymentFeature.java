@@ -7,10 +7,12 @@ import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient
 import com.codurance.katalyst.payment.application.apirest.dto.Error;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
+import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchase;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedBillAddress;
@@ -25,6 +27,7 @@ import com.codurance.katalyst.payment.application.model.ports.moodle.exception.C
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -39,6 +42,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.in;
 import static org.junit.jupiter.api.Assertions.fail;
 
 
@@ -161,6 +165,40 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(rows.size()).isEqualTo(1);
         userData = rows.get(0);
     }
+    @Given("the customer made a purchase with the following data")
+    public void the_customer_made_a_purchase_with_the_following_data(DataTable purchaseTable) {
+        var purchaseRows = purchaseTable.asMaps(String.class, String.class);
+        assertThat(purchaseRows.size()).isEqualTo(1);
+        var paymentTransaction = createPaymentTransaction();
+        paymentTransaction.setTransactionState(PaymentTransactionState.PENDING);
+        var dbPaymentTransaction = new DBPaymentTransaction(paymentTransaction);
+        dbPaymentTransaction = dbPaymentTransactionRepository.save(dbPaymentTransaction);
+        var purchase  = convertToPurchase(purchaseRows.get(0));
+        purchase.setTransactionId(dbPaymentTransaction.getId());
+        var dbPurchase = new DBPurchase(purchase);
+        dbPurchaseRepository.save(dbPurchase);
+    }
+
+    private PaymentTransaction createPaymentTransaction() {
+        throw new UnsupportedOperationException();
+    }
+
+    private Purchase convertToPurchase(Map<String, String> stringStringMap) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Given("during the payment notification process, the financial platform didn't respond, but now is available")
+    public void during_the_payment_notification_process_the_financial_platform_didn_t_respond_but_now_is_available() {
+        var dbPaymentTransactions = dbPaymentTransactionRepository.findAll();
+        for (var dbPaymentTransaction:dbPaymentTransactions) {
+            dbPaymentTransaction.setTransactionState(PaymentTransactionState.RETRY.getValue());
+        }
+
+        var dbPurchases = dbPurchaseRepository.findAll();
+        for (var dbPurchase:dbPurchases) {
+            dbPurchase.setFinantialStepOvercome(false);
+        }
+    }
 
     @Then("the customer is informed about the success of the subscription")
     public void the_customer_is_informed_about_the_success_of_the_subscription() {
@@ -247,7 +285,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         }
     }
 
-
     @Then("the customer is informed about the fail of the subscription")
     public void the_customer_is_informed_about_the_fail_of_the_subscription(DataTable dataTable) {
         var errorDescriptionData = dataTable.asMaps(String.class, String.class);
@@ -279,6 +316,17 @@ public class StepdefsSubscribeAndPaymentFeature {
         }
     }
 
+    @Then("the retry process finishes the notification process with the following contacts in holded")
+    public void the_retry_process_finishes_the_notification_process_with_the_following_contacts_in_holded(io.cucumber.datatable.DataTable dataTable) {
+        // Write code here that turns the phrase above into concrete actions
+        // For automatic transformation, change DataTable to one of
+        // E, List<E>, List<List<E>>, List<Map<K,V>>, Map<K,V> or
+        // Map<K, List<V>>. E,K,V must be a String, Integer, Float,
+        // Double, Byte, Short, Long, BigInteger or BigDecimal.
+        //
+        // For other transformations you can register a DataTableType.
+        throw new io.cucumber.java.PendingException();
+    }
 
     private boolean existInTheList(HoldedContact contact, List<HoldedContact> currentContactList) {
         for (var currentContact : currentContactList) {
