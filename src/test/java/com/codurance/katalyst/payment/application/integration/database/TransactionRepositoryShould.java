@@ -4,6 +4,7 @@ import com.codurance.katalyst.payment.application.builders.PaymentTransactionBui
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.TransactionRepositoryJPA;
+import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import org.junit.Before;
@@ -29,7 +30,9 @@ public class TransactionRepositoryShould {
     public TestEntityManager entityManager;
 
     @Autowired
-    public DBPaymentTransactionRepository jpaRepository;
+    public DBPaymentTransactionRepository jpaPaymentTransactionRepository;
+    @Autowired
+    public DBPurchaseRepository jpaPurchaseRepository;
 
     public TransactionRepositoryJPA paymentTransactionRepository;
     private PaymentTransaction paymentTransaction;
@@ -38,11 +41,13 @@ public class TransactionRepositoryShould {
 
     @Before
     public void beforeEach() {
-        paymentTransactionRepository = new TransactionRepositoryJPA(jpaRepository);
+        paymentTransactionRepository = new TransactionRepositoryJPA(jpaPaymentTransactionRepository);
         paymentTransactionBuilder = new PaymentTransactionBuilder();
         paymentTransaction = paymentTransactionBuilder
                 .createWithDefaultValues()
                 .getItem();
+        jpaPurchaseRepository.deleteAll();
+        jpaPaymentTransactionRepository.deleteAll();
     }
 
     @Test
@@ -78,6 +83,18 @@ public class TransactionRepositoryShould {
         var savedPaymentTransaction = paymentTransactionRepository.getPendingPaymentTransactionBasedOn(paymentTransaction.getOrder());
 
         paymentTransactionBuilder.assertHasSameData(savedPaymentTransaction, paymentTransaction);
+    }
+
+    @Test
+    public void read_retry_transactions_which_exist_in_database() {
+        paymentTransaction.setTransactionState(PaymentTransactionState.RETRY);
+        var dbEntity = new DBPaymentTransaction(paymentTransaction);
+        entityManager.persist(dbEntity);
+
+        var savedPaymentTransaction = paymentTransactionRepository.getPaymentTransactionForRetry();
+
+        assertThat(savedPaymentTransaction.size()).isEqualTo(1);
+        paymentTransactionBuilder.assertHasSameData(savedPaymentTransaction.get(0), paymentTransaction);
     }
 
     @Test

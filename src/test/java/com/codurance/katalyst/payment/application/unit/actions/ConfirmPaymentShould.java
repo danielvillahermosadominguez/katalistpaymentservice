@@ -6,19 +6,23 @@ import com.codurance.katalyst.payment.application.actions.exception.InvalidInput
 import com.codurance.katalyst.payment.application.actions.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.builders.PaymentNotificationBuilder;
 import com.codurance.katalyst.payment.application.builders.PaymentTransactionBuilder;
+import com.codurance.katalyst.payment.application.builders.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
 import com.codurance.katalyst.payment.application.model.financial.FinancialService;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
+import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.assertThrows;
@@ -160,8 +164,110 @@ public class ConfirmPaymentShould {
         verify(purchaseService, never()).updateLearningStepFor(any(), anyBoolean());
     }
 
+    @Test
+    void update_transaction_to_done_when_purchase_and_financial_step_are_done() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+        var paymentTransactionCapture = ArgumentCaptor.forClass(PaymentTransaction.class);
+        when(learningService.acquireACourseFor(any())).thenReturn(true);
+        when(financialService.emitInvoice(any())).thenReturn(true);
+        when(purchaseService.updateFinantialStepFor(any(), anyBoolean())).thenAnswer(invocation -> {
+            purchase.setFinantialStepOvercome(invocation.getArgument(1));
+            return invocation.getArgument(0);
+        });
+        when(purchaseService.updateLearningStepFor(any(), anyBoolean())).thenAnswer(invocation -> {
+            purchase.setLearningStepOvercome(invocation.getArgument(1));
+            return invocation.getArgument(0);
+        });
+
+        confirmPayment.confirm(notification);
+
+        verify(paymentService, times(1)).updateTransaction(
+                paymentTransactionCapture.capture()
+        );
+        var updatedTransaction = paymentTransactionCapture.getValue();
+        assertThat(updatedTransaction.getTransactionState()).isEqualTo(PaymentTransactionState.DONE);
+
+    }
+
+    @Test
+    void update_transaction_to_retry_when_learning_platform_is_not_available() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+        var paymentTransactionCapture = ArgumentCaptor.forClass(PaymentTransaction.class);
+        when(learningService.acquireACourseFor(any())).thenThrow(LearningPlatformIsNotAvailable.class);
+        when(financialService.emitInvoice(any())).thenReturn(true);
+        when(purchaseService.updateFinantialStepFor(any(), anyBoolean())).thenAnswer(invocation -> {
+            purchase.setFinantialStepOvercome(invocation.getArgument(1));
+            return invocation.getArgument(0);
+        });
+        when(purchaseService.updateLearningStepFor(any(), anyBoolean())).thenAnswer(invocation -> {
+            purchase.setLearningStepOvercome(invocation.getArgument(1));
+            return invocation.getArgument(0);
+        });
+
+        confirmPayment.confirm(notification);
+
+        verify(paymentService, times(1)).updateTransaction(
+                paymentTransactionCapture.capture()
+        );
+        var updatedTransaction = paymentTransactionCapture.getValue();
+        assertThat(updatedTransaction.getTransactionState()).isEqualTo(PaymentTransactionState.RETRY);
+
+    }
+
+    @Test
+    void update_transaction_to_retry_when_financial_platform_is_not_available() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+        var paymentTransactionCapture = ArgumentCaptor.forClass(PaymentTransaction.class);
+        when(learningService.acquireACourseFor(any())).thenReturn(true);
+        when(financialService.emitInvoice(any())).thenThrow(FinancialPlatformIsNotAvailable.class);
+        when(purchaseService.updateFinantialStepFor(any(), anyBoolean())).thenAnswer(invocation -> {
+            purchase.setFinantialStepOvercome(invocation.getArgument(1));
+            return invocation.getArgument(0);
+        });
+        when(purchaseService.updateLearningStepFor(any(), anyBoolean())).thenAnswer(invocation -> {
+            purchase.setLearningStepOvercome(invocation.getArgument(1));
+            return invocation.getArgument(0);
+        });
+
+        confirmPayment.confirm(notification);
+
+        verify(paymentService, times(1)).updateTransaction(
+                paymentTransactionCapture.capture()
+        );
+        var updatedTransaction = paymentTransactionCapture.getValue();
+        assertThat(updatedTransaction.getTransactionState()).isEqualTo(PaymentTransactionState.RETRY);
+
+    }
+
+    @Test
+    void update_transaction_to_retry_when_the_purchase_has_any_not_valid_email_format() throws NotValidNotification, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData, LearningPlatformIsNotAvailable {
+        var paymentTransactionCapture = ArgumentCaptor.forClass(PaymentTransaction.class);
+        when(learningService.acquireACourseFor(any())).thenReturn(true);
+        when(financialService.emitInvoice(any())).thenThrow(NotValidEMailFormat.class);
+        when(purchaseService.updateFinantialStepFor(any(), anyBoolean())).thenAnswer(invocation -> {
+            purchase.setFinantialStepOvercome(invocation.getArgument(1));
+            return invocation.getArgument(0);
+        });
+        when(purchaseService.updateLearningStepFor(any(), anyBoolean())).thenAnswer(invocation -> {
+            purchase.setLearningStepOvercome(invocation.getArgument(1));
+            return invocation.getArgument(0);
+        });
+
+        confirmPayment.confirm(notification);
+
+        verify(paymentService, times(1)).updateTransaction(
+                paymentTransactionCapture.capture()
+        );
+        var updatedTransaction = paymentTransactionCapture.getValue();
+        assertThat(updatedTransaction.getTransactionState()).isEqualTo(PaymentTransactionState.RETRY);
+
+    }
+
     private Purchase createPurchaseFixture(int transactionId) {
-        return new Purchase(transactionId, "RANDOM_ORDER_NAME");
+        var purchaseBuilder = new PurchaseBuilder();
+
+        return purchaseBuilder
+                .createWithDefaultValues()
+                .transactionId(transactionId)
+                .order("RANDOM_ORDER_NAME")
+                .getItem();
     }
 
 }

@@ -3,6 +3,7 @@ package com.codurance.katalyst.payment.application.integration.database;
 import com.codurance.katalyst.payment.application.builders.PaymentTransactionBuilder;
 import com.codurance.katalyst.payment.application.builders.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
+import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchase;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.PurchaseRepositoryJPA;
@@ -30,7 +31,10 @@ public class PurchaseRepositoryShould {
     public TestEntityManager entityManager;
 
     @Autowired
-    public DBPurchaseRepository jpaRepository;
+    public DBPurchaseRepository jpaPuchaseRepository;
+
+    @Autowired
+    public DBPaymentTransactionRepository jpaPaymentTransactionRepository;
 
     public PurchaseRepositoryJPA purchaseRepository;
     private Purchase purchase;
@@ -41,7 +45,9 @@ public class PurchaseRepositoryShould {
 
     @Before
     public void beforeEach() {
-        purchaseRepository = new PurchaseRepositoryJPA(jpaRepository);
+        purchaseRepository = new PurchaseRepositoryJPA(jpaPuchaseRepository);
+        jpaPuchaseRepository.deleteAll();
+        jpaPaymentTransactionRepository.deleteAll();
         purchase = purchaseBuilder
                 .createWithDefaultValues()
                 .getItem();
