@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.fixtures;
+package com.codurance.katalyst.payment.application.builders;
 
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
@@ -20,7 +20,8 @@ public class PaymentTransactionBuilder {
         return item;
     }
 
-    public PaymentTransaction createPaymentTransaction() {
+
+    private PaymentTransaction createPaymentTransaction() {
         var paymentStatus = new PaymentStatus();
         paymentStatus.setErrorCode(1);
         paymentStatus.setAmount(3456);
@@ -60,5 +61,10 @@ public class PaymentTransactionBuilder {
         assertThat(savedPaymentStatus.getChallengeUrl()).isEqualTo(paymentStatus.getChallengeUrl());
         assertThat(savedPaymentStatus.getCurrency()).isEqualTo(paymentStatus.getCurrency());
         assertThat(savedPaymentStatus.getErrorCode()).isEqualTo(paymentStatus.getErrorCode());
+    }
+
+    public PaymentTransactionBuilder id(int id) {
+        item.setId(id);
+        return this;
     }
 }

@@ -3,9 +3,9 @@ package com.codurance.katalyst.payment.application.acceptance.steps;
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
 import com.codurance.katalyst.payment.application.apirest.dto.Error;
+import com.codurance.katalyst.payment.application.builders.MoodleCourseBuilder;
 import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
-import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
@@ -121,22 +121,9 @@ public class StepdefsObtainCourseFeature {
     }
 
     private MoodleCourse convertToMoodleCourse(Map<String, String> data) throws CustomFieldNotExists {
-
-        var id = data.get("ID");
-        var name = data.get("NAME");
-        var price = data.get("PRICE");
-        int numericId = Integer.parseInt(id);
-        if (price.equals("<NO PRICE AVAILABLE>")) {
-            var moodleCourse = new MoodleCourse();
-            moodleCourse.setDisplayName(name);
-            moodleCourse.setId(numericId);
-            return moodleCourse;
-        }
-        var moodlePrice = new MoodlePrice(price);
-        return new MoodleCourse(
-                numericId,
-                name,
-                moodlePrice
-        );
+        var moodleCourseBuilder = new MoodleCourseBuilder();
+        return moodleCourseBuilder
+                .createFromMap(data)
+                .getItem();
     }
 }

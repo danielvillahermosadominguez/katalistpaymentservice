@@ -1,7 +1,7 @@
 package com.codurance.katalyst.payment.application.integration.database;
 
-import com.codurance.katalyst.payment.application.fixtures.PaymentTransactionBuilder;
-import com.codurance.katalyst.payment.application.fixtures.PurchaseBuilder;
+import com.codurance.katalyst.payment.application.builders.PaymentTransactionBuilder;
+import com.codurance.katalyst.payment.application.builders.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchase;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
@@ -34,21 +34,25 @@ public class PurchaseRepositoryShould {
 
     public PurchaseRepositoryJPA purchaseRepository;
     private Purchase purchase;
-    private PurchaseBuilder purchaseFixtures = new PurchaseBuilder();
+    private PurchaseBuilder purchaseBuilder = new PurchaseBuilder();
 
-    private PaymentTransactionBuilder paymentTransactionFixtures = new PaymentTransactionBuilder();
+    private PaymentTransactionBuilder paymentTransactionBuilder = new PaymentTransactionBuilder();
     private int transactionId;
 
     @Before
     public void beforeEach() {
         purchaseRepository = new PurchaseRepositoryJPA(jpaRepository);
-        purchase = purchaseFixtures.createPurchaseWithValuesByDefault();
+        purchase = purchaseBuilder
+                .createWithDefaultValues()
+                .getItem();
         transactionId = persistADefaultPaymentTransaction();
         purchase.setTransactionId(transactionId);
     }
 
     private int persistADefaultPaymentTransaction() {
-        var paymentTransaction = paymentTransactionFixtures.createPaymentTransaction();
+        var paymentTransaction = paymentTransactionBuilder
+                .createWithDefaultValues()
+                .getItem();
         var dbPaymentTransaction = new DBPaymentTransaction(paymentTransaction);
         dbPaymentTransaction = entityManager.persist(dbPaymentTransaction);
         return dbPaymentTransaction.getId();
@@ -59,7 +63,7 @@ public class PurchaseRepositoryShould {
         var savedPurchase = purchaseRepository.save(purchase);
         assertThat(savedPurchase).isNotNull();
         assertThat(savedPurchase.getId()).isNotEqualTo(0);
-        purchaseFixtures.assertTheSameDataThan(savedPurchase, purchase);
+        purchaseBuilder.assertTheSameDataThan(savedPurchase, purchase);
     }
 
     @Test

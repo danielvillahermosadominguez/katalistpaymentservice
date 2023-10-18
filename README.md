@@ -170,7 +170,6 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 
 # Task related with the POC
 - [In progress ] Remove gson as a dependency and use object mapper for serialization
-- [ ] Builders o fixtures for the tests. Equals when it is necessary.
 - [ ] BDD and retry for learning and financial
   - [ ] Resend in case of error + to be sure the mail has been sent (invoice)
 - [ ] Course with Zero price => we should allow to the user subscribe
@@ -214,6 +213,7 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [ ] Review the infrastructure and dockerization - use a docker container for the service
 - [ ] Transfer repositories to codurance organization in Github
 - [ ] Migration to AWS
+- [x] Builders o fixtures for the tests. Equals when it is necessary.
 - [x] Handover approach - think about it
 - [x] BDD and edge cases: error cases
 - [x] Sometimes the pipeline fail in bdd but github doesn't detect the fail. strange.

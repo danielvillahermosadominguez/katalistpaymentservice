@@ -1,5 +1,6 @@
-package com.codurance.katalyst.payment.application.fixtures;
+package com.codurance.katalyst.payment.application.builders;
 
+import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 
 import java.util.Map;
@@ -76,7 +77,17 @@ public class PurchaseBuilder {
         return item;
     }
 
-    public Purchase createPurchaseWithValuesByDefault() {
+    public PurchaseBuilder createWithDefaultValues() {
+        item = createPurchaseWithValuesByDefault();
+        return this;
+    }
+
+    public PurchaseBuilder createFromCustomerData(CustomerData customerData) {
+        item = createPurchaseFromCustomData(customerData);
+        return this;
+    }
+
+    private Purchase createPurchaseWithValuesByDefault() {
         return new Purchase(
                 TRANSACTION_ID,
                 ORDER,
@@ -100,6 +111,7 @@ public class PurchaseBuilder {
                 false
         );
     }
+
 
     public void assertTheSameDataThan(Purchase savedPurchase, Purchase purchase) {
         assertThat(savedPurchase).isNotNull();
@@ -125,31 +137,6 @@ public class PurchaseBuilder {
         assertThat(savedPurchase.isProcessedInFinantialState()).isEqualTo(purchase.isProcessedInFinantialState());
     }
 
-    public void assertTheSameDataThanDefaultPurchase(Purchase savedPurchase) {
-        assertThat(savedPurchase).isNotNull();
-        assertThat(savedPurchase.getTransactionId()).isEqualTo(TRANSACTION_ID);
-        assertThat(savedPurchase.getCourseId()).isEqualTo("1");
-        assertThat(savedPurchase.getConcept()).isEqualTo(CONCEPT);
-        assertThat(savedPurchase.getDescription()).isEqualTo(DESCRIPTION);
-        assertThat(savedPurchase.getPrice()).isEqualTo(PRICE);
-        assertThat(savedPurchase.getName()).isEqualTo(NAME);
-        assertThat(savedPurchase.getSurname()).isEqualTo(SURNAME);
-        assertThat(savedPurchase.getNifCif()).isEqualTo(NIF_CIF);
-        assertThat(savedPurchase.isCompany()).isFalse();
-        assertThat(savedPurchase.getCompany()).isEqualTo(COMPANY_NAME);
-        assertThat(savedPurchase.getEmail()).isEqualTo(EMAIL);
-        assertThat(savedPurchase.getPhone()).isEqualTo(PHONE_NUMBER);
-        assertThat(savedPurchase.getOrder()).isEqualTo(ORDER);
-        assertThat(savedPurchase.getTransactionId()).isEqualTo(TRANSACTION_ID);
-        assertThat(savedPurchase.getAddress()).isEqualTo(ADDRESS);
-        assertThat(savedPurchase.getPostalCode()).isEqualTo(POSTAL_CODE);
-        assertThat(savedPurchase.getCity()).isEqualTo(CITY);
-        assertThat(savedPurchase.getRegion()).isEqualTo(REGION);
-        assertThat(savedPurchase.getCountry()).isEqualTo(COUNTRY_CODE);
-        assertThat(savedPurchase.isProcessedInLearningState()).isFalse();
-        assertThat(savedPurchase.isProcessedInFinantialState()).isFalse();
-    }
-
     public PurchaseBuilder transactionId(int transactionId) {
         this.item.setTransactionId(transactionId);
         return this;
@@ -162,6 +149,56 @@ public class PurchaseBuilder {
 
     public PurchaseBuilder learningStepOvercome(boolean learningStepOvercome) {
         this.item.setLearningStepOvercome(learningStepOvercome);
+        return this;
+    }
+
+    private Purchase createPurchaseFromCustomData(CustomerData customerData) {
+        return new Purchase(
+                0,
+                "",
+                "0",
+                "",
+                "",
+                0,
+                customerData.getEmail(),
+                customerData.getName(),
+                customerData.getSurname(),
+                customerData.getDnicif(),
+                customerData.getIsCompany(),
+                customerData.getCompany(),
+                customerData.getPhoneNumber(),
+                customerData.getAddress(),
+                customerData.getPostalCode(),
+                customerData.getCity(),
+                customerData.getRegion(),
+                customerData.getCountry(),
+                false,
+                false
+        );
+    }
+
+    public PurchaseBuilder order(String order) {
+        item.setOrder(order);
+        return this;
+    }
+
+    public PurchaseBuilder courseId(String courseId) {
+        item.setCourseId(courseId);
+        return this;
+    }
+
+    public PurchaseBuilder concept(String value) {
+        item.setConcept(value);
+        return this;
+    }
+
+    public PurchaseBuilder description(String value) {
+        item.setDescription(value);
+        return this;
+    }
+
+    public PurchaseBuilder price(double value) {
+        item.setPrice(value);
         return this;
     }
 }

@@ -9,15 +9,15 @@ import com.codurance.katalyst.payment.application.actions.exception.LearningPlat
 import com.codurance.katalyst.payment.application.actions.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.TPVTokenIsRequired;
 import com.codurance.katalyst.payment.application.actions.exception.UserIsEnroledInTheCourse;
+import com.codurance.katalyst.payment.application.builders.CustomerDataBuilder;
+import com.codurance.katalyst.payment.application.builders.PaymentTransactionBuilder;
+import com.codurance.katalyst.payment.application.builders.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
 import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
-import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
-import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
-import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
@@ -62,13 +62,21 @@ public class SubscribeToCourseShould {
         learningService = mock(LearningService.class);
         purchaseService = mock(PurchaseService.class);
         log = mock(AbstractLog.class);
-        customerData = createCustomerDataFixture();
+        var customerDataBuilder = new CustomerDataBuilder();
+        customerData = customerDataBuilder
+                .createByDefault()
+                .ip(RANDOM_IP)
+                .payTpvToken(RANDOM_TPV_TOKEN)
+                .getItem();
         subscribeToCourse = new SubscribeToCourse(
                 paymentService,
                 learningService,
                 purchaseService,
                 log);
-        expectedPaymentTransaction = createPaymentTransactionFixture();
+        var paymentTransactionBuilder = new PaymentTransactionBuilder();
+        expectedPaymentTransaction = paymentTransactionBuilder
+                .createWithDefaultValues()
+                .getItem();
     }
 
     @Test
@@ -163,28 +171,18 @@ public class SubscribeToCourseShould {
     }
 
     private Purchase createPurchaseFromCustomData(String courseId) {
-        return new Purchase(
-                expectedPaymentTransaction.getId(),
-                expectedPaymentTransaction.getOrder(),
-                courseId,
-                RANDOM_COURSE_NAME,
-                "",
-                PRICE,
-                customerData.getEmail(),
-                customerData.getName(),
-                customerData.getSurname(),
-                customerData.getDnicif(),
-                customerData.getIsCompany(),
-                customerData.getCompany(),
-                customerData.getPhoneNumber(),
-                customerData.getAddress(),
-                customerData.getPostalCode(),
-                customerData.getCity(),
-                customerData.getRegion(),
-                customerData.getCountry(),
-                false,
-                false
-        );
+        var purchaseBuilder = new PurchaseBuilder();
+        return purchaseBuilder
+                .createFromCustomerData(customerData)
+                .transactionId(expectedPaymentTransaction.getId())
+                .order(expectedPaymentTransaction.getOrder())
+                .courseId(courseId)
+                .concept(RANDOM_COURSE_NAME)
+                .description("")
+                .price(PRICE)
+                .financialStepOvercome(false)
+                .learningStepOvercome(false)
+                .getItem();
     }
 
     @Test
@@ -209,28 +207,5 @@ public class SubscribeToCourseShould {
         );
         when(paymentService.authorizeTransaction(RANDOM_IP, RANDOM_TPV_TOKEN, PRICE))
                 .thenReturn(expectedPaymentTransaction);
-    }
-
-    private CustomerData createCustomerDataFixture() {
-        var customerData = new CustomerData();
-        customerData.setPaytpvToken(RANDOM_TPV_TOKEN);
-        customerData.setIp(RANDOM_IP);
-        return customerData;
-    }
-
-    private PaymentTransaction createPaymentTransactionFixture() {
-        return new PaymentTransaction(
-                1234,
-                RANDOM_IP,
-                PaymentMethod.CARDS,
-                TransactionType.AUTHORIZATION,
-                RANDOM_TPV_TOKEN,
-                1,
-                "RANDOM_ORDER",
-                34.56,
-                "20231205103259",
-                PaymentTransactionState.PENDING,
-                null
-        );
     }
 }

@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.integration.database;
 
-import com.codurance.katalyst.payment.application.fixtures.PaymentTransactionBuilder;
+import com.codurance.katalyst.payment.application.builders.PaymentTransactionBuilder;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.TransactionRepositoryJPA;
@@ -34,13 +34,15 @@ public class TransactionRepositoryShould {
     public TransactionRepositoryJPA paymentTransactionRepository;
     private PaymentTransaction paymentTransaction;
 
-    private PaymentTransactionBuilder paymentTransactionFixture;
+    private PaymentTransactionBuilder paymentTransactionBuilder;
 
     @Before
     public void beforeEach() {
         paymentTransactionRepository = new TransactionRepositoryJPA(jpaRepository);
-        paymentTransactionFixture = new PaymentTransactionBuilder();
-        paymentTransaction = paymentTransactionFixture.createPaymentTransaction();
+        paymentTransactionBuilder = new PaymentTransactionBuilder();
+        paymentTransaction = paymentTransactionBuilder
+                .createWithDefaultValues()
+                .getItem();
     }
 
     @Test
@@ -48,7 +50,7 @@ public class TransactionRepositoryShould {
         var savedPaymentTransaction = paymentTransactionRepository.save(paymentTransaction);
         assertThat(savedPaymentTransaction).isNotNull();
         assertThat(savedPaymentTransaction.getId()).isNotEqualTo(0);
-        paymentTransactionFixture.assertHasSameData(paymentTransaction, savedPaymentTransaction);
+        paymentTransactionBuilder.assertHasSameData(paymentTransaction, savedPaymentTransaction);
     }
 
     @Test
@@ -75,7 +77,7 @@ public class TransactionRepositoryShould {
 
         var savedPaymentTransaction = paymentTransactionRepository.getPendingPaymentTransactionBasedOn(paymentTransaction.getOrder());
 
-        paymentTransactionFixture.assertHasSameData(savedPaymentTransaction, paymentTransaction);
+        paymentTransactionBuilder.assertHasSameData(savedPaymentTransaction, paymentTransaction);
     }
 
     @Test

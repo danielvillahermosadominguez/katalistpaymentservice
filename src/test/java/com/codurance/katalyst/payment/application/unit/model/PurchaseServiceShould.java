@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.unit.model;
 
-import com.codurance.katalyst.payment.application.fixtures.PurchaseBuilder;
+import com.codurance.katalyst.payment.application.builders.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseRepository;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
@@ -19,13 +19,15 @@ public class PurchaseServiceShould {
     private PurchaseService purchaseService;
     private PurchaseRepository purchaseRepository;
     private Purchase purchaseFixture;
-    private PurchaseBuilder fixtures = new PurchaseBuilder();
+    private PurchaseBuilder purchaseBuilder = new PurchaseBuilder();
 
     @BeforeEach
     void beforeEach() {
         purchaseRepository = mock(PurchaseRepository.class);
         purchaseService = new PurchaseService(purchaseRepository);
-        purchaseFixture = fixtures.createPurchaseWithValuesByDefault();
+        purchaseFixture = purchaseBuilder
+                .createWithDefaultValues()
+                .getItem();
     }
 
     @Test

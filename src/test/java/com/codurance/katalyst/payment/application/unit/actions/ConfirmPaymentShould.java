@@ -4,19 +4,17 @@ import com.codurance.katalyst.payment.application.actions.ConfirmPayment;
 import com.codurance.katalyst.payment.application.actions.exception.FinancialPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.InvalidInputCustomerData;
 import com.codurance.katalyst.payment.application.actions.exception.LearningPlatformIsNotAvailable;
+import com.codurance.katalyst.payment.application.builders.PaymentNotificationBuilder;
+import com.codurance.katalyst.payment.application.builders.PaymentTransactionBuilder;
 import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
 import com.codurance.katalyst.payment.application.model.financial.FinancialService;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
-import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
-import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
-import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
-import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,8 +46,14 @@ public class ConfirmPaymentShould {
     @BeforeEach
     void beforeEach() throws NotValidNotification, PaymentTransactionNotFound {
         int transactionId = 12345;
-        notification = createNotificationFixture();
-        paymentTransaction = createPaymentTransactionFixture(transactionId);
+        var builder = new PaymentNotificationBuilder();
+        notification = builder
+                .createPaymentNotificationByDefault()
+                .getItem();
+        var paymentTransactionBuilder = new PaymentTransactionBuilder();
+        paymentTransaction = paymentTransactionBuilder.createWithDefaultValues()
+                .id(transactionId)
+                .getItem();
         purchase = createPurchaseFixture(transactionId);
         paymentService = mock(PaymentService.class);
         purchaseService = mock(PurchaseService.class);
@@ -160,28 +164,4 @@ public class ConfirmPaymentShould {
         return new Purchase(transactionId, "RANDOM_ORDER_NAME");
     }
 
-    private PaymentTransaction createPaymentTransactionFixture(int transactionId) {
-        return new PaymentTransaction(
-                transactionId,
-                "RANDOM_IP",
-                PaymentMethod.CARDS,
-                TransactionType.AUTHORIZATION, "RANDOM_TPV_TOKEN",
-                1,
-                "RANDOM_ORDER_NAME",
-                34.56,
-                "20231205103259",
-                PaymentTransactionState.PENDING,
-                new PaymentStatus());
-    }
-
-    private PaymentNotification createNotificationFixture() {
-        return new PaymentNotification(
-                PaymentMethod.CARDS,
-                TransactionType.AUTHORIZATION,
-                1234567,
-                "RANDOM_ORDER",
-                "RANDOM_AMOUNT",
-                "OK"
-        );
-    }
 }

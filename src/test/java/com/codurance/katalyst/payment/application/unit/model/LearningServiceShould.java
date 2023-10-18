@@ -2,7 +2,7 @@ package com.codurance.katalyst.payment.application.unit.model;
 
 import com.codurance.katalyst.payment.application.actions.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.NoPriceAvailable;
-import com.codurance.katalyst.payment.application.fixtures.PurchaseBuilder;
+import com.codurance.katalyst.payment.application.builders.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.model.learning.LearningService;
 import com.codurance.katalyst.payment.application.model.learning.UserNameService;
 import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
@@ -31,7 +31,7 @@ public class LearningServiceShould {
     private UserNameService userNameService;
     private MoodleApiClient moodleApiClient;
 
-    private PurchaseBuilder fixtures = new PurchaseBuilder();
+    private PurchaseBuilder purchaseBuilder = new PurchaseBuilder();
 
 
     @BeforeEach
@@ -133,7 +133,9 @@ public class LearningServiceShould {
 
     @Test
     void create_a_new_user_for_person_in_moodle_when_not_exists() throws MoodleNotRespond, LearningPlatformIsNotAvailable {
-        var purchase = fixtures.createPurchaseWithValuesByDefault();
+        var purchase = purchaseBuilder
+                .createWithDefaultValues()
+                .getItem();
         var username = "random_username_propose_for_service";
         when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
         var userId = "1";
@@ -165,7 +167,9 @@ public class LearningServiceShould {
 
     @Test
     void create_a_new_user_for_company_in_moodle_when_not_exists() throws MoodleNotRespond, LearningPlatformIsNotAvailable {
-        var purchase = fixtures.createPurchaseWithValuesByDefault();
+        var purchase = purchaseBuilder
+                .createWithDefaultValues()
+                .getItem();
         purchase.setIsCompany(true);
         purchase.setCompany("RANDOM_COMPANY_NAME");
         purchase.setName("N/A");
@@ -201,7 +205,9 @@ public class LearningServiceShould {
 
     @Test
     void not_to_create_a_new_user_in_moodle_when_exists() throws MoodleNotRespond, LearningPlatformIsNotAvailable {
-        var purchase = fixtures.createPurchaseWithValuesByDefault();
+        var purchase = purchaseBuilder
+                .createWithDefaultValues()
+                .getItem();
         var username = "random_username_propose_for_service";
         when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
         var userId = "1";
@@ -225,7 +231,9 @@ public class LearningServiceShould {
 
     @Test
     void enrolle_a_new_user_in_moodle_when_is_person() throws MoodleNotRespond, LearningPlatformIsNotAvailable, CustomFieldNotExists {
-        var purchase = fixtures.createPurchaseWithValuesByDefault();
+        var purchase = purchaseBuilder
+                .createWithDefaultValues()
+                .getItem();
         var username = "random_username_propose_for_service";
         when(userNameService.getAProposalForUserNameBasedOn(any())).thenReturn(username);
         var userId = "1";
@@ -271,7 +279,9 @@ public class LearningServiceShould {
 
     @Test
     void enrolle_a_new_user_in_moodle_when_is_company() throws MoodleNotRespond, LearningPlatformIsNotAvailable, CustomFieldNotExists {
-        var purchase = fixtures.createPurchaseWithValuesByDefault();
+        var purchase = purchaseBuilder
+                .createWithDefaultValues()
+                .getItem();
         purchase.setIsCompany(true);
         purchase.setCompany("RANDOM_COMPANY_NAME");
         purchase.setName("N/A");
@@ -321,7 +331,9 @@ public class LearningServiceShould {
 
     @Test
     void throw_an_learning_platform_not_respond_exception_if_moodle_not_respond_when_get_acquire_a_course() throws MoodleNotRespond {
-        var purchase = fixtures.createPurchaseWithValuesByDefault();
+        var purchase = purchaseBuilder
+                .createWithDefaultValues()
+                .getItem();
         when(moodleApiClient.getCourse(any())).thenThrow(MoodleNotRespond.class);
         var exception = Assertions.assertThrows(LearningPlatformIsNotAvailable.class, () -> {
             learningService.acquireACourseFor(purchase);
