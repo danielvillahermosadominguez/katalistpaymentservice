@@ -2,13 +2,14 @@ package com.codurance.katalyst.payment.application.unit.model;
 
 import com.codurance.katalyst.payment.application.actions.exception.FinancialPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.builders.HoldedContactBuilder;
+import com.codurance.katalyst.payment.application.builders.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.model.financial.FinancialService;
 import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedTypeContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,9 +38,11 @@ public class FinantialServiceShould {
     void beforeEach() {
         holdedApiClient = mock(HoldedApiClient.class);
         financialService = new FinancialService(holdedApiClient);
-        purchase = createPurchaseFixture();
+        var puchaseBuilder = new PurchaseBuilder();
+        purchase = puchaseBuilder
+                .createWithDefaultValues()
+                .getItem();
     }
-
 
     @Test
     void throw_an_exception_if_the_email_is_not_valid() {
@@ -148,7 +151,6 @@ public class FinantialServiceShould {
         assertThat(billAddress.getCountryCode()).isEqualTo(country);
     }
 
-
     @Test
     void not_create_a_contact_when_contact_exists() throws HoldedNotRespond, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
         var nifCif = purchase.getNifCif();
@@ -221,42 +223,10 @@ public class FinantialServiceShould {
     }
 
     private HoldedContact createBasicContact(HoldedEmail email, String nifCif) {
-        var contact = new HoldedContact(
-                "RANDOM_NAME",
-                nifCif,
-                "46842041C",
-                HoldedTypeContact.CLIENT,
-                true,
-                email,
-                "RANDOM_PHONE",
-                null,
-                "RANDOM_PURCHASE_ACCOUNT"
-        );
-        return contact;
+        var holdedContactBuilder = new HoldedContactBuilder();
+        return holdedContactBuilder
+                .createContactDefault(email, nifCif)
+                .getItem();
     }
 
-    private Purchase createPurchaseFixture() {
-        return new Purchase(
-                123456,
-                "RANDOM_ORDER",
-                "1",
-                "random_concept",
-                "random_description",
-                55.5,
-                "RANDOM_EMAIL@EMAIL.COM",
-                "random_name",
-                "random_surname",
-                "random_cif_nif",
-                false,
-                "N/A",
-                "random_phone_number",
-                "random_address",
-                "random_postal_code",
-                "random_city",
-                "random_region",
-                "ES",
-                false,
-                false
-        );
-    }
 }

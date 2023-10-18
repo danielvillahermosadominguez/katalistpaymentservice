@@ -1,4 +1,4 @@
-package com.codurance.katalyst.payment.application.fixtures;
+package com.codurance.katalyst.payment.application.builders;
 
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
@@ -8,8 +8,20 @@ import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.Payme
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class PaymentTransactionFixtures {
-    public PaymentTransaction createPaymentTransaction() {
+public class PaymentTransactionBuilder {
+    PaymentTransaction item;
+
+    public PaymentTransactionBuilder createWithDefaultValues() {
+        item = createPaymentTransaction();
+        return this;
+    }
+
+    public PaymentTransaction getItem() {
+        return item;
+    }
+
+
+    private PaymentTransaction createPaymentTransaction() {
         var paymentStatus = new PaymentStatus();
         paymentStatus.setErrorCode(1);
         paymentStatus.setAmount(3456);
@@ -49,5 +61,15 @@ public class PaymentTransactionFixtures {
         assertThat(savedPaymentStatus.getChallengeUrl()).isEqualTo(paymentStatus.getChallengeUrl());
         assertThat(savedPaymentStatus.getCurrency()).isEqualTo(paymentStatus.getCurrency());
         assertThat(savedPaymentStatus.getErrorCode()).isEqualTo(paymentStatus.getErrorCode());
+    }
+
+    public PaymentTransactionBuilder id(int id) {
+        item.setId(id);
+        return this;
+    }
+
+    public PaymentTransactionBuilder state(PaymentTransactionState value) {
+        item.setTransactionState(value);
+        return this;
     }
 }

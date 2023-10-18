@@ -66,12 +66,12 @@ public class LearningService {
 
     private MoodleUser createMoodleUser(Purchase purchase) throws MoodleNotRespond {
         MoodleUser user;
-        var email = new HoldedEmail(purchase.getEmail()); //ERROR DEPENDENCIA
+        var email = new HoldedEmail(purchase.getEmail()); //TODO: DEPENDENCY WITH HOLDED. ERROR OF DESIGN. REMOVE IT
         var name = purchase.getName();
         var surname = purchase.getSurname();
         var userName = userNameService.getAProposalForUserNameBasedOn(email.getUserName());
         if (purchase.isCompany()) {
-            surname = "";
+            surname = purchase.getCompany();
             name = purchase.getCompany();
         }
         user = moodleApiClient.createUser(

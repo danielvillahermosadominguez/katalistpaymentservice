@@ -217,4 +217,20 @@ public class Purchase {
     public void setTransactionId(int value) {
         transactionId = value;
     }
+
+    public void setOrder(String value) {
+        order = value;
+    }
+
+    public void setConcept(String value) {
+        concept = value;
+    }
+
+    public void setDescription(String value) {
+        description = value;
+    }
+
+    public void setPrice(double value) {
+        price = value;
+    }
 }

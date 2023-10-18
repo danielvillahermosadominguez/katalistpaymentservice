@@ -1,9 +1,10 @@
 package com.codurance.katalyst.payment.application.integration.database;
 
-import com.codurance.katalyst.payment.application.fixtures.PaymentTransactionFixtures;
+import com.codurance.katalyst.payment.application.builders.PaymentTransactionBuilder;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.TransactionRepositoryJPA;
+import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import org.junit.Before;
@@ -29,18 +30,24 @@ public class TransactionRepositoryShould {
     public TestEntityManager entityManager;
 
     @Autowired
-    public DBPaymentTransactionRepository jpaRepository;
+    public DBPaymentTransactionRepository jpaPaymentTransactionRepository;
+    @Autowired
+    public DBPurchaseRepository jpaPurchaseRepository;
 
     public TransactionRepositoryJPA paymentTransactionRepository;
     private PaymentTransaction paymentTransaction;
 
-    private PaymentTransactionFixtures paymentTransactionFixture;
+    private PaymentTransactionBuilder paymentTransactionBuilder;
 
     @Before
     public void beforeEach() {
-        paymentTransactionRepository = new TransactionRepositoryJPA(jpaRepository);
-        paymentTransactionFixture = new PaymentTransactionFixtures();
-        paymentTransaction = paymentTransactionFixture.createPaymentTransaction();
+        paymentTransactionRepository = new TransactionRepositoryJPA(jpaPaymentTransactionRepository);
+        paymentTransactionBuilder = new PaymentTransactionBuilder();
+        paymentTransaction = paymentTransactionBuilder
+                .createWithDefaultValues()
+                .getItem();
+        jpaPurchaseRepository.deleteAll();
+        jpaPaymentTransactionRepository.deleteAll();
     }
 
     @Test
@@ -48,7 +55,7 @@ public class TransactionRepositoryShould {
         var savedPaymentTransaction = paymentTransactionRepository.save(paymentTransaction);
         assertThat(savedPaymentTransaction).isNotNull();
         assertThat(savedPaymentTransaction.getId()).isNotEqualTo(0);
-        paymentTransactionFixture.assertHasSameData(paymentTransaction, savedPaymentTransaction);
+        paymentTransactionBuilder.assertHasSameData(paymentTransaction, savedPaymentTransaction);
     }
 
     @Test
@@ -75,7 +82,19 @@ public class TransactionRepositoryShould {
 
         var savedPaymentTransaction = paymentTransactionRepository.getPendingPaymentTransactionBasedOn(paymentTransaction.getOrder());
 
-        paymentTransactionFixture.assertHasSameData(savedPaymentTransaction, paymentTransaction);
+        paymentTransactionBuilder.assertHasSameData(savedPaymentTransaction, paymentTransaction);
+    }
+
+    @Test
+    public void read_retry_transactions_which_exist_in_database() {
+        paymentTransaction.setTransactionState(PaymentTransactionState.RETRY);
+        var dbEntity = new DBPaymentTransaction(paymentTransaction);
+        entityManager.persist(dbEntity);
+
+        var savedPaymentTransaction = paymentTransactionRepository.getPaymentTransactionForRetry();
+
+        assertThat(savedPaymentTransaction.size()).isEqualTo(1);
+        paymentTransactionBuilder.assertHasSameData(savedPaymentTransaction.get(0), paymentTransaction);
     }
 
     @Test

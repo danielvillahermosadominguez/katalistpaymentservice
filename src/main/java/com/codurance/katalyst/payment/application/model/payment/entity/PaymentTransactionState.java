@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.model.payment.entity;
 
 public enum PaymentTransactionState {
     PENDING("Pending"),
+    RETRY("Retry"),
     DONE("Done");
 
     private final String value;

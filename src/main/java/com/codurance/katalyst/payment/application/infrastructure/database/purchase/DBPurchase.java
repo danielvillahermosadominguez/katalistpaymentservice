@@ -138,4 +138,12 @@ public class DBPurchase {
     public int getTransactionId() {
         return transactionId;
     }
+
+    public void setFinantialStepOvercome(boolean value) {
+        finantialStepOvercome = value;
+    }
+
+    public void setLearningStepOvercome(boolean value) {
+        learningStepOvercome = value;
+    }
 }

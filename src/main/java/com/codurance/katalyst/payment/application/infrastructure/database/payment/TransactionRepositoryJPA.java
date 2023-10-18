@@ -6,6 +6,9 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTr
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class TransactionRepositoryJPA implements TransactionRepository {
 
@@ -35,5 +38,20 @@ public class TransactionRepositoryJPA implements TransactionRepository {
         var dbPaymentTransaction = new DBPaymentTransaction(paymentData);
         dbPaymentTransaction = jpaRepository.save(dbPaymentTransaction);
         return dbPaymentTransaction.toPaymentTransaction();
+    }
+
+    @Override
+    public List<PaymentTransaction> getPaymentTransactionForRetry() {
+        var paymentTransactions = jpaRepository.findAllByTransactionState(
+                PaymentTransactionState.RETRY.getValue()
+        );
+        List<PaymentTransaction> result = new ArrayList<>();
+        if (!paymentTransactions.isPresent()) {
+            return result;
+        }
+        for (var dBPaymentTransaction : paymentTransactions.get()) {
+            result.add(dBPaymentTransaction.toPaymentTransaction());
+        }
+        return result;
     }
 }

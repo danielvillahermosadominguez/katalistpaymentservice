@@ -4,19 +4,24 @@ import com.codurance.katalyst.payment.application.acceptance.doubles.HoldedApiCl
 import com.codurance.katalyst.payment.application.acceptance.doubles.MoodleApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.doubles.PayCometApiClientFake;
 import com.codurance.katalyst.payment.application.acceptance.utils.TestApiClient;
+import com.codurance.katalyst.payment.application.actions.RetryPendingPayments;
 import com.codurance.katalyst.payment.application.apirest.dto.Error;
+import com.codurance.katalyst.payment.application.builders.CustomerDataBuilder;
+import com.codurance.katalyst.payment.application.builders.HoldedContactBuilder;
+import com.codurance.katalyst.payment.application.builders.MoodleUserBuilder;
+import com.codurance.katalyst.payment.application.builders.PaymentTransactionBuilder;
+import com.codurance.katalyst.payment.application.builders.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransaction;
 import com.codurance.katalyst.payment.application.infrastructure.database.payment.DBPaymentTransactionRepository;
+import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchase;
 import com.codurance.katalyst.payment.application.infrastructure.database.purchase.DBPurchaseRepository;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedTypeContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
@@ -25,7 +30,9 @@ import com.codurance.katalyst.payment.application.model.ports.moodle.exception.C
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
+import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -34,37 +41,37 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.fail;
 
 
 public class StepdefsSubscribeAndPaymentFeature {
     public static final int NO_ANSWER = -10;
+    public static final int WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS = 2;
     public static MoodleCourse FIXTURE_COURSE = null;
-
     private int subscriptionOutputCode = -1;
     @LocalServerPort
     int randomServerPort;
-
     @Autowired
     private TestApiClient apiClient;
-
     @Autowired
     private MoodleApiClientFake moodleApiClient;
     @Autowired
     private HoldedApiClientFake holdedApiClient;
     @Autowired
     private PayCometApiClientFake payCometApiClient;
-
     @Autowired
     private DBPaymentTransactionRepository dbPaymentTransactionRepository;
-
     @Autowired
     private DBPurchaseRepository dbPurchaseRepository;
+    @Autowired
+    private RetryPendingPayments retryPendingPayments;
     @Value("${paycomet.terminal}")
     int tpvId;
     private int subscriptionResult = NO_ANSWER;
@@ -72,13 +79,12 @@ public class StepdefsSubscribeAndPaymentFeature {
     private Map<String, String> creditDebitCardData = null;
     private String temporalPayCometToken = null;
     private PaymentStatus paymentStatus;
-
     @Before
     public void beforeEachScenario() {
         if (!apiClient.isInitialized()) {
-            this.apiClient.setPort(randomServerPort);
+            apiClient.setPort(randomServerPort);
         }
-        var response = this.apiClient.checkItsAlive();
+        var response = apiClient.checkItsAlive();
 
         if (!response.getBody().equals("OK! Working")) {
             fail();
@@ -89,7 +95,17 @@ public class StepdefsSubscribeAndPaymentFeature {
         payCometApiClient.reset();
         dbPurchaseRepository.deleteAll();
         dbPaymentTransactionRepository.deleteAll();
+        retryPendingPayments.setActive(false);
         subscriptionResult = NO_ANSWER;
+    }
+    @After
+    public void afterEach() {
+        moodleApiClient.reset();
+        holdedApiClient.reset();
+        payCometApiClient.reset();
+        dbPurchaseRepository.deleteAll();
+        dbPaymentTransactionRepository.deleteAll();
+        retryPendingPayments.setActive(false);
     }
 
     @Given("Holded has no contacts")
@@ -108,13 +124,11 @@ public class StepdefsSubscribeAndPaymentFeature {
         var currentContactList = holdedApiClient.getAllContacts();
         assertThat(contactList.size()).isEqualTo(currentContactList.size());
     }
-
     @Given("Moodle has not students")
     public void moodle_has_not_students() {
         var students = moodleApiClient.getAllUsers();
         assertThat(students.size()).isEqualTo(0);
     }
-
     @Given("Moodle which has these previous users")
     public void moodle_which_has_these_previous_users(DataTable dataTable) throws MoodleNotRespond {
         var userList = dataTable.asMaps(String.class, String.class);
@@ -140,7 +154,6 @@ public class StepdefsSubscribeAndPaymentFeature {
             moodleApiClient.enrolToTheCourse(course, student);
         }
     }
-
     @Given("An customer who has chosen the following course the course {string} with a price of {string}")
     public void an_customer_who_has_chosen_the_following_course_the_course_with_a_price_of(String courseName, String priceText) throws CustomFieldNotExists {
         var price = new MoodlePrice(priceText);
@@ -153,7 +166,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         FIXTURE_COURSE = course;
         assertThat(FIXTURE_COURSE).isNotNull();
     }
-
     @Given("the customer has filled the following data")
     public void the_customer_has_filled_the_following_data(DataTable dtUserData) {
         assertThat(FIXTURE_COURSE).isNotNull();
@@ -161,7 +173,41 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(rows.size()).isEqualTo(1);
         userData = rows.get(0);
     }
-
+    @Given("the customer made a purchase with the following data")
+    public void the_customer_made_a_purchase_with_the_following_data(DataTable purchaseTable) {
+        var purchaseRows = purchaseTable.asMaps(String.class, String.class);
+        assertThat(purchaseRows.size()).isEqualTo(1);
+        var paymentTransaction = createPaymentTransaction();
+        paymentTransaction.setTransactionState(PaymentTransactionState.PENDING);
+        var dbPaymentTransaction = new DBPaymentTransaction(paymentTransaction);
+        dbPaymentTransaction = dbPaymentTransactionRepository.save(dbPaymentTransaction);
+        var transactionId = dbPaymentTransaction.getId();
+        var purchase = convertToPurchase(purchaseRows.get(0), transactionId);
+        var dbPurchase = new DBPurchase(purchase);
+        dbPurchaseRepository.save(dbPurchase);
+    }
+    @Given("during the payment notification process, the learning platform didn't respond, but now is available")
+    public void during_the_payment_notification_process_the_learning_platform_didn_t_respond_but_now_is_available() {
+        setRetryStateAllPaymentTransactions();
+        var dbPurchases = dbPurchaseRepository.findAll();
+        for (var dbPurchase : dbPurchases) {
+            dbPurchase.setLearningStepOvercome(false);
+        }
+        dbPurchaseRepository.saveAll(dbPurchases);
+    }
+    @Given("the retry process is active")
+    public void the_retry_process_is_active() {
+        retryPendingPayments.setActive(true);
+    }
+    @Given("during the payment notification process, the financial platform didn't respond, but now is available")
+    public void during_the_payment_notification_process_the_financial_platform_didn_t_respond_but_now_is_available() {
+        setRetryStateAllPaymentTransactions();
+        var dbPurchases = dbPurchaseRepository.findAll();
+        for (var dbPurchase : dbPurchases) {
+            dbPurchase.setFinantialStepOvercome(false);
+        }
+        dbPurchaseRepository.saveAll(dbPurchases);
+    }
     @Then("the customer is informed about the success of the subscription")
     public void the_customer_is_informed_about_the_success_of_the_subscription() {
         assertThat(paymentStatus).isNotNull();
@@ -213,20 +259,6 @@ public class StepdefsSubscribeAndPaymentFeature {
         }
     }
 
-    private PaymentNotification createOKNotification(PaymentOrder order) {
-
-        var amount = String.valueOf(order.getAmount());
-        var notification = new PaymentNotification(
-                PaymentMethod.fromInt(order.getMethodId()),
-                TransactionType.AUTHORIZATION,
-                tpvId,
-                order.getOrder(),
-                amount,
-                "OK"
-        );
-        return notification;
-    }
-
     @Then("the customer will receive access to the platform in the email {string} with the user {string} and fullname {string} {string}")
     public void the_customer_will_receive_access_to_the_platform_in_the_email_with_the_user_and_name(String moodleEmail, String moodleUser, String moodleName, String moodleSurname) throws MoodleNotRespond {
         var user = moodleApiClient.getUserByMail(moodleEmail);
@@ -240,13 +272,8 @@ public class StepdefsSubscribeAndPaymentFeature {
     public void holded_has_the_following_contacts(DataTable dtContacts) {
         var contactList = dtContacts.asMaps(String.class, String.class);
         var expectedContactList = createContactList(contactList);
-        var currentContactList = holdedApiClient.getAllContacts();
-        assertThat(currentContactList.size()).isEqualTo(expectedContactList.size());
-        for (var contact : expectedContactList) {
-            assertThat(existInTheList(contact, currentContactList)).isTrue();
-        }
+        assertThat(holdedHasTheFollowingContacts(expectedContactList)).isTrue();
     }
-
 
     @Then("the customer is informed about the fail of the subscription")
     public void the_customer_is_informed_about_the_fail_of_the_subscription(DataTable dataTable) {
@@ -268,17 +295,32 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(existPendingTransactions).isFalse();
         assertThat(lastPaymentOrders.size()).isEqualTo(0);
     }
+
     @Then("Moodle has the following users")
     public void moodle_has_the_following_users(DataTable dataTable) {
         var userList = dataTable.asMaps(String.class, String.class);
-        var expectedUserList= createUserList(userList);
-        var currentUsersList = moodleApiClient.getAllUsers();
-        assertThat(expectedUserList.size()).isEqualTo(currentUsersList.size());
-        for (var user : expectedUserList) {
-             assertThat(existInTheList(user, currentUsersList));
-        }
+        var expectedUserList = createUserList(userList);
+        assertThat(moodleHasTheFolowingUsers(expectedUserList)).isTrue();
     }
 
+    @Then("the retry process finishes the notification process with the following contacts in holded")
+    public void the_retry_process_finishes_the_notification_process_with_the_following_contacts_in_holded(DataTable dtContacts) {
+        var contactList = dtContacts.asMaps(String.class, String.class);
+        var expectedContactList = createContactList(contactList);
+        await()
+                .timeout(Duration.ofSeconds(WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS))
+                .untilAsserted(() -> assertThat(holdedHasTheFollowingContacts(expectedContactList)).isTrue());
+
+    }
+
+    @Then("the retry process finishes the notification process with the following users in Moodle")
+    public void the_retry_process_finishes_the_notification_process_with_the_following_users_in_moodle(DataTable dataTable) {
+        var userList = dataTable.asMaps(String.class, String.class);
+        var expectedUserList = createUserList(userList);
+        await()
+                .timeout(Duration.ofSeconds(WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS))
+                .untilAsserted(() -> assertThat(moodleHasTheFolowingUsers(expectedUserList)).isTrue());
+    }
 
     private boolean existInTheList(HoldedContact contact, List<HoldedContact> currentContactList) {
         for (var currentContact : currentContactList) {
@@ -299,61 +341,21 @@ public class StepdefsSubscribeAndPaymentFeature {
     }
 
     private CustomerData convertToCustomData() {
-        var customData = new CustomerData();
-        customData.setCourseId(FIXTURE_COURSE.getId() + "");
-        customData.setEmail(this.userData.get("EMAIL"));
-        customData.setName(this.userData.get("FIRST NAME"));
-        customData.setSurname(this.userData.get("SURNAME"));
-        customData.setCompany(this.userData.get("COMPANY NAME"));
-        customData.setDnicif(this.userData.get("NIF/CIF"));
-        customData.setIsCompany(this.userData.get("IS COMPANY").equals("YES"));
-        customData.setPhoneNumber(this.userData.get("PHONE NUMBER"));
-        customData.setAddress(this.userData.get("ADDRESS"));
-        customData.setPostalCode(this.userData.get("POSTAL CODE"));
-        customData.setCity(this.userData.get("CITY"));
-        customData.setRegion(this.userData.get("REGION"));
-        customData.setCountry(this.userData.get("COUNTRY"));
-        customData.setUsername(this.creditDebitCardData.get("NAME"));
-        customData.setIp("127.0.0.1");
-        customData.setPaytpvToken(this.temporalPayCometToken);
-        return customData;
+        var customerDataBuilder = new CustomerDataBuilder();
+        return customerDataBuilder
+                .createFromMap(userData)
+                .courseId(FIXTURE_COURSE.getId() + "")
+                .userName(this.creditDebitCardData.get("NAME"))
+                .ip("127.0.0.1")
+                .payTpvToken(this.temporalPayCometToken)
+                .getItem();
     }
 
-    private HoldedContact convertToHoldedContact(Map<String,String> holdedContactData) throws NotValidEMailFormat {
-        var customId = holdedContactData.get("CUSTOMER-ID");
-        var name = holdedContactData.get("NAME");
-        var code = holdedContactData.get("CONTACT NIF");
-        var vatNumber = holdedContactData.get("VAT NUMBER");
-        var thisContactIs = holdedContactData.get("THIS CONTACT IS");
-        var email = holdedContactData.get("EMAIL");
-        var address = holdedContactData.get("ADDRESS");
-        var phoneNumber = holdedContactData.get("PHONE NUMBER");
-        var postalCode = holdedContactData.get("POSTAL CODE");
-        var province = holdedContactData.get("PROVINCE");
-        var city = holdedContactData.get("CITY");
-        var country = holdedContactData.get("COUNTRY");
-        var purchaseAccount = holdedContactData.get("PURCHASE ACCOUNT");
-        var billAddress = new HoldedBillAddress(address, postalCode, city, province, country);
-
-        var isPerson = thisContactIs.equals("Person");
-        if (isPerson) {
-            vatNumber = null;
-        } else {
-            code = null;
-        }
-        var contact = new HoldedContact(
-                name,
-                code,
-                vatNumber,
-                HoldedTypeContact.CLIENT,
-                isPerson,
-                new HoldedEmail(email),
-                phoneNumber,
-                billAddress,
-                purchaseAccount
-        );
-        contact.setCustomId(customId);
-        return contact;
+    private HoldedContact convertToHoldedContact(Map<String, String> data) throws NotValidEMailFormat {
+        var holdedContactBuilder = new HoldedContactBuilder();
+        return holdedContactBuilder
+                .createFromMap(data)
+                .getItem();
     }
 
     private List<HoldedContact> createContactList(List<Map<String, String>> paymentData) {
@@ -378,11 +380,10 @@ public class StepdefsSubscribeAndPaymentFeature {
     }
 
     private MoodleUser convertToMoodleUser(Map<String, String> data) {
-        var name = data.get("NAME");
-        var surname = data.get("SURNAME");
-        var userName = data.get("USERNAME");
-        var email = data.get("EMAIL");
-        return new MoodleUser(name, surname, userName, email);
+        var moodleUserBuilder = new MoodleUserBuilder();
+        return moodleUserBuilder
+                .createFromMap(data)
+                .getItem();
     }
 
     private Error createError(Map<String, String> errorDescriptionData) {
@@ -394,8 +395,8 @@ public class StepdefsSubscribeAndPaymentFeature {
 
     private boolean existPendingTransactions(Iterable<DBPaymentTransaction> paymentTransactions) {
         boolean existPendingTransactions = false;
-        for (DBPaymentTransaction paymentTransaction: paymentTransactions) {
-            if(paymentTransaction.getTransactionState().equals(PaymentTransactionState.PENDING.getValue())) {
+        for (DBPaymentTransaction paymentTransaction : paymentTransactions) {
+            if (paymentTransaction.getTransactionState().equals(PaymentTransactionState.PENDING.getValue())) {
                 existPendingTransactions = true;
                 break;
             }
@@ -403,4 +404,67 @@ public class StepdefsSubscribeAndPaymentFeature {
         return existPendingTransactions;
     }
 
+    private PaymentTransaction createPaymentTransaction() {
+        var builder = new PaymentTransactionBuilder();
+        return builder
+                .createWithDefaultValues()
+                .getItem();
+    }
+
+    private Purchase convertToPurchase(Map<String, String> purchaseMap, int transactionId) {
+        var builder = new PurchaseBuilder();
+        return builder
+                .create(purchaseMap)
+                .transactionId(transactionId)
+                .financialStepOvercome(true)
+                .learningStepOvercome(true)
+                .getItem();
+    }
+
+    private boolean holdedHasTheFollowingContacts(List<HoldedContact> expectedContactList) {
+        var currentContactList = holdedApiClient.getAllContacts();
+        if (currentContactList.size() != expectedContactList.size()) {
+            return false;
+        }
+        for (var contact : expectedContactList) {
+            if (!existInTheList(contact, currentContactList)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean moodleHasTheFolowingUsers(List<MoodleUser> expectedUserList) {
+        var currentUsersList = moodleApiClient.getAllUsers();
+        if (expectedUserList.size() != currentUsersList.size()) {
+            return false;
+        }
+        for (var user : expectedUserList) {
+            if (!existInTheList(user, currentUsersList)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void setRetryStateAllPaymentTransactions() {
+        var dbPaymentTransactions = dbPaymentTransactionRepository.findAll();
+        for (var dbPaymentTransaction : dbPaymentTransactions) {
+            dbPaymentTransaction.setTransactionState(PaymentTransactionState.RETRY.getValue());
+        }
+        dbPaymentTransactionRepository.saveAll(dbPaymentTransactions);
+    }
+
+    private PaymentNotification createOKNotification(PaymentOrder order) {
+        var amount = String.valueOf(order.getAmount());
+        var notification = new PaymentNotification(
+                PaymentMethod.fromInt(order.getMethodId()),
+                TransactionType.AUTHORIZATION,
+                tpvId,
+                order.getOrder(),
+                amount,
+                "OK"
+        );
+        return notification;
+    }
 }

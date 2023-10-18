@@ -9,9 +9,11 @@ import com.codurance.katalyst.payment.application.model.learning.LearningService
 import com.codurance.katalyst.payment.application.model.payment.PaymentService;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
+import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
+import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,38 +51,50 @@ public class ConfirmPayment {
             logIgnoredNotification(notification);
             return;
         }
+        process(paymentTransaction);
+    }
+
+    private void process(PaymentTransaction paymentTransaction) throws NoCustomerData {
+        var nextTransactionState = PaymentTransactionState.DONE;
         var purchase = purchaseService.getPurchase(paymentTransaction.getId());
         if (purchase == null) {
-            log.error(ConfirmPayment.class, String.format("[NOT PURCHASE DATA AVAILABLE]: for transaction id = %s", paymentTransaction.getId()));
+            logTransactionSelectedToRetry(String.format("[NOT PURCHASE DATA AVAILABLE]: for transaction id = %s", paymentTransaction.getId()));
             throw new NoCustomerData();
         }
         try {
             if (financialService.emitInvoice(purchase)) {
-                purchaseService.updateFinantialStepFor(purchase, true);
+                purchase = purchaseService.updateFinantialStepFor(purchase, true);
             }
 
             if (learningService.acquireACourseFor(purchase)) {
-                purchaseService.updateLearningStepFor(purchase, true);
+                purchase = purchaseService.updateLearningStepFor(purchase, true);
             }
         } catch (Exception exception) {
-            logNotProcessablePurchase(notification);
+            nextTransactionState = PaymentTransactionState.RETRY;
+            logNotProcessablePurchase(purchase);
+            logTransactionSelectedToRetry(String.format("[TRANSACTION IS SELECTED TO RETRY]: for transaction id = %s", paymentTransaction.getId()));
+        } catch (LearningPlatformIsNotAvailable | FinancialPlatformIsNotAvailable | InvalidInputCustomerData e) {
+            nextTransactionState = PaymentTransactionState.RETRY;
+            logTransactionSelectedToRetry(String.format("[TRANSACTION IS SELECTED TO RETRY]: for transaction id = %s", paymentTransaction.getId()));
         }
+
+        paymentTransaction.setTransactionState(nextTransactionState);
+        paymentService.updateTransaction(paymentTransaction);
     }
 
-    private void logNotProcessablePurchase(PaymentNotification notification) {
+    private void logTransactionSelectedToRetry(String paymentTransaction) {
+        log.error(ConfirmPayment.class, paymentTransaction);
+    }
+
+    private void logNotProcessablePurchase(Purchase notification) {
         var objectMapper = new ObjectMapper();
         try {
             var json = objectMapper.writeValueAsString(notification);
-            log.error(ConfirmPayment.class,
-                    String.format("[PURCHASE NOT PROCESSABLE]:Not possible to emit the invoice or/and acquire the course for the purchase %s",
-                            json)
-            );
+            logTransactionSelectedToRetry(String.format("[PURCHASE NOT PROCESSABLE]:Not possible to emit the invoice or/and acquire the course for the purchase %s",
+                    json));
         } catch (JsonProcessingException e) {
-            log.error(
-                    ConfirmPayment.class,
-                    String.format("[PURCHASE NOT PROCESSABLE]:Not possible to emit the invoice or/and acquire the course for the purchase. Purchase cannot be converted into json format: ",
-                            e.getMessage())
-            );
+            logTransactionSelectedToRetry(String.format("[PURCHASE NOT PROCESSABLE]:Not possible to emit the invoice or/and acquire the course for the purchase. Purchase cannot be converted into json format: ",
+                    e.getMessage()));
         }
     }
 
