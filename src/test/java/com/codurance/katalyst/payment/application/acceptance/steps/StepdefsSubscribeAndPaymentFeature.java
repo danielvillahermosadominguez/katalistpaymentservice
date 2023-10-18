@@ -32,6 +32,7 @@ import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.Payme
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -81,9 +82,9 @@ public class StepdefsSubscribeAndPaymentFeature {
     @Before
     public void beforeEachScenario() {
         if (!apiClient.isInitialized()) {
-            this.apiClient.setPort(randomServerPort);
+            apiClient.setPort(randomServerPort);
         }
-        var response = this.apiClient.checkItsAlive();
+        var response = apiClient.checkItsAlive();
 
         if (!response.getBody().equals("OK! Working")) {
             fail();
@@ -97,11 +98,22 @@ public class StepdefsSubscribeAndPaymentFeature {
         retryPendingPayments.setActive(false);
         subscriptionResult = NO_ANSWER;
     }
+    @After
+    public void afterEach() {
+        moodleApiClient.reset();
+        holdedApiClient.reset();
+        payCometApiClient.reset();
+        dbPurchaseRepository.deleteAll();
+        dbPaymentTransactionRepository.deleteAll();
+        retryPendingPayments.setActive(false);
+    }
+
     @Given("Holded has no contacts")
     public void holded_has_no_contacts() {
         var contacts = holdedApiClient.getAllContacts();
         assertThat(contacts.size()).isEqualTo(0);
     }
+
     @Given("Holded which has these previous contacts")
     public void holded_which_has_these_previous_contacts(DataTable dtPreviousContacts) {
         var contactList = dtPreviousContacts.asMaps(String.class, String.class);
