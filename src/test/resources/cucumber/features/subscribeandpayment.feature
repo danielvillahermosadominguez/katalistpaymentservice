@@ -149,6 +149,7 @@ Feature: As an user interested in Katalyst courses
   had some problems to comunicate with the learning platform. So, it should retry and finish the process.
     Given Holded has no contacts
     And Moodle has not students
+    And the retry process is active
     And the customer made a purchase with the following data
       | COURSE ID | PRICE | DESCRIPTION  | CONCEPT | ORDER CODE     | FIRST NAME | SURNAME | EMAIL                | COMPANY NAME | IS COMPANY | NIF/CIF   | PHONE NUMBER  | ADDRESS                 | POSTAL CODE | REGION | COUNTRY | CITY               |
       | 32        | 79.9  | TDD in depth | course  | PS202310121032 | John       | Doe     | john.doe@example.com | N/A          | NO         | 46842041D | +34 636737337 | Avd. YellowStone 45, 2B | 28080       | Madrid | ES      | Boadilla del Monte |
@@ -161,6 +162,7 @@ Feature: As an user interested in Katalyst courses
   had some problems to comunicate with both the learning platform and financial platform. So, it should retry and finish the process.
     Given Holded has no contacts
     And Moodle has not students
+    And the retry process is active
     And the customer made a purchase with the following data
       | COURSE ID | PRICE | DESCRIPTION  | CONCEPT | ORDER CODE     | FIRST NAME | SURNAME | EMAIL                | COMPANY NAME | IS COMPANY | NIF/CIF   | PHONE NUMBER  | ADDRESS                 | POSTAL CODE | REGION | COUNTRY | CITY               |
       | 32        | 79.9  | TDD in depth | course  | PS202310121032 | John       | Doe     | john.doe@example.com | N/A          | NO         | 46842041D | +34 636737337 | Avd. YellowStone 45, 2B | 28080       | Madrid | ES      | Boadilla del Monte |

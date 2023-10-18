@@ -27,14 +27,15 @@ public class RetryPendingPayments {
     private boolean active;
 
     public void setActive(boolean value) {
-        active = true;
+        active = value;
     }
+
     @Autowired
     public RetryPendingPayments(PaymentService paymentService,
-                          PurchaseService purchaseService,
-                          FinancialService financialService,
-                          LearningService learningService,
-                          AbstractLog log
+                                PurchaseService purchaseService,
+                                FinancialService financialService,
+                                LearningService learningService,
+                                AbstractLog log
     ) {
         this.paymentService = paymentService;
         this.purchaseService = purchaseService;
@@ -45,21 +46,21 @@ public class RetryPendingPayments {
     @Scheduled(initialDelayString = "${payments.retry.initialDelay:5000}", fixedRateString = "${payments.retry.fixedRate:2500}")
     public void retry() throws NoCustomerData {
         if(active) {
-            var retryPayments = paymentService.getRetryPaiments();
-            log.warn(ConfirmPayment.class, "[RETRY] -----------------TEST-------------------------------");
-            if(retryPayments.isEmpty()) {
+            var retryPayments = paymentService.getRetryPayments();
+            log.warn(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS] %s transactions to process", retryPayments.toArray().length));
+            if (retryPayments.isEmpty()) {
                 return;
             }
 
-            log.warn(ConfirmPayment.class, "Processing retry payments");
-            for (var paymentTransaction: retryPayments) {
+            for (var paymentTransaction : retryPayments) {
+                log.warn(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS] Start to process transaction = %s", paymentTransaction.getId()));
                 var purchase = purchaseService.getPurchase(paymentTransaction.getId());
                 if (purchase == null) {
-                    log.error(ConfirmPayment.class, String.format("[NOT PURCHASE DATA AVAILABLE]: for transaction id = %s", paymentTransaction.getId()));
-                    throw new NoCustomerData();
+                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Not purchase data available for transaction id = %s", paymentTransaction.getId()));
+                    continue;
                 }
                 try {
-                    if(!purchase.isProcessedInFinantialState()) {
+                    if (!purchase.isProcessedInFinantialState()) {
                         if (financialService.emitInvoice(purchase)) {
                             purchase = purchaseService.updateFinantialStepFor(purchase, true);
                         }
@@ -71,17 +72,19 @@ public class RetryPendingPayments {
                         }
                     }
                 } catch (Exception exception) {
-                    //TODO: Put a log and we put in false Special alert
+                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: There was a generic exception for transaction %s: %s", paymentTransaction.getId(), exception.getMessage()));
                 } catch (LearningPlatformIsNotAvailable e) {
-                    //TODO: Put a log and we put in false
+                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Learning platform is not available for transaction %s", paymentTransaction.getId()));
                 } catch (FinancialPlatformIsNotAvailable e) {
-                    //TODO: Put a log and we put in false
+                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Financial platform is not available for transaction %s", paymentTransaction.getId()));
                 } catch (InvalidInputCustomerData e) {
-                    //TODO: Put a log and we put in false Special alert
+                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Some problems with the purchase data for transaction %s: %s", paymentTransaction.getId(), e.getMessage()));
                 }
+
                 if(purchase.isProcessedInLearningState() && purchase.isProcessedInFinantialState()){
                     paymentTransaction.setTransactionState(PaymentTransactionState.DONE);
                     paymentService.updateTransaction(paymentTransaction);
+                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Transaction %s to state DONE", paymentTransaction.getId()));
                 }
             }
         }

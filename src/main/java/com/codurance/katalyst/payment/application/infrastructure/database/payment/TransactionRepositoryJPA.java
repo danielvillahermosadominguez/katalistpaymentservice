@@ -45,10 +45,10 @@ public class TransactionRepositoryJPA implements TransactionRepository {
         var paymentTransactions = jpaRepository.findAllByTransactionState(
                 PaymentTransactionState.RETRY.getValue()
         );
-        if (!paymentTransactions.isPresent()) {
-            return null;
-        }
         List<PaymentTransaction> result = new ArrayList<>();
+        if (!paymentTransactions.isPresent()) {
+            return result;
+        }
         for (var dBPaymentTransaction : paymentTransactions.get()) {
             result.add(dBPaymentTransaction.toPaymentTransaction());
         }

@@ -120,7 +120,7 @@ public class PaymentService {
         }
     }
 
-    public List<PaymentTransaction> getRetryPaiments() {
+    public List<PaymentTransaction> getRetryPayments() {
         return transactionRepository.getPaymentTransactionForRetry();
     }
 

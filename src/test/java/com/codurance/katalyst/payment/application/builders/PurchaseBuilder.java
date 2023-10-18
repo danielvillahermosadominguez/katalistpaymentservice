@@ -138,12 +138,12 @@ public class PurchaseBuilder {
     }
 
     public PurchaseBuilder transactionId(int transactionId) {
-        this.item.setTransactionId(transactionId);
+        item.setTransactionId(transactionId);
         return this;
     }
 
     public PurchaseBuilder financialStepOvercome(boolean financialStepOvercome) {
-        this.item.setFinantialStepOvercome(financialStepOvercome);
+        item.setFinantialStepOvercome(financialStepOvercome);
         return this;
     }
 

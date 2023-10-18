@@ -67,4 +67,9 @@ public class PaymentTransactionBuilder {
         item.setId(id);
         return this;
     }
+
+    public PaymentTransactionBuilder state(PaymentTransactionState value) {
+        item.setTransactionState(value);
+        return this;
+    }
 }
