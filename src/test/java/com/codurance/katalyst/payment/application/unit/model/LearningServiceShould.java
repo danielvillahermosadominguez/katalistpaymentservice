@@ -179,7 +179,7 @@ public class LearningServiceShould {
         var userId = "1";
         var name = purchase.getCompany();
         var email = purchase.getEmail();
-        var surname = "";
+        var surname = purchase.getCompany();
         var student = new MoodleUser(
                 userId,
                 name,

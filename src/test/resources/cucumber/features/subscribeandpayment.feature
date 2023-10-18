@@ -41,7 +41,7 @@ Feature: As an user interested in Katalyst courses
     And the customer will receive an invoice to the recipients "company.business@example.com" with the following data
       | CONCEPT      | PRICE | UNITS | SUBTOTAL | TOTAL |
       | TDD IN DEPTH | 99.9  | 1     | 99.9     | 99.9  |
-    And the customer will receive access to the platform in the email "company.business@example.com" with the user "companybusiness" and fullname "Company Business S.A" ""
+    And the customer will receive access to the platform in the email "company.business@example.com" with the user "companybusiness" and fullname "Company Business S.A" "Company Business S.A"
 
   Scenario: The customer, which is not a company, subscribes to the course. He/She has been enrolled to other courses
   in the past but not in this course and he/she include in the subscription some different data in the address
