@@ -15,6 +15,7 @@ import com.codurance.katalyst.payment.application.apirest.dto.Error;
 import com.codurance.katalyst.payment.application.apirest.dto.ErrorResponseFactory;
 import com.codurance.katalyst.payment.application.apirest.payment.PaymentController;
 import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
+import com.codurance.katalyst.payment.application.common.requests.AbstractIpCatcher;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
@@ -67,6 +68,9 @@ public class PaymentControllerShould {
 
     @MockBean
     private AbstractLog log;
+
+    @MockBean
+    private AbstractIpCatcher ipCatcher;
 
     @Test
     void return_Ok_200_when_subscribe_is_called_and_the_subscription_is_success() throws Exception, CourseNotExists, FinancialPlatformIsNotAvailable, LearningPlatformIsNotAvailable, NoPriceAvailable, UserIsEnroledInTheCourse, InvalidInputCustomerData, TPVTokenIsRequired, CreditCardNotValid, PayCometNotRespond {

@@ -14,6 +14,7 @@ import com.codurance.katalyst.payment.application.actions.exception.UserIsEnrole
 import com.codurance.katalyst.payment.application.apirest.dto.Error;
 import com.codurance.katalyst.payment.application.apirest.dto.ErrorResponseFactory;
 import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
+import com.codurance.katalyst.payment.application.common.requests.AbstractIpCatcher;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
@@ -54,6 +55,9 @@ public class PaymentController {
     @Autowired
     private ErrorResponseFactory responseFactory;
 
+    @Autowired
+    private AbstractIpCatcher ipCatcher;
+
     @RequestMapping(value = "/confirmation", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity webhook(@RequestParam Map<String, Object> payload, HttpServletRequest request) {
@@ -70,6 +74,9 @@ public class PaymentController {
             //There is only one example in the documentation with OK
             //The ko value has been gotten with the exploration of the notification when is cancel
             //We should ask to paycomet about if it is the best way to discrimitate between a cancelled or Accepted payment
+            var ip = ipCatcher.getIpFrom(request);
+            log.warn(PaymentController.class, "The IP of the request is :" + ip);
+
             if (paymentNotification.isOKResponse()) {
                 confirmPayment.confirm(paymentNotification);
             }
@@ -107,6 +114,9 @@ public class PaymentController {
     public ResponseEntity subscription(@RequestBody CustomerData customer, HttpServletRequest request) {
         PaymentStatus paymentStatus = null;
         try {
+            var ip = ipCatcher.getIpFrom(request);
+            log.warn(PaymentController.class, "The IP of the request is :" + ip);
+            customer.setIp(ip);
             paymentStatus = this.subscription.subscribe(customer);
             if (paymentStatus == null) {
                 return responseFactory.createBadRequest(
