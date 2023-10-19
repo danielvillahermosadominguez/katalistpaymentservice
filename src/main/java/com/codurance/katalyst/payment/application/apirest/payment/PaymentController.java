@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.application.apirest.payment;
 
+import com.codurance.katalyst.payment.application.actions.CancelPayment;
 import com.codurance.katalyst.payment.application.actions.ConfirmPayment;
 import com.codurance.katalyst.payment.application.actions.SubscribeToCourse;
 import com.codurance.katalyst.payment.application.actions.exception.CourseNotExists;
@@ -41,6 +42,9 @@ public class PaymentController {
 
     @Autowired
     private ConfirmPayment confirmPayment;
+
+    @Autowired
+    private CancelPayment cancelPayment;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -61,7 +65,17 @@ public class PaymentController {
         try {
             var json = objectMapper.writeValueAsString(payload);
             var paymentNotification = objectMapper.readValue(json, PaymentNotification.class);
-            confirmPayment.confirm(paymentNotification);
+            //IMPORTANT: The way to know if the response is Cancelled or OK is with the Response which is an String
+            //In the documentation, there is not any indication about the possibles values https://docs.paycomet.com/en/inicio/seguimiento
+            //There is only one example in the documentation with OK
+            //The ko value has been gotten with the exploration of the notification when is cancel
+            //We should ask to paycomet about if it is the best way to discrimitate between a cancelled or Accepted payment
+            if (paymentNotification.isOKResponse()) {
+                confirmPayment.confirm(paymentNotification);
+            }
+            if (paymentNotification.isKOResponse()) {
+                cancelPayment.cancel(paymentNotification);
+            }
         } catch (NotValidNotification e) {
             return responseFactory.createBadRequest(
                     Error.CODE_ERROR_GENERAL_SUBSCRIPTION,

@@ -10,4 +10,6 @@ public interface DBPaymentTransactionRepository extends CrudRepository<DBPayment
     Optional<DBPaymentTransaction> findByOrderCodeAndTransactionState(String orderCode, String transactionState);
 
     Optional<Iterable<DBPaymentTransaction>> findAllByTransactionState(String transactionState);
+
+    Optional<Iterable<DBPaymentTransaction>> findAllByOrderCode(String orderCode);
 }

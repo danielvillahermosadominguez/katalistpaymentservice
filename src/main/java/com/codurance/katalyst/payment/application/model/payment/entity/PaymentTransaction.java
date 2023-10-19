@@ -130,4 +130,8 @@ public class PaymentTransaction {
     public void setTransactionState(PaymentTransactionState value) {
         state = value;
     }
+
+    public void setOrder(String value) {
+        order = value;
+    }
 }

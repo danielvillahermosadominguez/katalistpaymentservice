@@ -2,6 +2,7 @@ package com.codurance.katalyst.payment.application.model.payment;
 
 import com.codurance.katalyst.payment.application.actions.exception.CreditCardNotValid;
 import com.codurance.katalyst.payment.application.actions.exception.TPVTokenIsRequired;
+import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentMethod;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
@@ -32,15 +33,19 @@ public class PaymentService {
     private final TransactionRepository transactionRepository;
     private final PayCometApiClient payCometApiClient;
     private final Clock clock;
+    private final AbstractLog log;
 
     public PaymentService(TransactionRepository transactionRepository,
                           PayCometApiClient payCometApiClient,
-                          Clock clock, @Value("${paycomet.terminal}") int terminal
+                          Clock clock,
+                          AbstractLog log,
+                          @Value("${paycomet.terminal}") int terminal
     ) {
         this.terminal = terminal;
         this.transactionRepository = transactionRepository;
         this.payCometApiClient = payCometApiClient;
         this.clock = clock;
+        this.log = log;
     }
 
     public PaymentTransaction confirmPayment(PaymentNotification notification) throws NotValidNotification, PaymentTransactionNotFound {
@@ -126,5 +131,25 @@ public class PaymentService {
 
     public void updateTransaction(PaymentTransaction paymentTransaction) {
         transactionRepository.save(paymentTransaction);
+    }
+
+    public void cancelTransaction(String order) throws PaymentTransactionNotFound {
+        var paymentTransactions = transactionRepository.getTransactionsBasedOnOrder(order);
+        if (paymentTransactions == null || paymentTransactions.isEmpty()) {
+            throw new PaymentTransactionNotFound();
+        }
+
+        if (paymentTransactions.size() > 1) {
+            log.warn(PaymentService.class, String.format("[CANCEL TRANSACTION] We have detected %s transaction with the order code %s. We will cancel all the pending or retry transactions", paymentTransactions.size(), order));
+        }
+
+        //We cancel all the transactions as safety. But we should have only one
+        for (var transaction : paymentTransactions) {
+            if (transaction.getTransactionState() == PaymentTransactionState.RETRY ||
+                    transaction.getTransactionState() == PaymentTransactionState.PENDING) {
+                transaction.setTransactionState(PaymentTransactionState.CANCEL);
+                transactionRepository.save(transaction);
+            }
+        }
     }
 }

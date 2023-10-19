@@ -10,4 +10,6 @@ public interface TransactionRepository {
     PaymentTransaction save(PaymentTransaction paymentData);
 
     List<PaymentTransaction> getPaymentTransactionForRetry();
+
+    List<PaymentTransaction> getTransactionsBasedOnOrder(String order);
 }

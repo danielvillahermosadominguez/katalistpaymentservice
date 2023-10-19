@@ -98,6 +98,18 @@ public class TransactionRepositoryShould {
     }
 
     @Test
+    public void read_a_transaction_depending_on_order_field_which_exist_in_database() {
+        paymentTransaction.setOrder("RANDOM_ORDER");
+        paymentTransaction.setTransactionState(PaymentTransactionState.PENDING);
+        var dbEntity = new DBPaymentTransaction(paymentTransaction);
+        entityManager.persist(dbEntity);
+
+        var savedPaymentTransactions = paymentTransactionRepository.getTransactionsBasedOnOrder("RANDOM_ORDER");
+        assertThat(savedPaymentTransactions.size()).isEqualTo(1);
+        paymentTransactionBuilder.assertHasSameData(savedPaymentTransactions.get(0), paymentTransaction);
+    }
+
+    @Test
     public void read_null_when_there_is_not_a_pending_transaction_with_this_order_code() {
         var savedPaymentTransaction = paymentTransactionRepository.getPendingPaymentTransactionBasedOn(paymentTransaction.getOrder());
 

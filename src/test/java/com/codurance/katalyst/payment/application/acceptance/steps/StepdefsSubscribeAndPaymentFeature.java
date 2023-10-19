@@ -211,6 +211,7 @@ public class StepdefsSubscribeAndPaymentFeature {
     @Then("the customer is informed about the success of the subscription")
     public void the_customer_is_informed_about_the_success_of_the_subscription() {
         assertThat(paymentStatus).isNotNull();
+        assertThat(paymentStatus.getChallengeUrl()).isNotEqualTo("");
         assertThat(apiClient.getLastErrors().size()).isEqualTo(0);
     }
 
@@ -247,16 +248,26 @@ public class StepdefsSubscribeAndPaymentFeature {
 
     @When("the customer receives a challenge URL and decide to {string} the payment")
     public void the_customer_receives_a_challenge_url_and_decide_to_the_payment(String decision) {
-        var orders= payCometApiClient.getLastPaymentOrders();
+        var orders = payCometApiClient.getLastPaymentOrders();
         assertThat(orders.size()).isEqualTo(1);
         var order = orders.get(0);
-        if(decision.equals("Accept")) {
+        if (decision.equals("Accept")) {
             assertThat(paymentStatus).isNotNull();
             assertThat(apiClient.getLastErrors().size()).isNotNull();
             assertThat(paymentStatus.getChallengeUrl()).isEqualTo(PayCometApiClientFake.URL_CHALLENGE_OK);
-            var notification = createOKNotification(order);
+            var notification = createAcceptNotification(order);
             assertThat(apiClient.confirmPayment(notification)).isTrue();
+            return;
         }
+        if (decision.equals("Cancel")) {
+            assertThat(paymentStatus).isNotNull();
+            assertThat(apiClient.getLastErrors().size()).isNotNull();
+            assertThat(paymentStatus.getChallengeUrl()).isEqualTo(PayCometApiClientFake.URL_CHALLENGE_OK);
+            var notification = createCancelNotification(order);
+            assertThat(apiClient.confirmPayment(notification)).isTrue();
+            return;
+        }
+        fail();
     }
 
     @Then("the customer will receive access to the platform in the email {string} with the user {string} and fullname {string} {string}")
@@ -320,6 +331,37 @@ public class StepdefsSubscribeAndPaymentFeature {
         await()
                 .timeout(Duration.ofSeconds(WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS))
                 .untilAsserted(() -> assertThat(moodleHasTheFolowingUsers(expectedUserList)).isTrue());
+    }
+
+    @Then("the customer is informed about the cancellation of the subscription")
+    public void the_customer_is_informed_about_the_cancellation_of_the_subscription() {
+        assertThat(paymentStatus).isNotNull();
+        assertThat(paymentStatus.getChallengeUrl()).isNotEqualTo("");
+        assertThat(apiClient.getLastErrors().size()).isEqualTo(0);
+    }
+
+    @Then("there are not contact in Holded")
+    public void there_are_not_contact_in_holded() {
+        var contacts = holdedApiClient.getAllContacts();
+        assertThat(contacts.size()).isEqualTo(0);
+    }
+
+    @Then("there are not users in Moodle")
+    public void there_are_not_users_in_moodle() {
+        var users = moodleApiClient.getAllUsers();
+        assertThat(users.size()).isEqualTo(0);
+    }
+
+    @Then("the customer doesn't receive any invoice to {string}")
+    public void the_customer_doesn_t_receive_any_invoice_to(String email) {
+        var holdedInvoiceInfos = holdedApiClient.getSentInvoices(email);
+        assertThat(holdedInvoiceInfos.size()).isEqualTo(0);
+    }
+
+    @Then("the customer doesn't receive access to the platform in the email {string}")
+    public void the_customer_doesn_t_receive_access_to_the_platform_in_the_email(String moodleEmail) throws MoodleNotRespond {
+        var user = moodleApiClient.getUserByMail(moodleEmail);
+        assertThat(user).isNull();
     }
 
     private boolean existInTheList(HoldedContact contact, List<HoldedContact> currentContactList) {
@@ -455,7 +497,20 @@ public class StepdefsSubscribeAndPaymentFeature {
         dbPaymentTransactionRepository.saveAll(dbPaymentTransactions);
     }
 
-    private PaymentNotification createOKNotification(PaymentOrder order) {
+    private PaymentNotification createCancelNotification(PaymentOrder order) {
+        var amount = String.valueOf(order.getAmount());
+        var notification = new PaymentNotification(
+                PaymentMethod.fromInt(order.getMethodId()),
+                TransactionType.AUTHORIZATION,
+                tpvId,
+                order.getOrder(),
+                amount,
+                "KO"
+        );
+        return notification;
+    }
+
+    private PaymentNotification createAcceptNotification(PaymentOrder order) {
         var amount = String.valueOf(order.getAmount());
         var notification = new PaymentNotification(
                 PaymentMethod.fromInt(order.getMethodId()),

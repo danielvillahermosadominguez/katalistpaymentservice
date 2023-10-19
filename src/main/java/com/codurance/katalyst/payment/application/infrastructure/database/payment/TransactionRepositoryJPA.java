@@ -54,4 +54,17 @@ public class TransactionRepositoryJPA implements TransactionRepository {
         }
         return result;
     }
+
+    @Override
+    public List<PaymentTransaction> getTransactionsBasedOnOrder(String order) {
+        var paymentTransactions = jpaRepository.findAllByOrderCode(order);
+        List<PaymentTransaction> result = new ArrayList<>();
+        if (!paymentTransactions.isPresent()) {
+            return result;
+        }
+        for (var dBPaymentTransaction : paymentTransactions.get()) {
+            result.add(dBPaymentTransaction.toPaymentTransaction());
+        }
+        return result;
+    }
 }

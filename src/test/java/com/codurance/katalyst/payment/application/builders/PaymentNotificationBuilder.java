@@ -27,4 +27,14 @@ public class PaymentNotificationBuilder {
     public PaymentNotification getItem() {
         return item;
     }
+
+    public PaymentNotificationBuilder response(String value) {
+        item.setResponse(value);
+        return this;
+    }
+
+    public PaymentNotificationBuilder order(String value) {
+        item.setOrder(value);
+        return this;
+    }
 }

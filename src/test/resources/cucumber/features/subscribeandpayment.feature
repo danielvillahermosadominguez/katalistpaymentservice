@@ -1,7 +1,8 @@
 Feature: As an user interested in Katalyst courses
   I want to give my personal data to subscribe to the course
   so that I can access to the learning platform
-  Scenario: The customer, which is not a company, subscribes to the course. He/She has not been enrolled to other courses
+  Scenario: Payment success - new person customer
+  The customer, which is not a company, subscribes to the course. He/She has not been enrolled to other courses
   in the past.
     Given Holded has no contacts
     And Moodle has not students
@@ -22,7 +23,27 @@ Feature: As an user interested in Katalyst courses
       | TDD IN DEPTH | 99.9  | 1     | 99.9     | 99.9  |
     And the customer will receive access to the platform in the email "john@example.com" with the user "john" and fullname "John" "Doe"
 
-  Scenario: The customer, which is a company, subscribes to the course. The company has not been enrolled to other courses
+  Scenario: Payment cancelled
+  The customer, which is not a company, subscribes to the course. He/She has not been enrolled to other courses
+  in the past. But, when he/she has to confirm the payment, he/she cancel the operation
+    Given Holded has no contacts
+    And Moodle has not students
+    And An customer who has chosen the following course the course "TDD in depth" with a price of "99.9"
+    And the customer has filled the following data
+      | FIRST NAME | SURNAME | EMAIL            | COMPANY NAME | IS COMPANY | NIF/CIF   | PHONE NUMBER  | ADDRESS                 | POSTAL CODE | REGION | COUNTRY | CITY               |
+      | John       | Doe     | john@example.com | N/A          | NO         | 46842041D | +34 636737337 | Avd. Yellowstone 45, 2B | 28080       | Madrid | Spain   | Boadilla del Monte |
+    When the customer pays the subscription with credit/debit card with the following data
+      | NAME     | NUMBER           | MONTH | YEAR | CVV | RESULT |
+      | John Doe | 4273682057894021 | 05    | 24   | 123 | OK     |
+    And the customer receives a challenge URL and decide to "Cancel" the payment
+    Then the customer is informed about the cancellation of the subscription
+    And there are not contact in Holded
+    And there are not users in Moodle
+    And the customer doesn't receive any invoice to "john@example.com"
+    And the customer doesn't receive access to the platform in the email "john@example.com"
+
+  Scenario: Payment success - new company customer
+  The customer, which is a company, subscribes to the course. The company has not been enrolled to other courses
   in the past.
     Given Holded has no contacts
     And Moodle has not students
@@ -43,7 +64,8 @@ Feature: As an user interested in Katalyst courses
       | TDD IN DEPTH | 99.9  | 1     | 99.9     | 99.9  |
     And the customer will receive access to the platform in the email "company.business@example.com" with the user "companybusiness" and fullname "Company Business S.A" "Company Business S.A"
 
-  Scenario: The customer, which is not a company, subscribes to the course. He/She has been enrolled to other courses
+  Scenario: Payment success - regular person customer
+  The customer, which is not a company, subscribes to the course. He/She has been enrolled to other courses
   in the past but not in this course and he/she include in the subscription some different data in the address
     Given Holded which has these previous contacts
       | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
@@ -74,7 +96,8 @@ Feature: As an user interested in Katalyst courses
       | TDD IN DEPTH | 99.9  | 1     | 99.9     | 99.9  |
     And the customer will receive access to the platform in the email "john.doe@example.com" with the user "johndoe" and fullname "John" "Doe"
 
-  Scenario: The customer, which is not a company, subscribes to the course. He/She has not been enrolled to other courses
+  Scenario: Payment success - the same username exists in Moodle
+  The customer, which is not a company, subscribes to the course. He/She has not been enrolled to other courses
   in the past but an user exists in moodle with the same username. It could be,for example, the same person but with other email domain.
   We consider both as different people and users for moodle. For us, a person is the combination of the NIF/CIF and email
     Given Holded which has these previous contacts
@@ -107,7 +130,8 @@ Feature: As an user interested in Katalyst courses
       | TDD IN DEPTH | 99.9  | 1     | 99.9     | 99.9  |
     And the customer will receive access to the platform in the email "john.doe@domain2.com" with the user "johndoe1" and fullname "John" "Doe"
 
-  Scenario: The customer subscribes to a course, however, this customer is enrolled already in the course. He/She receives a message explaining it.
+  Scenario: Payment refused - the user is already enrolled in the course
+  The customer subscribes to a course, however, this customer is enrolled already in the course. He/She receives a message explaining it.
     Given Holded which has these previous contacts
       | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
       | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | SPAIN   | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |
@@ -132,7 +156,8 @@ Feature: As an user interested in Katalyst courses
       | 2          | The user has a subscription for this course |
     And There are not pending authorized payments
 
-  Scenario: The customer has subscribed to a course and payed the price. The Payment platform confirmed the payment but it
+  Scenario:  Payment success - Resilence when problems with financial platform (Holded)
+  The customer has subscribed to a course and payed the price. The Payment platform confirmed the payment but it
   had some problems to comunicate with the financial platform. So, it should retry and finish the process.
     Given Holded has no contacts
     And Moodle has not students
@@ -145,7 +170,8 @@ Feature: As an user interested in Katalyst courses
       | NAME     | CONTACT NIF | THIS CONTACT IS | EMAIL                | ADDRESS                 | PHONE NUMBER  | POSTAL CODE | CITY               | PROVINCE | COUNTRY | PURCHASE ACCOUNT | CUSTOMER-ID                                                      |
       | JOHN DOE | 46842041D   | Person          | john.doe@example.com | AVD. YELLOWSTONE 45, 2B | +34 636737337 | 28080       | BOADILLA DEL MONTE | MADRID   | ES       | 70500000         | d640ef3f8b62ba0cfe2c8a8a35cdc6f469f2bc7429675e6246cac82929d4c878 |
 
-  Scenario: The customer has subscribed to a course and payed the price. The Payment platform confirmed the payment but it
+  Scenario: Payment success - Resilence when problems with learning platform (Moodle)
+  The customer has subscribed to a course and payed the price. The Payment platform confirmed the payment but it
   had some problems to comunicate with the learning platform. So, it should retry and finish the process.
     Given Holded has no contacts
     And Moodle has not students
@@ -158,7 +184,8 @@ Feature: As an user interested in Katalyst courses
       | NAME | SURNAME | USERNAME | EMAIL                |
       | John | Doe     | johndoe  | john.doe@example.com |
 
-  Scenario: The customer has subscribed to a course and payed the price. The Payment platform confirmed the payment but it
+  Scenario: Payment success - Resilence when problems with learning and financial platform (Holded and Moodle)
+  The customer has subscribed to a course and payed the price. The Payment platform confirmed the payment but it
   had some problems to comunicate with both the learning platform and financial platform. So, it should retry and finish the process.
     Given Holded has no contacts
     And Moodle has not students

@@ -30,6 +30,11 @@ public class TransactionRepositoryFake implements TransactionRepository {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public List<PaymentTransaction> getTransactionsBasedOnOrder(String order) {
+        throw new UnsupportedOperationException();
+    }
+
     public void reset() {
         paymenTransactions.clear();
     }

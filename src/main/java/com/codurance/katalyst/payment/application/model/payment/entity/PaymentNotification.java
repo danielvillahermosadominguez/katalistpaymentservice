@@ -146,4 +146,16 @@ public class PaymentNotification {
     public void setOrder(String value) {
         order = value;
     }
+
+    public void setResponse(String value) {
+        response = value;
+    }
+
+    public boolean isOKResponse() {
+        return response.equals("OK");
+    }
+
+    public boolean isKOResponse() {
+        return response.equals("KO");
+    }
 }

@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.application.apirest;
 
+import com.codurance.katalyst.payment.application.actions.CancelPayment;
 import com.codurance.katalyst.payment.application.actions.ConfirmPayment;
 import com.codurance.katalyst.payment.application.actions.SubscribeToCourse;
 import com.codurance.katalyst.payment.application.actions.exception.CourseNotExists;
@@ -15,6 +16,7 @@ import com.codurance.katalyst.payment.application.apirest.dto.ErrorResponseFacto
 import com.codurance.katalyst.payment.application.apirest.payment.PaymentController;
 import com.codurance.katalyst.payment.application.common.logs.AbstractLog;
 import com.codurance.katalyst.payment.application.model.customer.CustomerData;
+import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
 import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
@@ -32,6 +34,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,6 +63,9 @@ public class PaymentControllerShould {
     private ConfirmPayment confirmPayment;
 
     @MockBean
+    private CancelPayment cancelPayment;
+
+    @MockBean
     private AbstractLog log;
 
     @Test
@@ -76,20 +84,41 @@ public class PaymentControllerShould {
     }
 
     @Test
-    void return_Ok_200_when_a_payment_is_confirmed_and_accepted_by_the_customer() throws Exception, NotValidNotification {
+    void return_Ok_200_when_a_payment_is_confirmed_and_accepted_by_the_customer() throws Exception, NotValidNotification, LearningPlatformIsNotAvailable, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
         var request = post("/confirmation")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-                .param("MethodId","1")
-                .param("TransactionType","1")
-                .param("Order","RANDOM_ORDER")
-                .param("TpvID","12345")
-                .param("Amount","RANDOM_AMOUNT")
-                .param("Response","OK");
+                .param("MethodId", "1")
+                .param("TransactionType", "1")
+                .param("Order", "RANDOM_ORDER")
+                .param("TpvID", "12345")
+                .param("Amount", "RANDOM_AMOUNT")
+                .param("Response", "OK");
 
         var result = this.mockMvc.perform(request);
 
         result.andExpect(status().isOk());
+        verify(confirmPayment, times(1)).confirm(any());
+        verify(cancelPayment, never()).cancel(any());
+    }
+
+    @Test
+    void return_Ok_200_when_a_payment_is_canceled_by_the_customer() throws Exception, NotValidNotification, LearningPlatformIsNotAvailable, NoCustomerData, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
+        var request = post("/confirmation")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+                .param("MethodId", "1")
+                .param("TransactionType", "1")
+                .param("Order", "RANDOM_ORDER")
+                .param("TpvID", "12345")
+                .param("Amount", "RANDOM_AMOUNT")
+                .param("Response", "KO");
+
+        var result = this.mockMvc.perform(request);
+
+        result.andExpect(status().isOk());
+        verify(confirmPayment, never()).confirm(any());
+        verify(cancelPayment, times(1)).cancel(any());
     }
 
     @Test
