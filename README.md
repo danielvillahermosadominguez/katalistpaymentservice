@@ -170,14 +170,10 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 
 # Task related with the POC
 - [In progress ] Remove gson as a dependency and use object mapper for serialization
-- [ ] BDD and retry for learning and financial
-  - [ ] Resend in case of error + to be sure the mail has been sent (invoice)
-- [ ] Course with Zero price => we should allow to the user subscribe
 - [ ] Manual tests - description of regression tests
+- [ ] Course with Zero price => we should allow to the user subscribe
 - [ ] Web: refactor paths in the tests
 - [ ] Web: refactor of code js - to many ifs for fields
-- [ ] Test the main changes of the refactor (split the two calls from paycomet) in Azure.
-- [ ] IP, get the ip from the request and prepare for development with a fixed IP
 - [ ] Connection holded PRO
 - [ ] Connection moodle PRO + configuration of security
 - [ ] Deploy the bundle and avoid to use embebed library i18n
@@ -213,6 +209,10 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [ ] Review the infrastructure and dockerization - use a docker container for the service
 - [ ] Transfer repositories to codurance organization in Github
 - [ ] Migration to AWS
+- [x] BDD and retry for learning and financial
+  - [x] Resend in case of error + to be sure the mail has been sent (invoice)
+- [x] Test the main changes of the refactor (split the two calls from paycomet) in Azure.
+- [x] IP, get the ip from the request and prepare for development with a fixed IP
 - [x] Builders o fixtures for the tests. Equals when it is necessary.
 - [x] Handover approach - think about it
 - [x] BDD and edge cases: error cases
