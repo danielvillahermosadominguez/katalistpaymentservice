@@ -20,7 +20,7 @@ public class CancelPayment {
     }
 
     public void cancel(PaymentNotification notification) {
-        if (checkKOResponse(notification)) return;
+        if (!isACorrectKOResponse(notification)) return;
 
         logWarningForCancelPayment(notification);
         try {
@@ -30,17 +30,17 @@ public class CancelPayment {
         }
     }
 
-    private boolean checkKOResponse(PaymentNotification notification) {
+    private boolean isACorrectKOResponse(PaymentNotification notification) {
         var response = notification.getResponse();
         if (!response.equals(KO)) {
             logErrorForNotCancelPaymentNotificationNotKO(notification);
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     private void logWarningForCancelPayment(PaymentNotification notification) {
-        log(notification, "[CANCEL PAYMENT]: %s");
+        log(notification, "[CANCEL PAYMENT]: This payment is going to be cancelled %s", false);
     }
 
     private void logErrorForNotCancelPaymentNotificationNotKO(PaymentNotification notification) {
@@ -49,7 +49,8 @@ public class CancelPayment {
                 String.format(
                         "[CANCEL PAYMENT]: The notification is not KO, the value is %s and the full notification",
                         notification.getResponse()
-                ) + ": %s"
+                ) + ": %s",
+                true
         );
     }
 
@@ -59,11 +60,12 @@ public class CancelPayment {
                 String.format(
                         "[CANCEL PAYMENT]: The order %s has not been found y the database. The full notification",
                         notification.getOrder()
-                ) + ": %s"
+                ) + ": %s",
+                true
         );
     }
 
-    private void log(PaymentNotification notification, String message) {
+    private void log(PaymentNotification notification, String message, boolean error) {
         var mapper = new ObjectMapper();
         String information = null;
         try {
@@ -71,6 +73,10 @@ public class CancelPayment {
         } catch (JsonProcessingException e) {
             information = "Not possible to parse information";
         }
-        log.error(CancelPayment.class, String.format(message, information));
+        if(error) {
+            log.error(CancelPayment.class, String.format(message, information));
+        } else {
+            log.warn(CancelPayment.class, String.format(message, information));
+        }
     }
 }
