@@ -172,8 +172,305 @@ You can find this information in:"[Katalyst.payment] Moodle keys, password, mail
 In addition, you have some enviroments variables related to Moodle in your ".env", so you
 should make a look to the section "How to start with this service".
 
-## Configuration of Moodle
+## Creation of a new account
+If you need to create a new account you will need to go to
+https://moodlecloud.com/app/en/login
+You will need to click in "Try for free" where you will have a 45 days account.
 
+You could create a new account, but you can renew the trial choosen the same 
+moodlecloud site dame. In our case is "exampleforcodurance". You can use the password for admin
+which you can see in Bitwarden:"[Katalyst.payment] Moodle keys, password, mails"
+
+you can choose a new name, for example "exampleforcodurance2" for the site name.
+
+## Configuration of Moodle
+You will need to configure Moodle to use the API. 
+1. Create a new user katalyst which it will have maximum rights to have the capability to create
+   courses, enrole users, etc. Site administration->users->Add new user
+   * username: katalist 
+   * password: <see it in bitwarden>
+   * an email, for example: daniel.villahermosa+katalist@codurance.com
+2. Create a test course: Courses->Add a new course:
+   * Course full name: TDD in depth
+   * Course short name: TDD in depth
+   * Course ID number: 9 (we use it for testing)
+3. Create a custom field for a price. Site administration-> courses-> course custom fields-> Add a new category
+   * change the name of the new category to "Purchase fields"
+   * Click on: add a new custom field -> short text:
+     * name: price
+     * short name: price
+     * default value: 0
+4. Put a price to the TDD in depth course: My courses-> TDD in depth-> settings
+   * in the group "Purchase fields" write a price, for example: 60.55
+5. Create a new external service: Site administration->Server->Web services-> external services
+   * Add a new "Custom services" name = katalyst and shortname = katalyst
+   * Click -> Enabled = true
+   * Click -> authorized users only
+   * click on "add service" -> add functions
+   * An now we are going to add all the functions we are using in the api. They are:
+     * core_enrol_get_enrolled_users
+     * core_user_get_users_by_field
+     * core_user_create_users
+     * enrol_manual_enrol_users
+     * core_course_get_courses 
+   * If you have added more functions to the MoodleAdapter, you will need to add them too.
+   * When you finish to select, click on add functions.
+   * You will see the functions, description and required capabilities. The capabilies are important
+     to take into account for the step 6
+For example:
+```
+* core_enrol_get_enrolled_users needs: moodle/course:view, moodle/course:update, moodle/course:viewhiddencourses
+* core_user_get_users_by_field needs: moodle/user:viewdetails, moodle/user:viewhiddendetails, moodle/course:useremail, moodle/user:update, moodle/site:accessallgroups
+* core_user_create_users nees: moodle/user:create
+* enrol_manual_enrol_users: moodle/user:viewdetails, moodle/user:viewhiddendetails, moodle/course:useremail, moodle/user:update
+* core_course_get_courses needs: enrol/manual:enrol
+```
+7. Assign the katalist user to the new service. In Site administration->Server->Web services-> External services
+   * Go to External service -> katalyst and click on "Authorized users"
+   * Asign the katalist user
+8. Assign right to the katalist user. Site administration->Users->Permissions
+   * In site administrators, include katalist from potential users to main administrators
+   * Go to define roles and "add a new role". We are going to create a role with all the permissions
+   * User role archetype: Manager
+   * Continue
+   * shortname: katalyst
+   * custom full name: full control role (KATALYST API access)
+   * Context type where this role may be assigned: System, Category, and course (values by default)
+   * Allow role assigments: by default
+   * Allow role overrides:by default
+   * Allow role switches: by default
+   * Allow role to view: by default
+   * click on "show advanced" and click "allow" in all the capabilities of:
+     * To user the REST API:
+       * webservice/rest:use
+       * moodle/site:viewparticipants 
+       * moodle/site:viewuseridentity
+       * moodle/course:managegroups
+       * moodle/course:view
+       * moodle/course:viewparticipants
+       * moodle/user:viewdetails
+       * moodle/user:viewhiddendetails
+       * moodle/course:useremail
+       * moodle/course:viewhiddencourses
+       * moodle/site:accessallgroups
+       * moodle/course:update
+       * moodle/user:update
+     * to use: core_enrol_get_enrolled_users needs: 
+       * moodle/course:view, 
+       * moodle/course:update, 
+       * moodle/course:viewhiddencourses
+     * to use core_user_get_users_by_field needs: 
+       * moodle/user:viewdetails, 
+       * moodle/user:viewhiddendetails, 
+       * moodle/course:useremail, 
+       * moodle/user:update, 
+       * moodle/site:accessallgroups
+     * to use core_user_create_users needs: moodle/user:create
+     * to enrol_manual_enrol_users needs: 
+       * moodle/user:viewdetails, 
+       * moodle/user:viewhiddendetails, 
+       * moodle/course:useremail, 
+       * moodle/user:update
+     * to core_course_get_courses needs: enrol/manual:enrol
+   * Click on "Create this role"
+9. Assign this role to the user: katalist
+   * Go to Site administration->Users-> permissions-> assign system roles
+   * Choose: full control role (KATALYST API access)
+   * select katalist in potential users and "Add"
+
+10. Activate the REST protocol. Site administration->Server->web services->Manage protocols-> Enable REST protocol
+11. Enable web services: Site administration->Advanced features: enable web services.
+12. Create a token: click on "create token":
+    * token: KATALYST
+    * User: katalist
+    * Service: katalyst
+    * IP restriction: empty
+    * valid until: (not enabled = forever)
+    * Click on "saves changes"
+
+This token should be stored in bitwarden : "[Katalyst.payment] Moodle keys, password, mails"
+
+
+Some useful link:
+https://help.feedbackfruits.com/en/articles/4392969-configuring-the-api-for-moodle
+In Site administration->Server-> web services->overview you have a set of steps fo enable the access.It could
+be useful.
+
+```
+NOTE: We should review the permissions we need and assign only them. In the firsts versions we assign
+all the permissions to this user.
+```
+
+To be sure every call to the api is going to work, try to test it with for example Postman:https://www.postman.com/
+### Testing the api service of moodle
+If the token is 06280b0c477e3fc6921a0e0066da2761
+
+If we use postman for it, we could do the following tests
+
+#### core_course_get_courses
+```
+   protocol: POST
+   https://exampleforcodurance2.moodlecloud.com/webservice/rest/server.php?wstoken=06280b0c477e3fc6921a0e0066da2761&wsfunction=core_course_get_courses&moodlewsrestformat=json
+   Body: x-www-form-unlencoded
+   Key = options[ids][0]
+   Value = 9
+```
+
+```json
+[
+    {
+        "id": 9,
+        "shortname": "TDD in depth",
+        "categoryid": 1,
+        "categorysortorder": 10001,
+        "fullname": "TDD in depth",
+        "displayname": "TDD in depth",
+        "idnumber": "",
+        "summary": "",
+        "summaryformat": 1,
+        "format": "topics",
+        "showgrades": 1,
+        "newsitems": 5,
+        "startdate": 1698012000,
+        "enddate": 1729548000,
+        "numsections": 4,
+        "maxbytes": 2097152,
+        "showreports": 0,
+        "visible": 1,
+        "hiddensections": 1,
+        "groupmode": 0,
+        "groupmodeforce": 0,
+        "defaultgroupingid": 0,
+        "timecreated": 1697981114,
+        "timemodified": 1697981114,
+        "enablecompletion": 1,
+        "completionnotify": 0,
+        "lang": "",
+        "forcetheme": "",
+        "courseformatoptions": [
+            {
+                "name": "hiddensections",
+                "value": 1
+            },
+            {
+                "name": "coursedisplay",
+                "value": 0
+            }
+        ],
+        "showactivitydates": true,
+        "showcompletionconditions": true,
+        "customfields": [
+            {
+                "name": "price",
+                "shortname": "price",
+                "type": "text",
+                "valueraw": "60.55",
+                "value": "60.55"
+            }
+        ]
+    }
+]
+
+```
+
+#### core_enrol_get_enrolled_users
+```
+   protocol: POST
+   https://exampleforcodurance2.moodlecloud.com/webservice/rest/server.php?wstoken=06280b0c477e3fc6921a0e0066da2761&wsfunction=core_enrol_get_enrolled_users&moodlewsrestformat=json
+   Body: x-www-form-unlencoded
+   Key = courseid
+   Value = 9
+```
+
+```json
+[
+  {
+    "id": 2,
+    "username": "admin",
+    "firstname": "Daniel",
+    "lastname": "Villahermosa",
+    "fullname": "Daniel Villahermosa",
+    "email": "daniel.villahermosa+moodle@codurance.com",
+    "department": "",
+    "firstaccess": 1697980675,
+    "lastaccess": 1697989005,
+    "lastcourseaccess": 1697989023,
+    "description": "",
+    "descriptionformat": 1,
+    "country": "ES",
+    "profileimageurlsmall": "https://secure.gravatar.com/avatar/05d73ca8d7409e9e02731aee37cb45d6?s=35&d=mm",
+    "profileimageurl": "https://secure.gravatar.com/avatar/05d73ca8d7409e9e02731aee37cb45d6?s=100&d=mm",
+    "roles": [
+      {
+        "roleid": 3,
+        "name": "",
+        "shortname": "editingteacher",
+        "sortorder": 0
+      }
+    ],
+    "enrolledcourses": [
+      {
+        "id": 9,
+        "fullname": "TDD in depth",
+        "shortname": "TDD in depth"
+      },
+      {
+        "id": 8,
+        "fullname": "Starting with Moodle",
+        "shortname": "Starting with Moodle"
+      }
+    ]
+  }
+]
+```
+#### core_user_get_users_by_field
+```
+   protocol: POST
+   https://exampleforcodurance2.moodlecloud.com/webservice/rest/server.php?wstoken=06280b0c477e3fc6921a0e0066da2761&wsfunction=core_user_get_users_by_field&moodlewsrestformat=json
+   Body: x-www-form-unlencoded
+   Key1 = field
+   Value1 = username
+   Key2 = values[0]
+   Value2 = admin
+```
+
+#### core_course_get_courses
+```
+   protocol: POST
+   https://exampleforcodurance2.moodlecloud.com/webservice/rest/server.php?wstoken=06280b0c477e3fc6921a0e0066da2761&wsfunction=core_course_get_courses&moodlewsrestformat=json
+   Body: x-www-form-unlencoded
+   Key = options[ids][0]
+   Value = 9   
+```
+
+#### core_user_create_users
+```
+   protocol: POST
+   https://exampleforcodurance2.moodlecloud.com/webservice/rest/server.php?wstoken=06280b0c477e3fc6921a0e0066da2761&wsfunction=core_user_create_users&moodlewsrestformat=json
+   Body: x-www-form-unlencoded
+   Key1 = users[0][username]
+   Value1 = prueba   
+   
+   Key2 = users[0][createpassword]   
+   Value2 = 1
+   
+   Key3 = users[0][email]
+   Value3 = daniel.villahermosa+student@codurance.com
+   
+   Key4 = users[0][firstname]
+   Value4 = Ramon
+   
+   Key5 = users[0][lastname]
+   Value5 = Garcia   
+```
+```json
+[
+    {
+        "id": 5,
+        "username": "prueba"
+    }
+]
+```
 ## Some considerations for Moodle integration
 
 # Integration with Holded
@@ -191,21 +488,23 @@ user we are using.
 You have all the information in: "[Katalyst.payment] Moodle keys, password, mails"
 
 ## Configuration of Holded
+To use Holded you will need to create an API-key.
+Go to Your profile -> Settings -> More -> Developers -> New Api Key
 
+You will create an api key.
+
+This api key must be stored in Bitwardem in "[Katalyst.payment] Moodle keys, password, mails".
 
 ## Some considerations for Holded integration
-In Holded we need to follow the following steps:
-- We receive the following data :
-  - name
-  - surname
-  - email
-  - NIF/CIF
-  - isCIF (pending) :
-  - Address (pending) :
-- The process look for if the contact exists with the custom_id = <NIF/CIF><email> encoding in utf8
-- if the contact doesn't exist we create a new contact with this data
-- we create an invoice
-- we send the invoice
+In holded we are using Contacts and invoices. The invoices are in Sales -> Invoices.
+
+To identify the contact, from the point of view of the Service, is using the CustomId. This is
+calculated applying a SHA-256 to the [CIF/NIF]+[email]. 
+
+Te custom-id is stored in: Contact->Edit contact -> Preferences->Reference.
+
+Be careful with the field country. When you use the API you will need to fill both fields: country and country
+code. In the code there are some explainations about this strange behaviour of the API.
 
 # Integration with Paycomet
 ## Access to Paycomet
@@ -230,11 +529,158 @@ writing in the email what is our commercial number: 354180143
 - Paycomet support: In paycommet you can create support tickets and ask questions.
 
 ## Configuration of Paycomet
-## Some considerations for Paycomet integration
+In Configure Produce you can edit the TPV produce. This is valid for sandbox and real accounts.
+
+You can here to change:
+- Name of product
+- Commercial name of the product
+
+In this window you will have information you need for the payment as for example:
+- Password
+- Terminal number
+- client code
+- JET ID => you will use in the front to integrate with Paycomet
+
+In addition, here you can change other interesting things:
+
+- Type of notification. To receive the notification in the service you will need include here the url to notify.
+For example: https://katalistpaymentservice.azurewebsites.net//confirmation
+Take into account that if you are testing in local, you can receive this notification but you will need to 
+establish here you external IP, to have the service running and also, to map your router port to your computer
+If you are using a movistar router this information could be useful:
+  https://www.movistar.es/blog/router/abrir-puertos-router-movistar/
+- URL OK: your ok html page. By default Paycomet has www.paycomet.com/url-bs-ok
+- URL KO: your ok html page. By default Paycomet has www.paycomet.com/url-bs-ko
+
+In addition, if you are using for the front integration IFRAME you could configure some of the styles.
+
+To connect with the API, you will need to create the API key. It is in "my products-> API keys"
+
+You only need to click on "create new api key". Remember you will need to store this api key in Bitwarden: "[Katalyst.payment] Paycomet keys, password, mails"
+
+
+## Operations historical
+To see your operations you will need to click : Operation Historical-> Search in history:
+* click on select all my products
+* click on www.codurace.com (name of product)
+* Search
+
+You will se here all the operations and the state and other relevant data. Remember:
+- Fail if it has been cancelled or failed
+- Pending if it has been only authoriced but not confirmed by the user
+- Accepted if it has been confirmed by the user
+
+## Support
+
+In Support you can create tikets you can use "Support-> Creation of tiket"
+
+## Some considerations with Paycomet
+* Remember how is the workflow.
+```json
+
+  FRONT                         PAYCOMET                     BACKEND
+    │                              │                            │
+    │                              │                            │
+    │    ask token with jetid      │                            │
+    ├─────────────────────────────►│                            │
+    │                              │                            │
+    │           token              │                            │
+    │◄─────────────────────────────┤                            │
+    │                              │                            │
+    │   subscribe(data, token..)   │                            │
+    ├──────────────────────────────┼───────────────────────────►│
+    │                              │                            │
+    │                              │  authorize payment with    │
+    │                              ◄────────────────────────────┤
+    │                              │   token, passord, order... │
+    │                              │                            │
+    │                              │ok and urlchallenge         │
+    │                              ├───────────────────────────►│
+    │   url challenge              │                            │
+    ◄──────────────────────────────┼────────────────────────────┤
+    │     ok or cancel             │                            │
+    ├─────────────────────────────►│  notification ok or cancel │
+    │                              └───────────────────────────┐►
+                                                               └┘
+```
+* The IP is something which is important, the External IP of the client, because paycomet use it
+  to authorize the payment and other parameters (password, order, etc)
 
 # CI/CD with Github actions
 # The pipeline
+The pipeline:
+- Get the code
+- Prepare a local database with docker
+- compile, test and create the artifact with maven
+- create the docker file
+- deploy the docker file in the azure container register
+- remove the database
+- Restart the app service (To be developed)
 # Secrets and variables
+To do these things the pipeline has several secrets. They are in Settings-> Secrets and variables-> Actions
+
+* ACR_ENDPOINT => container register end point (you can see it in the Azure container service)
+* ACR_PASSWORD => container register password (you can see it in the Azure container service)
+* ACR_USERNAME => container register username (you can see it in the Azure container service)
+
+# Automatic deployment
+
+For the deployment, you will need right to assign a user to the App service. Currently, I don't have
+rights with my account.
+
+You should login in Azure:
+
+```
+az login
+```
+
+And create 
+
+```
+az ad sp create-for-rbac --name "katalystcicd" --role contributor --scopes /subscriptions/edb907a0-34b8-47cc-a65b-9ae69c0b6398/resourceGroups/katalistpayment_group  --sdk-auth
+```
+and you should copy the json which should be result. An no real example could be:
+```json
+{
+  "clientId": "efbfad19-6742-441c-9e9e-8803b0ab8397",
+  "clientSecret": "fOA8Q~Uacpm6fNMAkOoWhvloYzCH_dC5EMWjBidN",
+  "subscriptionId": "5f983a34-8f24-40dc-338e-35d5a138adf3",
+  "tenantId": "e68bd738-9e3b-4e35-b5b3-337b38db205c",
+  "activeDirectoryEndpointUrl": "https://login.microsoftonline.com",
+  "resourceManagerEndpointUrl": "https://management.azure.com/",
+  "activeDirectoryGraphResourceId": "https://graph.windows.net/",
+  "sqlManagementEndpointUrl": "https://management.core.windows.net:8443/",
+  "galleryEndpointUrl": "https://gallery.azure.com/",
+  "managementEndpointUrl": "https://management.core.windows.net/"
+}
+```
+You will need to save this and put in a secret in Github "AZ_CREDENTIALS"
+In addition, you will need to include "AZURE_APP_SERVICE_NAME" which will be the name of the App service:katalistpaymentservice
+
+```json
+``` yaml
+  deploy:
+    runs-on: ubuntu-latest
+    needs:  test-and-build    
+    permissions:
+      id-token: write
+      contents: read
+    steps:      
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZ_CREDENTIALS }}              
+      - uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_APP_SERVICE_NAME }} 
+          images: ${{ secrets.ACR_ENDPOINT }}
+      - name: Azure logout
+        run:
+          az logout
+```
+With this last part in the current workflow we should deploy automatically. Currently, we need to
+stop and start the app service.
+
 
 # Azure
 We recommend to review the plans we are using in Azure if you want to use as "Production".
@@ -339,6 +785,5 @@ If you create a new app service you will need to configure it in "Diagnostic set
 
 Also, the App service logs are enabled: "File system", so you can see the output in the "Log stream" too.
 
-## Some considerations for the migration to AWS
 
 
