@@ -1,6 +1,6 @@
 package com.codurance.katalyst.payment.application.integration.wiremock;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -14,7 +14,7 @@ public class WireMockServerExtension {
 
     protected MockServer wireMockServer = null;
 
-    protected Gson gson = new Gson();
+    protected ObjectMapper objectMapper = new ObjectMapper();
     private int port;
 
     public void setPort(int port) {

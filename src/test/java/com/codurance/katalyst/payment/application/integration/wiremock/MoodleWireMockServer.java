@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.application.integration.wiremock;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -113,34 +114,34 @@ public class MoodleWireMockServer extends WireMockServerExtension {
         return String.format(URL_BASE, token, function);
     }
 
-    public void stubForEnrollUsersWithStatusOk(Map<String, String> requestBodyMap, List<Map<String, Object>> responseBody) throws UnsupportedEncodingException {
-        var jsonResponse = gson.toJson(responseBody.toArray());
+    public void stubForEnrollUsersWithStatusOk(Map<String, String> requestBodyMap, List<Map<String, Object>> responseBody) throws UnsupportedEncodingException, JsonProcessingException {
+        var jsonResponse = objectMapper.writeValueAsString(responseBody.toArray());
         String requestBody = joinParameters(requestBodyMap);
         stubForPostWithStatusOkAndBodyParameters("enrol_manual_enrol_users",
                 requestBody,
                 jsonResponse);
     }
 
-    public void stubForCreateUsersWithStatusOk(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException {
-        var json = gson.toJson(Arrays.asList(responseBody).toArray());
+    public void stubForCreateUsersWithStatusOk(Map<String, String> requestBodyParameters, Map<String, Object> responseBody) throws UnsupportedEncodingException, JsonProcessingException {
+        var json = objectMapper.writeValueAsString(Arrays.asList(responseBody).toArray());
         stubForPostWithStatusOkAndBodyParameters(
                 "core_user_create_users",
                 joinParameters(requestBodyParameters),
                 json);
     }
 
-    public void stubForGetUsersByFieldWithStatusOk(List<Map<String, Object>> responseBody) {
-        var json = gson.toJson(responseBody.toArray());
+    public void stubForGetUsersByFieldWithStatusOk(List<Map<String, Object>> responseBody) throws JsonProcessingException {
+        var json = objectMapper.writeValueAsString(responseBody.toArray());
         stubForPostWithStatusOk("core_user_get_users_by_field", json);
     }
 
-    public void stubForGetEnrolledUsersWithStatusOK(List<Map<String, Object>> responseBody) {
-        var json = gson.toJson(responseBody.toArray());
+    public void stubForGetEnrolledUsersWithStatusOK(List<Map<String, Object>> responseBody) throws JsonProcessingException {
+        var json = objectMapper.writeValueAsString(responseBody.toArray());
         stubForPostWithStatusOk("core_enrol_get_enrolled_users", json);
     }
 
-    public void stubForGetCoursesWithStatusOk(List<Map<String, Object>> responseBody) {
-        var jsonResponseBody = gson.toJson(responseBody.toArray());
+    public void stubForGetCoursesWithStatusOk(List<Map<String, Object>> responseBody) throws JsonProcessingException {
+        var jsonResponseBody = objectMapper.writeValueAsString(responseBody.toArray());
         stubForPostWithStatusOk("core_course_get_courses", jsonResponseBody);
     }
 

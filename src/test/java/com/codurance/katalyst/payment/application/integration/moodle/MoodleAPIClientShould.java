@@ -6,6 +6,7 @@ import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -51,7 +52,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_a_course_by_id_when_the_course_exists() throws MoodleNotRespond {
+    public void get_a_course_by_id_when_the_course_exists() throws MoodleNotRespond, JsonProcessingException {
         Integer courseId = 1;
         var responseBody = wireMock.createResponseBodyGetCoursesOk(
                 courseId,
@@ -65,7 +66,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_course_by_id_when_the_course_not_exists() throws MoodleNotRespond {
+    public void get_course_by_id_when_the_course_not_exists() throws MoodleNotRespond, JsonProcessingException {
         Integer courseId = 1;
         wireMock.stubForGetCoursesWithStatusOk(Arrays.asList());
 
@@ -96,7 +97,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_users_by_email_when_the_user_not_exist() throws MoodleNotRespond {
+    public void get_users_by_email_when_the_user_not_exist() throws MoodleNotRespond, JsonProcessingException {
         wireMock.stubForGetUsersByFieldWithStatusOk(Arrays.asList());
 
         var user = apiAdapter.getUserByMail("random@example.com");
@@ -105,7 +106,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_users_by_email_when_the_user_exist() throws MoodleNotRespond {
+    public void get_users_by_email_when_the_user_exist() throws MoodleNotRespond, JsonProcessingException {
         var email = "random@example.com";
         var responseBody = wireMock.createResponseBodyGetUserByFieldOk(
                 1,
@@ -141,7 +142,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_users_by_username_when_the_user_not_exist() throws MoodleNotRespond {
+    public void get_users_by_username_when_the_user_not_exist() throws MoodleNotRespond, JsonProcessingException {
         wireMock.stubForGetUsersByFieldWithStatusOk(Arrays.asList());
 
         var user = apiAdapter.getUserByUserName("random_username");
@@ -150,7 +151,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_users_by_username_when_the_user_exist() throws MoodleNotRespond {
+    public void get_users_by_username_when_the_user_exist() throws MoodleNotRespond, JsonProcessingException {
         var userName = "random_username";
         var responseBody = wireMock.createResponseBodyGetUserByFieldOk(
                 1,
@@ -187,7 +188,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void create_user_when_the_user_not_exists() throws UnsupportedEncodingException, MoodleNotRespond, NotValidEMailFormat {
+    public void create_user_when_the_user_not_exists() throws UnsupportedEncodingException, MoodleNotRespond, NotValidEMailFormat, JsonProcessingException {
         var userId = 1;
         var userName = "RANDOM_USERNAME";
         var email = "RANDOM_USERNAME@email.com";
@@ -251,7 +252,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void enrole_an_user_to_a_course() throws UnsupportedEncodingException, MoodleNotRespond {
+    public void enrole_an_user_to_a_course() throws UnsupportedEncodingException, MoodleNotRespond, JsonProcessingException {
         var userId = "1";
         var courseId = 9;
         List<Map<String, Object>> responseBody = Arrays.asList();
@@ -302,7 +303,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_enrolled_users_when_are_not_users_enrolled() throws MoodleNotRespond {
+    public void get_enrolled_users_when_are_not_users_enrolled() throws MoodleNotRespond, JsonProcessingException {
 
         List<Map<String, Object>> responseBody = Arrays.asList();
         wireMock.stubForGetEnrolledUsersWithStatusOK(responseBody);
@@ -316,7 +317,7 @@ public class MoodleAPIClientShould {
     }
 
     @Test
-    public void get_enrolled_users_when_are_users_enrolled() throws MoodleNotRespond {
+    public void get_enrolled_users_when_are_users_enrolled() throws MoodleNotRespond, JsonProcessingException {
         var email = "random@example.com";
         var responseBody = wireMock.createResponseBodyGetUserByFieldOk(
                 1,

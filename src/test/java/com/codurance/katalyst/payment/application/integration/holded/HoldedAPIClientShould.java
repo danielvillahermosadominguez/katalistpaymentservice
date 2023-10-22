@@ -10,6 +10,7 @@ import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedS
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedTypeContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -110,7 +111,7 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void create_person_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+    public void create_person_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat, JsonProcessingException {
         var contactId = "1";
         var email = new HoldedEmail("RANDOM_USER@email.com");
         var nifCif = "46842041C";
@@ -128,17 +129,23 @@ public class HoldedAPIClientShould {
                 ""
         );
 
-        var responseBodyCreate = wireMock.createResponseBodyOkCreate(contactId);
-
-        var requestBodyParameters = wireMock.createContactRequestParameters(
-                contact.getName(),
-                contact.getEmail().getValue(),
-                "client",
-                contact.getCode(),
-                contact.getVatNumber(),
-                contact.getCustomId(),
-                true
-        );
+        var responseBodyCreate = String.format("""
+                {
+                    "status":1,
+                    "info":  "RANDOM_INFO",
+                    "id": "%s"
+                }
+                """, contactId);
+        var requestBodyParameters = String.format("""
+                {
+                    "name": "%s",
+                    "email": "%s",
+                    "type": "client",                 
+                    "code": "%s",
+                    "CustomId": "%s",
+                    "isperson": true
+                }
+                """, contact.getName(), contact.getEmail().getValue(), contact.getCode(), contact.getCustomId());
 
         var responseBodyGet = String.format("""
                 [{
@@ -170,7 +177,7 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void create_company_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+    public void create_company_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat, JsonProcessingException {
         var contactId = "1";
         var email = new HoldedEmail("RANDOM_USER@email.com");
         var name = "RANDOM_NAME";
@@ -191,23 +198,28 @@ public class HoldedAPIClientShould {
                 ""
         );
 
-        var responseBodyCreate = wireMock.createResponseBodyOkCreate(contactId);
-
-        var requestBodyParameters = wireMock.createContactRequestParameters(
-                contact.getName(),
-                contact.getEmail().getValue(),
-                "client",
-                contact.getCode(),
-                contact.getVatNumber(),
-                contact.getCustomId(),
-                false
-        );
+        var responseBodyCreate = String.format("""
+                {
+                    "status":1,
+                    "info":  "RANDOM_INFO",
+                    "id": "%s"
+                }
+                """, contactId);
+        var requestBodyParameters = String.format("""
+                {
+                    "name": "%s",
+                    "email": "%s",
+                    "type": "client",                 
+                    "vatnumber": "%s",
+                    "CustomId": "%s",
+                    "isperson": false
+                }
+                """, contact.getName(), contact.getEmail().getValue(), contact.getVatNumber(), contact.getCustomId());
 
         var responseBodyGet = String.format("""
                 [{
                     "id": 1,
-                    "name":  "%s",
-                    "code":  null,                  
+                    "name":  "%s",                                      
                     "customId": "%s",
                     "email": "%s",
                     "vatnumber": "%s",
@@ -346,14 +358,20 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void send_an_invoice_to_an_email_with_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+    public void send_an_invoice_to_an_email_with_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat, JsonProcessingException {
         var emails = Arrays.asList(new HoldedEmail("RANDOM_USERNAME@gmail.com"));
         var recipient = HoldedEmail.getRecipients(emails);
         var invoiceID = "1";
-        Map<String, Object> responseBody = wireMock.createResponseBodyOkCreate(invoiceID);
+        var responseBody = String.format("""
+                {
+                    "status": 1,
+                    "info": "RANDOM_INFO",
+                  	"id": "%s"                  	
+                }
+                """, invoiceID);
 
         Map<String, String> requestBodyParameters = new LinkedHashMap<>();
-        requestBodyParameters.put("emails",recipient);
+        requestBodyParameters.put("emails", recipient);
 
         wireMock.stubForCreateInvoiceWithStatusOK(invoiceID, requestBodyParameters, responseBody);
 
@@ -367,11 +385,17 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void send_an_invoice_to_an_email_with_not_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+    public void send_an_invoice_to_an_email_with_not_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat, JsonProcessingException {
         var emails = Arrays.asList(new HoldedEmail("RANDOM_USERNAME@gmail.com"));
         var recipient = HoldedEmail.getRecipients(emails);
         var invoiceID = "1";
-        Map<String, Object> responseBody = wireMock.createResponseBodyNotOK(invoiceID);
+        var responseBody = String.format("""
+                {
+                    "status": 0,
+                    "info": "RANDOM_INFO",
+                  	"id": "%s"                  	
+                }
+                """, invoiceID);
 
         Map<String, String> requestBodyParameters = new LinkedHashMap<>();
         requestBodyParameters.put("emails", recipient);
@@ -381,7 +405,7 @@ public class HoldedAPIClientShould {
         var invoice = mock(HoldedInvoiceInfo.class);
         when(invoice.getId()).thenReturn(invoiceID);
 
-         var status = apiAdapter.sendInvoice(invoice, emails);
+        var status = apiAdapter.sendInvoice(invoice, emails);
         assertThat(status).isNotNull();
         assertThat(status.getStatus()).isNotEqualTo(HoldedStatus.OK);
 
