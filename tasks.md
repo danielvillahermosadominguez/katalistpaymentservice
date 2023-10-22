@@ -1,0 +1,115 @@
+# Restrictions, Rules and Decisions
+- [12.09.2023 ] We don't overwrite data in Moodle or in Holded.
+- [12.09.2023 ] The quantity is initially 1. One per user. We will evolve by the time
+- [21.09.2023 ] Repositories must be privates. Ask to Jose H, these repositories.
+- [21.09.2023 ] MVP - First productive version. We think we could use 7-10 natural days to finish the process and payment (Basic).
+  In parallel we could see the the review of the messages and text, the review of the UI, and translations
+  Out of this we will need to do the migration to AWS and migration of reposistories with the help of a Platform engineer
+  In parallel we will need to activation of the TPV with Paycomet.
+  Tasks:
+    - Basic - Paycomet integration - finish the integration, including configuration of Paycomet and database.
+    - Basic - Save in holded new fields and change the behaviour of company/CIF or person/NIF - in the form
+    - Basic - Country and holdem. See the requirement
+    - Basic - Validation of NIF and CIF at least in a form level
+    - Basic - Logs and repeat in case of error
+    - Basic - Connect and customize Moodle pro
+    - Basic - Connect and customize Holded pro
+    - Basic - Connect and customize Paycomet pro
+    - Tests - Test in real environment with PO
+    - Documentation - Secrets, bitlocker and environment variables, documentation of integrations, etc
+    - Infrastructure - AWS migration and migration of repos.
+    - Other people: review UI and translations.
+    - Activation of TPV with Paycomet and the bank
+    - Optional: IP request, deployment in azure and create a backlog with user stories
+      NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
+- [5.10.2023 ]  We started again with the objective to do a demo and a handover the next 24/10/2023
+
+# Task related with the POC
+- [ ] Course with Zero price => we should allow to the user subscribe
+- [ ] Web: refactor paths in the tests
+- [ ] Web: refactor of code js - to many ifs for fields
+- [ ] Connection holded PRO
+- [ ] Connection moodle PRO + configuration of security
+- [partially] Deploy the bundle and avoid to use embebed library i18n
+- [ ] Validation of the format for NIF and CIF in web page
+- [ ] Review if we need all the countries that are shown in the selector in the web page
+- [ ] Confirmation page - Codurance confirmation and KO page
+- [ ] Messages in front for compliance with Paycomet
+- [ ] Review of the separation of classes between layers
+- [ ] Business Rules taxes, account, etc. See bussiness rules in miro
+- [ ] Check the IP confirmation from Paycomet servers
+- [ ] CSS styles in the payment web page
+- [ ] Mail and format in the website. Message in spanish
+- [ ] Send a email in case of error with the information (or monitoring, think about it). Surely we need to process it manually and correct the bug. Se cases in the test cases
+- [ ] Send a mail with an account. The idea it could be neccesary, at least to the edge cases
+- [ ] Azure Web App, delay when start after a long time. Something related to the configuration surely.
+- [ ] Default data in creation of contact
+- [ ] Problem with the automatic deployment of the service. User in azure to deploy.
+- [ ] Private Data Policy in the form - People of Paycomet will help us to cover it
+- [ ] Repository migration to Codurance organization
+- [ ] Service security in the backend
+- [ ] Documentation about the integrations.
+    - [ ] Integration with Moodle and user, token, etc
+        - Some importants topics:
+            - Creation of contacts and trial. Point of contact in holded
+            - Configuration in Moodle
+            - Paycomet procedures
+            - Paycomet and configuration the router for the IP and configuration of the IP to develop
+            - Languages in holded and strange behaviours
+    - [ ] Decisions in Holded integration + configuration
+    - [ ] Deployment in Azure and improvements
+    - [ ] Secrets in vaults and Bitlocker
+    - [ ] The solution and structure - IDD
+- [ ] Review the infrastructure and dockerization - use a docker container for the service
+- [ ] Transfer repositories to codurance organization in Github
+- [ ] Migration to AWS
+- [x] Manual tests - description of regression tests
+- [x] Remove gson as a dependency and use object mapper for serialization
+- [x] BDD and retry for learning and financial
+    - [x] Resend in case of error + to be sure the mail has been sent (invoice)
+- [x] Test the main changes of the refactor (split the two calls from paycomet) in Azure.
+- [x] IP, get the ip from the request and prepare for development with a fixed IP
+- [x] Builders o fixtures for the tests. Equals when it is necessary.
+- [x] Handover approach - think about it
+- [x] BDD and edge cases: error cases
+- [x] Sometimes the pipeline fail in bdd but github doesn't detect the fail. strange.
+- [x] Errors from Payment review and include the CODE ERROR form backend ERROR_PAYMENT_PLATFORM_CANNOT_TO_PROCESS_THIS_CREDIT_CARD
+- [x] WireMock - clean the code and avoid complexity
+- [x] Logs and traceability
+- [x] Paycomet adapter -> test and refactor
+- [x] Integration test for getUserByUserName
+- [x] BDD with database - it should be good to have it.
+- [x] New data in the forms: address, phone
+- [x] TPV interaction - basic uses cases
+- [x] In the form, we should show name and surname if it is NIF, and company name if it is CIF
+- [x] Create in holded person and company depending on the form. Include a checkbox "Company"
+- [x]  Uppercase in values
+- [x] To use a hash for the key in holded
+- [x] Environments variables in HTML5. How not to harcode the url
+- [x] Validation the correct input in the service. surely with tests
+- [x] Restrict connection with the service, only for the static form (cookies?) or with infrastructure
+- [x] Evaluate to use MongoDB - Deprecated. Create an ADR for the PostgreeSQL decision
+- [x] TPV and Sandbox (Paycomet) access
+- [x] Emulation of the TPV (temporary) - Optional and to evaluate
+- [x] Basic integration in azure with TPV. Test
+- [x] Improve the look and feel of the basic form - use codurance styles
+- [x] Review the format of the invoice - review with product owner
+- [x] Review the error messages
+- [x] Form must have localization
+- [x] Refactor of the service and some test coverage after the poc
+- [x] static website with a basic form in Azure (playground). Github repository + deployment
+- [x] Basic service in Java without security in the playground. Github repository + deployement
+- [x] Basic Integration between website form and service
+- [x] Access to Moodle and configuration for interaction with the API
+- [x] Moodle interaction - basic uses cases
+- [x] Access to holded
+- [x] holded interaction - basic uses cases
+- [x] Workaround. Create a new account with other email in holded to test the api
+- [x] Enviroment variables in Service
+- [x] Basic integration of in azure with Moodle. Tests
+- [x] Basic integration in azure with Holded. Test
+- [x] Database to persist information in the playground. Postgree? We could delay the decision with SQLite or file.
+- [x] Review if the playground is the best place for it.-> Final in AWS
+- [x] Form with token and remove the courseID (this could be a parameter)
+
+# Detected BUGS
