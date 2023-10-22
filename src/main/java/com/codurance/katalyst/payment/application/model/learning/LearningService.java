@@ -3,7 +3,7 @@ package com.codurance.katalyst.payment.application.model.learning;
 import com.codurance.katalyst.payment.application.actions.exception.LearningPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.NoPriceAvailable;
 import com.codurance.katalyst.payment.application.model.learning.entity.Course;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
 import com.codurance.katalyst.payment.application.model.ports.moodle.MoodleApiClient;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
@@ -66,7 +66,7 @@ public class LearningService {
 
     private MoodleUser createMoodleUser(Purchase purchase) throws MoodleNotRespond {
         MoodleUser user;
-        var email = new HoldedEmail(purchase.getEmail()); //TODO: DEPENDENCY WITH HOLDED. ERROR OF DESIGN. REMOVE IT
+        var email = new Email(purchase.getEmail());
         var name = purchase.getName();
         var surname = purchase.getSurname();
         var userName = userNameService.getAProposalForUserNameBasedOn(email.getUserName());

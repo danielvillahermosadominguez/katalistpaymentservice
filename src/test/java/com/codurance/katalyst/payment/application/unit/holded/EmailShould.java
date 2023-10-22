@@ -1,20 +1,19 @@
 package com.codurance.katalyst.payment.application.unit.holded;
 
 
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
-import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
+import com.codurance.katalyst.payment.application.model.ports.email.NotValidEMailFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class HoldedEmailShould {
+public class EmailShould {
 
     @ParameterizedTest
     @CsvSource({
@@ -36,7 +35,7 @@ public class HoldedEmailShould {
             "'a#@mail.com','a'",
     })
     void transform_a_email_to_user_name(String email, String expectedUserName) throws NotValidEMailFormat {
-        var sut = new HoldedEmail(email);
+        var sut = new Email(email);
         assertThat(sut.getUserName()).isEqualTo(expectedUserName);
     }
 
@@ -50,7 +49,7 @@ public class HoldedEmailShould {
     })
     void throws_an_not_valid_email_format(String email){
         var thrown = Assertions.assertThrows(NotValidEMailFormat.class, () -> {
-            new HoldedEmail(email);
+            new Email(email);
         });
 
         assertThat(thrown).isNotNull();
@@ -75,30 +74,30 @@ public class HoldedEmailShould {
             "'example?other@mail.com','example%3Fother%40mail.com'",
             "'a#@mail.com','a%23%40mail.com'",
     })
-    void transform_a_email_to_unicode(String email, String expectedUnicodeEmail) throws NotValidEMailFormat, UnsupportedEncodingException {
-        var sut = new HoldedEmail(email);
+    void transform_a_email_to_unicode(String email, String expectedUnicodeEmail) throws NotValidEMailFormat {
+        var sut = new Email(email);
         assertThat(sut.getInUnicodeFormat()).isEqualTo(expectedUnicodeEmail);
     }
 
     @Test
     void convert_a_email_list_into_recipient_string() throws NotValidEMailFormat {
         var email1 = "random1@email.com";
-        var first = new HoldedEmail(email1);
+        var first = new Email(email1);
         var email2 = "random2@email.com";
-        var second = new HoldedEmail(email2);
+        var second = new Email(email2);
 
-        var recipients = HoldedEmail.getRecipients(Arrays.asList(first,second));
+        var recipients = Email.getRecipients(Arrays.asList(first, second));
 
         assertThat(recipients).isEqualTo(email1+";"+email2);
     }
 
     @Test
     void convert_a_email_list_with_one_element_into_recipient_string() throws NotValidEMailFormat {
-        var email = "random1@email.com";
-        var holdedEmail = new HoldedEmail(email);
+        var emailString = "random1@emailString.com";
+        var email = new Email(emailString);
 
-        var recipients = HoldedEmail.getRecipients(Arrays.asList(holdedEmail));
+        var recipients = Email.getRecipients(Arrays.asList(email));
 
-        assertThat(recipients).isEqualTo(email);
+        assertThat(recipients).isEqualTo(emailString);
     }
 }

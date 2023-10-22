@@ -1,5 +1,6 @@
 package com.codurance.katalyst.payment.application.model.ports.holded.dto;
 
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -28,7 +29,7 @@ public class HoldedContact {
     private String phone;
 
     @JsonFormat(shape = JsonFormat.Shape.OBJECT)
-    protected HoldedEmail email;
+    protected Email email;
 
     @JsonFormat(shape = JsonFormat.Shape.OBJECT)
     protected HoldedTypeContact type;
@@ -48,7 +49,7 @@ public class HoldedContact {
                          String vatNumber,
                          HoldedTypeContact type,
                          boolean isPerson,
-                         HoldedEmail email,
+                         Email email,
                          String phone,
                          HoldedBillAddress billAddress,
                          String purchaseAccount) {
@@ -67,7 +68,7 @@ public class HoldedContact {
                 : buildCustomId(vatNumber, email);
     }
 
-    public static String buildCustomId(String codeOrVat, HoldedEmail email) {
+    public static String buildCustomId(String codeOrVat, Email email) {
         try {
             var messageDigest = MessageDigest.getInstance("SHA-256");
             var input = codeOrVat + email.getValue();
@@ -106,7 +107,7 @@ public class HoldedContact {
         return name;
     }
 
-    public HoldedEmail getEmail() {
+    public Email getEmail() {
         return email;
     }
 
@@ -160,5 +161,4 @@ public class HoldedContact {
         result &= contact.getBillAddress().equals(billAddress);
         return result;
     }
-
 }

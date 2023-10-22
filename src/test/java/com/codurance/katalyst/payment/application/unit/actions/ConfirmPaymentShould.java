@@ -17,7 +17,7 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTr
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NoCustomerData;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.NotValidNotification;
 import com.codurance.katalyst.payment.application.model.payment.exceptions.PaymentTransactionNotFound;
-import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.model.ports.email.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import com.codurance.katalyst.payment.application.model.purchase.PurchaseService;
 import org.junit.jupiter.api.BeforeEach;
@@ -269,5 +269,4 @@ public class ConfirmPaymentShould {
                 .order("RANDOM_ORDER_NAME")
                 .getItem();
     }
-
 }

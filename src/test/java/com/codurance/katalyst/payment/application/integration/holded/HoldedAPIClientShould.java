@@ -3,13 +3,13 @@ package com.codurance.katalyst.payment.application.integration.holded;
 import com.codurance.katalyst.payment.application.acceptance.doubles.ClockStub;
 import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.HoldedApiClientAdapter;
 import com.codurance.katalyst.payment.application.integration.wiremock.HoldedWireMockServer;
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
+import com.codurance.katalyst.payment.application.model.ports.email.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedTypeContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
-import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
@@ -56,7 +56,7 @@ public class HoldedAPIClientShould {
 
     @Test
     public void get_null_contact_by_custom_id_when_the_contact_not_exits() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
-        var email = new HoldedEmail("RANDOM_USERNAME@email.com");
+        var email = new Email("RANDOM_USERNAME@email.com");
         var nifCif = "46842041C";
         var customId = nifCif + email.getInUnicodeFormat();
 
@@ -111,9 +111,9 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void create_person_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat, JsonProcessingException {
+    public void create_person_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
         var contactId = "1";
-        var email = new HoldedEmail("RANDOM_USER@email.com");
+        var email = new Email("RANDOM_USER@email.com");
         var nifCif = "46842041C";
         var name = "RANDOM_NAME";
         var customId = HoldedContact.buildCustomId(nifCif, email);
@@ -177,9 +177,9 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void create_company_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat, JsonProcessingException {
+    public void create_company_contact_when_the_contact_not_exists() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
         var contactId = "1";
-        var email = new HoldedEmail("RANDOM_USER@email.com");
+        var email = new Email("RANDOM_USER@email.com");
         var name = "RANDOM_NAME";
         var nifCif = "46842041C";
         var customId = HoldedContact.buildCustomId(
@@ -250,7 +250,7 @@ public class HoldedAPIClientShould {
                 "46842041C",
                 "46842041C", HoldedTypeContact.CLIENT,
                 true,
-                new HoldedEmail("RANDOM_USER@email.com"),
+                new Email("RANDOM_USER@email.com"),
                 null,
                 null,
                 ""
@@ -358,9 +358,9 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void send_an_invoice_to_an_email_with_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat, JsonProcessingException {
-        var emails = Arrays.asList(new HoldedEmail("RANDOM_USERNAME@gmail.com"));
-        var recipient = HoldedEmail.getRecipients(emails);
+    public void send_an_invoice_to_an_email_with_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+        var emails = Arrays.asList(new Email("RANDOM_USERNAME@gmail.com"));
+        var recipient = Email.getRecipients(emails);
         var invoiceID = "1";
         var responseBody = String.format("""
                 {
@@ -385,9 +385,9 @@ public class HoldedAPIClientShould {
     }
 
     @Test
-    public void send_an_invoice_to_an_email_with_not_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat, JsonProcessingException {
-        var emails = Arrays.asList(new HoldedEmail("RANDOM_USERNAME@gmail.com"));
-        var recipient = HoldedEmail.getRecipients(emails);
+    public void send_an_invoice_to_an_email_with_not_ok_status() throws UnsupportedEncodingException, HoldedNotRespond, NotValidEMailFormat {
+        var emails = Arrays.asList(new Email("RANDOM_USERNAME@gmail.com"));
+        var recipient = Email.getRecipients(emails);
         var invoiceID = "1";
         var responseBody = String.format("""
                 {
@@ -414,7 +414,7 @@ public class HoldedAPIClientShould {
 
     @Test
     public void throw_an_holded_exception_when_send_an_invoice_not_respond() throws NotValidEMailFormat, JSONException {
-        var emails = Arrays.asList(new HoldedEmail("RANDOM_EMAIL@EMAIL.COM"));
+        var emails = Arrays.asList(new Email("RANDOM_EMAIL@EMAIL.COM"));
         var invoice = mock(HoldedInvoiceInfo.class);
         var expectedBody = String.format("""
                 {

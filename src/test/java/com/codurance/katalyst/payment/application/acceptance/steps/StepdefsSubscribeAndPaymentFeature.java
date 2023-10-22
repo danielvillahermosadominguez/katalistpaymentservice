@@ -21,8 +21,8 @@ import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNo
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransaction;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentTransactionState;
 import com.codurance.katalyst.payment.application.model.payment.entity.TransactionType;
+import com.codurance.katalyst.payment.application.model.ports.email.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
@@ -55,6 +55,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class StepdefsSubscribeAndPaymentFeature {
     public static final int NO_ANSWER = -10;
     public static final int WAIT_FOR_RETRY_TIMEOUT_IN_SECONDS = 2;
+    public static final String OK = "OK";
+    public static final String KO = "KO";
+    public static final String ANY_IP = "127.0.0.1";
+    public static final String HEALTHCHECK_OK_EXPECTED_RESPONSE = "OK! Working";
     public static MoodleCourse FIXTURE_COURSE = null;
     private int subscriptionOutputCode = -1;
     @LocalServerPort
@@ -87,7 +91,7 @@ public class StepdefsSubscribeAndPaymentFeature {
         }
         var response = apiClient.checkItsAlive();
 
-        if (!response.getBody().equals("OK! Working")) {
+        if (!response.getBody().equals(HEALTHCHECK_OK_EXPECTED_RESPONSE)) {
             fail();
         }
 
@@ -390,7 +394,7 @@ public class StepdefsSubscribeAndPaymentFeature {
                 .createFromMap(userData)
                 .courseId(FIXTURE_COURSE.getId() + "")
                 .userName(this.creditDebitCardData.get("NAME"))
-                .ip("127.0.0.1")
+                .ip(ANY_IP)
                 .payTpvToken(this.temporalPayCometToken)
                 .getItem();
     }
@@ -507,7 +511,7 @@ public class StepdefsSubscribeAndPaymentFeature {
                 tpvId,
                 order.getOrder(),
                 amount,
-                "KO"
+                KO
         );
         return notification;
     }
@@ -520,7 +524,7 @@ public class StepdefsSubscribeAndPaymentFeature {
                 tpvId,
                 order.getOrder(),
                 amount,
-                "OK"
+                OK
         );
         return notification;
     }

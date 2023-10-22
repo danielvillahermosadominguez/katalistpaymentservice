@@ -2,7 +2,7 @@ package com.codurance.katalyst.payment.application.integration.moodle;
 
 import com.codurance.katalyst.payment.application.infrastructure.adapters.moodle.MoodleAPIClientAdapter;
 import com.codurance.katalyst.payment.application.integration.wiremock.MoodleWireMockServer;
-import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
+import com.codurance.katalyst.payment.application.model.ports.email.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleUser;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.MoodleNotRespond;
