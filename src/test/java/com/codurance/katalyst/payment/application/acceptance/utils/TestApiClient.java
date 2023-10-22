@@ -5,7 +5,8 @@ import com.codurance.katalyst.payment.application.model.customer.CustomerData;
 import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.model.payment.entity.PaymentNotification;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -29,7 +30,7 @@ public class TestApiClient {
     public static final String SUBSCRIPTION = "/subscription";
     private int port = -1;
 
-    private Gson gson = new Gson();
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     private RestTemplate restTemplate;
     @Autowired
@@ -109,26 +110,27 @@ public class TestApiClient {
         return this.port != -1;
     }
 
-    public Course getCourse(int selectedCourse) {
+    public Course getCourse(int selectedCourse) throws JsonProcessingException {
         var response = sendRequest(HttpMethod.GET, getUrlBase() + "/courses/" + selectedCourse);
         if (response.getStatusCode() == HttpStatus.OK) {
-            return gson.fromJson(response.getBody(), Course.class);
+            return objectMapper.readValue(response.getBody(), Course.class);
         } else {
-            var error = gson.fromJson(response.getBody(), Error.class);
+            var error = objectMapper.readValue(response.getBody(), Error.class);
             errorList.add(error);
             return null;
         }
     }
 
-    public PaymentStatus paySubscription(CustomerData customData) {
-        var body = gson.toJson(customData);
+    public PaymentStatus paySubscription(CustomerData customData) throws JsonProcessingException {
+        var body = objectMapper.writeValueAsString(customData);
         var response = post(getUrlBase() + SUBSCRIPTION, body);
         if (response.getStatusCode() != HttpStatus.OK) {
-            var error = gson.fromJson(response.getBody(), Error.class);
+            var error = objectMapper.readValue(response.getBody(), Error.class);
             this.errorList.add(error);
             return null;
         }
-        var paymentStatus = gson.fromJson(response.getBody(), PaymentStatus.class);
+
+        var paymentStatus = objectMapper.readValue(response.getBody(), PaymentStatus.class);
         return paymentStatus;
     }
 

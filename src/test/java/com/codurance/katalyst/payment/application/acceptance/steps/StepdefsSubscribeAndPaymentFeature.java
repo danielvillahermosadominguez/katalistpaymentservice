@@ -31,6 +31,7 @@ import com.codurance.katalyst.payment.application.model.ports.moodle.exception.M
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentOrder;
 import com.codurance.katalyst.payment.application.model.ports.paycomet.dto.PaymentStatus;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -234,8 +235,9 @@ public class StepdefsSubscribeAndPaymentFeature {
         assertThat(units).isEqualTo(item.getUnits());
         assertThat(subtotal).isEqualTo(item.getSubtotal());
     }
+
     @When("the customer pays the subscription with credit\\/debit card with the following data")
-    public void the_customer_pays_the_subscription_with_credit_debit_card_with_the_following_data(DataTable dataTable) {
+    public void the_customer_pays_the_subscription_with_credit_debit_card_with_the_following_data(DataTable dataTable) throws JsonProcessingException {
         var paymentData = dataTable.asMaps(String.class, String.class);
         assertThat(FIXTURE_COURSE).isNotNull();
         assertThat(this.userData).isNotNull();

@@ -169,14 +169,12 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [5.10.2023 ]  We started again with the objective to do a demo and a handover the next 24/10/2023
 
 # Task related with the POC
-- [In progress ] Remove gson as a dependency and use object mapper for serialization
-- [ ] Manual tests - description of regression tests
 - [ ] Course with Zero price => we should allow to the user subscribe
 - [ ] Web: refactor paths in the tests
 - [ ] Web: refactor of code js - to many ifs for fields
 - [ ] Connection holded PRO
 - [ ] Connection moodle PRO + configuration of security
-- [ ] Deploy the bundle and avoid to use embebed library i18n
+- [partially] Deploy the bundle and avoid to use embebed library i18n
 - [ ] Validation of the format for NIF and CIF in web page
 - [ ] Review if we need all the countries that are shown in the selector in the web page
 - [ ] Confirmation page - Codurance confirmation and KO page
@@ -209,6 +207,8 @@ NOTE: see comments in PaymentCometApiClientAdapter->payment to continue.
 - [ ] Review the infrastructure and dockerization - use a docker container for the service
 - [ ] Transfer repositories to codurance organization in Github
 - [ ] Migration to AWS
+- [x] Manual tests - description of regression tests
+- [x] Remove gson as a dependency and use object mapper for serialization
 - [x] BDD and retry for learning and financial
   - [x] Resend in case of error + to be sure the mail has been sent (invoice)
 - [x] Test the main changes of the refactor (split the two calls from paycomet) in Azure.
