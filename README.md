@@ -185,7 +185,7 @@ you can choose a new name, for example "exampleforcodurance2" for the site name.
 
 ## Configuration of Moodle
 You will need to configure Moodle to use the API. 
-1. Create a new user katalyst which it will have maximum rights to have the capability to create
+1. Create a new user katalyst which it will have rights to have the capability to create
    courses, enrole users, etc. Site administration->users->Add new user
    * username: katalist 
    * password: <see it in bitwarden>
@@ -471,6 +471,26 @@ If we use postman for it, we could do the following tests
     }
 ]
 ```
+
+#### enrol_manual_enrol_users
+```
+   protocol: POST
+   https://exampleforcodurance2.moodlecloud.com/webservice/rest/server.php?wstoken=06280b0c477e3fc6921a0e0066da2761&wsfunction=enrol_manual_enrol_users&moodlewsrestformat=json
+   Body: x-www-form-unlencoded
+   Key1 = enrolments[0][roleid]
+   Value1 = 5   
+   
+   Key2 = enrolments[0][userid] 
+   Value2 = id for the created user
+   
+   Key3 = enrolments[0][courseid]
+   Value3 = 9
+         
+```
+```json
+   null
+```
+
 ## Some considerations for Moodle integration
 
 # Integration with Holded

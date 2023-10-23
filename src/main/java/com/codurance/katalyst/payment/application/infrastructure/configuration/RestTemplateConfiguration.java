@@ -12,7 +12,7 @@ import java.time.Duration;
 @Configuration
 public class RestTemplateConfiguration {
 
-    public static final int TIMEOUT_LIMIT = 3000;
+    public static final int TIMEOUT_LIMIT = 10000;
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
