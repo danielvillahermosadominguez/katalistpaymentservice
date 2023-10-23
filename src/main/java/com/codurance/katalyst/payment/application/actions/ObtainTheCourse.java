@@ -22,9 +22,9 @@ public class ObtainTheCourse {
     public Course getCourse(String courseId) throws NoPriceAvailable, LearningPlatformIsNotAvailable {
         try {
             var moodleCourse = moodleApiClient.getCourse(courseId);
-            var coursePrice = moodleCourse.getPrice();
-
             if (moodleCourse == null) return null;
+            
+            var coursePrice = moodleCourse.getPrice();
 
             checkCoursePriceIsNotZero(coursePrice);
 

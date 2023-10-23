@@ -48,7 +48,7 @@ public class ObtainTheCourseShould {
     }
 
     @Test
-    void obtain_the_course_when_is_in_moodle() throws CustomFieldNotExists, MoodleNotRespond, NoPriceAvailable, LearningPlatformIsNotAvailable {
+    void obtain_the_course_when_is_in_moodle() throws NoPriceAvailable, LearningPlatformIsNotAvailable {
 
         var course = obtainTheCourseUseCase.getCourse(COURSE_ID);
 
@@ -59,7 +59,7 @@ public class ObtainTheCourseShould {
     }
 
     @Test
-    void obtain_null_value_when_is_not_in_moodle() throws CustomFieldNotExists, MoodleNotRespond, NoPriceAvailable, LearningPlatformIsNotAvailable {
+    void obtain_null_value_when_is_not_in_moodle() throws  NoPriceAvailable, LearningPlatformIsNotAvailable {
 
         var course = obtainTheCourseUseCase.getCourse(COURSE_ID_THAT_NOT_EXIST);
 
