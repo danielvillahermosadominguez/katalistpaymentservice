@@ -1,8 +1,8 @@
 package com.codurance.katalyst.payment.application.model.ports.holded;
 
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
 
@@ -20,5 +20,5 @@ public interface HoldedApiClient {
                                     double price) throws HoldedNotRespond;
 
     HoldedStatus sendInvoice(HoldedInvoiceInfo invoice,
-                             List<HoldedEmail> emails) throws HoldedNotRespond;
+                             List<Email> emails) throws HoldedNotRespond;
 }

@@ -1,6 +1,5 @@
-package com.codurance.katalyst.payment.application.model.ports.holded.dto;
+package com.codurance.katalyst.payment.application.model.ports.email;
 
-import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -11,7 +10,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class HoldedEmail {
+public class Email {
     public static final String AT = "@";
     public static final String SPECIAL_CHARACTERS = "[!#$%&'*+-/=?]";
 
@@ -21,7 +20,7 @@ public class HoldedEmail {
     @JsonIgnore
     private final String userName;
 
-    public HoldedEmail(String email) throws NotValidEMailFormat {
+    public Email(String email) throws NotValidEMailFormat {
         if (email == null) {
             throw createNotValidEmailException(email);
         }
@@ -75,7 +74,7 @@ public class HoldedEmail {
         return value;
     }
 
-    public static String getRecipients(List<HoldedEmail> emails) {
+    public static String getRecipients(List<Email> emails) {
         List<String> emailList = emails
                 .stream()
                 .map(email -> email.getValue())
@@ -87,7 +86,7 @@ public class HoldedEmail {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        HoldedEmail that = (HoldedEmail) o;
+        Email that = (Email) o;
         return Objects.equals(value, that.value);
     }
 

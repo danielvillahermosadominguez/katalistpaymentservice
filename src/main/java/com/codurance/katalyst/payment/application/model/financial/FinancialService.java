@@ -2,13 +2,13 @@ package com.codurance.katalyst.payment.application.model.financial;
 
 import com.codurance.katalyst.payment.application.actions.exception.FinancialPlatformIsNotAvailable;
 import com.codurance.katalyst.payment.application.actions.exception.InvalidInputCustomerData;
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
+import com.codurance.katalyst.payment.application.model.ports.email.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedTypeContact;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
-import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.purchase.Purchase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,7 +39,7 @@ public class FinancialService {
     }
 
     private void createContactAndInvoicing(Purchase purchase) throws NotValidEMailFormat, UnsupportedEncodingException, HoldedNotRespond {
-        var email = new HoldedEmail(purchase.getEmail());
+        var email = new Email(purchase.getEmail());
 
         var customId = HoldedContact.buildCustomId(purchase.getNifCif(), email);
         var contact = holdedApiClient.getContactByCustomId(customId);
@@ -81,7 +81,7 @@ public class FinancialService {
                 vatNumber,
                 type,
                 isPerson,
-                new HoldedEmail(originalDataPurchase.getEmail()),
+                new Email(originalDataPurchase.getEmail()),
                 originalDataPurchase.getPhone().toUpperCase(),
                 billingAddress,
                 "70500000"

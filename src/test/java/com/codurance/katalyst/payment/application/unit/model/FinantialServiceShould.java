@@ -7,7 +7,7 @@ import com.codurance.katalyst.payment.application.builders.PurchaseBuilder;
 import com.codurance.katalyst.payment.application.model.financial.FinancialService;
 import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
@@ -68,7 +68,7 @@ public class FinantialServiceShould {
 
     @Test
     void not_to_create_a_contact_if_the_contact_exists_in_holded() throws HoldedNotRespond, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
-        var email = new HoldedEmail(purchase.getEmail());
+        var email = new Email(purchase.getEmail());
         var nifCif = purchase.getNifCif();
         var contact = createBasicContact(email, nifCif);
         var expectedCustomId = contact.getCustomId();
@@ -92,7 +92,7 @@ public class FinantialServiceShould {
         var region = purchase.getRegion();
         var city = purchase.getCity();
         var country = purchase.getCountry();
-        var email = new HoldedEmail(purchase.getEmail());
+        var email = new Email(purchase.getEmail());
         var contact = createBasicContact(email, nifCif);
         var expectedCustomId = contact.getCustomId();
         purchase.setIsCompany(true);
@@ -127,7 +127,7 @@ public class FinantialServiceShould {
         var region = purchase.getRegion();
         var city = purchase.getCity();
         var country = purchase.getCountry();
-        var email = new HoldedEmail(purchase.getEmail());
+        var email = new Email(purchase.getEmail());
         var contact = createBasicContact(email, nifCif);
         var expectedCustomId = contact.getCustomId();
         purchase.setIsCompany(false);
@@ -154,7 +154,7 @@ public class FinantialServiceShould {
     @Test
     void not_create_a_contact_when_contact_exists() throws HoldedNotRespond, FinancialPlatformIsNotAvailable, InvalidInputCustomerData {
         var nifCif = purchase.getNifCif();
-        var email = new HoldedEmail(purchase.getEmail());
+        var email = new Email(purchase.getEmail());
         var contact = createBasicContact(email, nifCif);
         var expectedCustomId = contact.getCustomId();
 
@@ -174,7 +174,7 @@ public class FinantialServiceShould {
         var email = purchase.getEmail();
         var nifCif = purchase.getNifCif();
         var contact = createBasicContact(
-                new HoldedEmail(email),
+                new Email(email),
                 nifCif
         );
         var invoice = new HoldedInvoiceInfo();
@@ -199,12 +199,12 @@ public class FinantialServiceShould {
         var email = purchase.getEmail();
         var nifCif = purchase.getNifCif();
         var contact = createBasicContact(
-                new HoldedEmail(email),
+                new Email(email),
                 nifCif
         );
         var invoice = new HoldedInvoiceInfo();
 
-        ArgumentCaptor<List<HoldedEmail>> captor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<List<Email>> captor = ArgumentCaptor.forClass(List.class);
         when(holdedApiClient.getContactByCustomId(any())).thenReturn(null);
         when(holdedApiClient.createContact(any())).thenReturn(contact);
         when(holdedApiClient.createInvoice(any(), any(), any(), anyInt(), anyDouble())).thenReturn(invoice);
@@ -222,7 +222,7 @@ public class FinantialServiceShould {
         assertThat(emails.get(0).getValue()).isEqualTo(email);
     }
 
-    private HoldedContact createBasicContact(HoldedEmail email, String nifCif) {
+    private HoldedContact createBasicContact(Email email, String nifCif) {
         var holdedContactBuilder = new HoldedContactBuilder();
         return holdedContactBuilder
                 .createContactDefault(email, nifCif)

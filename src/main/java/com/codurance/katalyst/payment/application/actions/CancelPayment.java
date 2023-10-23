@@ -22,50 +22,58 @@ public class CancelPayment {
     public void cancel(PaymentNotification notification) {
         if (!isACorrectKOResponse(notification)) return;
 
-        logWarningForCancelPayment(notification);
+        logInfoStartToCancelPaymentTransaction(notification);
         try {
             paymentService.cancelTransaction(notification.getOrder());
         } catch (PaymentTransactionNotFound e) {
-            logErrorForNotCancelPaymentOrderNotFound(notification);
+            logErrorPaymentOrderNotFound(notification);
         }
     }
 
     private boolean isACorrectKOResponse(PaymentNotification notification) {
         var response = notification.getResponse();
         if (!response.equals(KO)) {
-            logErrorForNotCancelPaymentNotificationNotKO(notification);
+            logErrorNotificatonIsNotKO(notification);
             return false;
         }
         return true;
     }
 
-    private void logWarningForCancelPayment(PaymentNotification notification) {
-        log(notification, "[CANCEL PAYMENT]: This payment is going to be cancelled %s", false);
+    private void logInfoStartToCancelPaymentTransaction(PaymentNotification notification) {
+        logInfo(notification, "[CANCEL PAYMENT]: This payment is going to be cancelled %s");
     }
 
-    private void logErrorForNotCancelPaymentNotificationNotKO(PaymentNotification notification) {
-        log(
+    private void logErrorNotificatonIsNotKO(PaymentNotification notification) {
+        logError(
                 notification,
                 String.format(
                         "[CANCEL PAYMENT]: The notification is not KO, the value is %s and the full notification",
                         notification.getResponse()
-                ) + ": %s",
-                true
+                ) + ": %s"
         );
     }
 
-    private void logErrorForNotCancelPaymentOrderNotFound(PaymentNotification notification) {
-        log(
+    private void logErrorPaymentOrderNotFound(PaymentNotification notification) {
+        logError(
                 notification,
                 String.format(
                         "[CANCEL PAYMENT]: The order %s has not been found y the database. The full notification",
                         notification.getOrder()
-                ) + ": %s",
-                true
+                ) + ": %s"
         );
     }
 
-    private void log(PaymentNotification notification, String message, boolean error) {
+    private void logError(PaymentNotification notification, String message) {
+        var information = getInformation(notification);
+        log.error(CancelPayment.class, String.format(message, information));
+    }
+
+    private void logInfo(PaymentNotification notification, String message) {
+        var information = getInformation(notification);
+        log.info(CancelPayment.class, String.format(message, information));
+    }
+
+    private String getInformation(PaymentNotification notification) {
         var mapper = new ObjectMapper();
         String information = null;
         try {
@@ -73,10 +81,6 @@ public class CancelPayment {
         } catch (JsonProcessingException e) {
             information = "Not possible to parse information";
         }
-        if(error) {
-            log.error(CancelPayment.class, String.format(message, information));
-        } else {
-            log.warn(CancelPayment.class, String.format(message, information));
-        }
+        return information;
     }
 }

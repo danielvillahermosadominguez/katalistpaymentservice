@@ -1,9 +1,9 @@
 package com.codurance.katalyst.payment.application.acceptance.doubles;
 
 import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.CreateInvoiceItemRequestBody;
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
 import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
 
@@ -16,11 +16,6 @@ import java.util.Map;
 public class HoldedApiClientFake implements HoldedApiClient {
 
     public static int holdedCounterId = 0;
-    private int interactions = 0;
-
-    public int getInteractions() {
-        return interactions;
-    }
 
     class HoldedCreationDataInvoiceDTOFake extends HoldedInvoiceInfo {
         public static int idCounter = 0;
@@ -44,19 +39,13 @@ public class HoldedApiClientFake implements HoldedApiClient {
 
     @Override
     public HoldedContact createContact(HoldedContact contact) {
-        this.checkAvailability();
         contact.setId(++holdedCounterId + "");
         contacts.put(contact.getCustomId(), contact);
         return contact;
     }
 
-    private void checkAvailability() {
-        this.interactions++;
-    }
-
     @Override
     public HoldedContact getContactByCustomId(String customId) {
-        checkAvailability();
         if (!contacts.containsKey(customId)) {
             return null;
         }
@@ -69,15 +58,13 @@ public class HoldedApiClientFake implements HoldedApiClient {
 
     @Override
     public HoldedInvoiceInfo createInvoice(HoldedContact contact, String concept, String description, int amount, double price) {
-        checkAvailability();
         var item = new CreateInvoiceItemRequestBody(concept, description, amount, price);
         return new HoldedCreationDataInvoiceDTOFake(Arrays.asList(item));
     }
 
     @Override
-    public HoldedStatus sendInvoice(HoldedInvoiceInfo invoice, List<HoldedEmail> emails) {
-        checkAvailability();
-        var strEmails = HoldedEmail.getRecipients(emails);
+    public HoldedStatus sendInvoice(HoldedInvoiceInfo invoice, List<Email> emails) {
+        var strEmails = Email.getRecipients(emails);
 
         List<HoldedInvoiceInfo> sentList;
         if (!sentInvoices.containsKey(strEmails)) {
@@ -96,7 +83,6 @@ public class HoldedApiClientFake implements HoldedApiClient {
     public void reset() {
         this.contacts.clear();
         this.sentInvoices.clear();
-        interactions = 0;
     }
 
     public List<HoldedInvoiceInfo> getSentInvoices(String emails) {

@@ -47,16 +47,28 @@ public class RetryPendingPayments {
     public void retry() throws NoCustomerData {
         if(active) {
             var retryPayments = paymentService.getRetryPayments();
-            log.warn(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS] %s transactions to process", retryPayments.toArray().length));
+            log.info(ConfirmPayment.class,
+                    String.format("[RETRY TRANSACTION PAYMENTS] %s transactions to process",
+                            retryPayments.toArray().length)
+            );
+
             if (retryPayments.isEmpty()) {
                 return;
             }
 
             for (var paymentTransaction : retryPayments) {
-                log.warn(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS] Start to process transaction = %s", paymentTransaction.getId()));
+                log.info(ConfirmPayment.class,
+                        String.format("[RETRY TRANSACTION PAYMENTS] Start to process transaction = %s",
+                                paymentTransaction.getId()
+                        )
+                );
                 var purchase = purchaseService.getPurchase(paymentTransaction.getId());
                 if (purchase == null) {
-                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Not purchase data available for transaction id = %s", paymentTransaction.getId()));
+                    log.error(ConfirmPayment.class,
+                            String.format("[RETRY TRANSACTION PAYMENTS]: Not purchase data available for transaction id = %s",
+                                    paymentTransaction.getId()
+                            )
+                    );
                     continue;
                 }
                 try {
@@ -72,19 +84,34 @@ public class RetryPendingPayments {
                         }
                     }
                 } catch (Exception exception) {
-                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: There was a generic exception for transaction %s: %s", paymentTransaction.getId(), exception.getMessage()));
+                    log.error(ConfirmPayment.class,
+                            String.format("[RETRY TRANSACTION PAYMENTS]: There was a generic exception for transaction %s: %s",
+                                    paymentTransaction.getId(), exception.getMessage()
+                            )
+                    );
                 } catch (LearningPlatformIsNotAvailable e) {
-                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Learning platform is not available for transaction %s", paymentTransaction.getId()));
+                    log.error(ConfirmPayment.class,
+                            String.format("[RETRY TRANSACTION PAYMENTS]: Learning platform is not available for transaction %s",
+                                    paymentTransaction.getId()
+                            )
+                    );
                 } catch (FinancialPlatformIsNotAvailable e) {
-                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Financial platform is not available for transaction %s", paymentTransaction.getId()));
+                    log.error(ConfirmPayment.class,
+                            String.format("[RETRY TRANSACTION PAYMENTS]: Financial platform is not available for transaction %s",
+                                    paymentTransaction.getId()
+                            )
+                    );
                 } catch (InvalidInputCustomerData e) {
-                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Some problems with the purchase data for transaction %s: %s", paymentTransaction.getId(), e.getMessage()));
+                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Some problems with the purchase data for transaction %s: %s",
+                                    paymentTransaction.getId(), e.getMessage()
+                            )
+                    );
                 }
 
                 if(purchase.isProcessedInLearningState() && purchase.isProcessedInFinantialState()){
                     paymentTransaction.setTransactionState(PaymentTransactionState.DONE);
                     paymentService.updateTransaction(paymentTransaction);
-                    log.error(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Transaction %s to state DONE", paymentTransaction.getId()));
+                    log.info(ConfirmPayment.class, String.format("[RETRY TRANSACTION PAYMENTS]: Transaction %s to state DONE", paymentTransaction.getId()));
                 }
             }
         }

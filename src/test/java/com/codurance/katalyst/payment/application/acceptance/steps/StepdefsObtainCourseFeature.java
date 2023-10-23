@@ -7,6 +7,7 @@ import com.codurance.katalyst.payment.application.builders.MoodleCourseBuilder;
 import com.codurance.katalyst.payment.application.model.learning.entity.Course;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodleCourse;
 import com.codurance.katalyst.payment.application.model.ports.moodle.exception.CustomFieldNotExists;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
@@ -66,7 +67,7 @@ public class StepdefsObtainCourseFeature {
     }
 
     @When("the customer open the payment system with the id {int} for the course")
-    public void the_customer_open_the_payment_system_with_the_id_for_the_course(Integer courseId) {
+    public void the_customer_open_the_payment_system_with_the_id_for_the_course(Integer courseId) throws JsonProcessingException {
         selectedCourse = this.apiClient.getCourse(courseId);
     }
 

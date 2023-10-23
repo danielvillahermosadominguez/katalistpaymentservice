@@ -75,7 +75,7 @@ public class PaymentController {
             //The ko value has been gotten with the exploration of the notification when is cancel
             //We should ask to paycomet about if it is the best way to discrimitate between a cancelled or Accepted payment
             var ip = ipCatcher.getIpFrom(request);
-            log.warn(PaymentController.class, "The IP of the request is :" + ip);
+            log.info(PaymentController.class, "The IP of the request is :" + ip);
 
             if (paymentNotification.isOKResponse()) {
                 confirmPayment.confirm(paymentNotification);

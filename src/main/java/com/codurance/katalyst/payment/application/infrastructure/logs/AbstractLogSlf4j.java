@@ -36,6 +36,6 @@ public class AbstractLogSlf4j implements AbstractLog {
     }
 
     private String formatMessage(Class c, String message) {
-        return String.format("[%s]: %s", c.getName(), message);
+        return String.format("[%s]: %s", c.getSimpleName(), message);
     }
 }

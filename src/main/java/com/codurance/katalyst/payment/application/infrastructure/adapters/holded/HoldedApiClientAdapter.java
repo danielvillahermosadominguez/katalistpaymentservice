@@ -6,9 +6,9 @@ import com.codurance.katalyst.payment.application.infrastructure.adapters.holded
 import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.CreateInvoiceRequestBody;
 import com.codurance.katalyst.payment.application.infrastructure.adapters.holded.requests.HoldedInvoiceStatus;
 import com.codurance.katalyst.payment.application.model.ports.clock.Clock;
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
 import com.codurance.katalyst.payment.application.model.ports.holded.HoldedApiClient;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedInvoiceInfo;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedStatus;
 import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.HoldedNotRespond;
@@ -179,8 +179,8 @@ public class HoldedApiClientAdapter extends APIClient implements HoldedApiClient
         return null;
     }
 
-    public HoldedStatus sendInvoice(HoldedInvoiceInfo invoice, List<HoldedEmail> emails) throws HoldedNotRespond {
-        var strEmails = HoldedEmail.getRecipients(emails);
+    public HoldedStatus sendInvoice(HoldedInvoiceInfo invoice, List<Email> emails) throws HoldedNotRespond {
+        var strEmails = Email.getRecipients(emails);
         var url = generateEndPoint("invoicing/v1/documents/invoice/" + invoice.getId() + "/send");
 
         MultiValueMap<String, Object> requestBody = new LinkedMultiValueMap<>();

@@ -5,6 +5,10 @@ public class Course {
     private String name;
     private double price;
 
+    public Course() {
+
+    }
+
     public Course(int id, String name, double price) {
         this.id = id;
         this.name = name;

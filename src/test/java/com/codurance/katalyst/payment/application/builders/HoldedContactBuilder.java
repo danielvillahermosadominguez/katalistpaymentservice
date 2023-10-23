@@ -1,17 +1,17 @@
 package com.codurance.katalyst.payment.application.builders;
 
+import com.codurance.katalyst.payment.application.model.ports.email.Email;
+import com.codurance.katalyst.payment.application.model.ports.email.NotValidEMailFormat;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedBillAddress;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedEmail;
 import com.codurance.katalyst.payment.application.model.ports.holded.dto.HoldedTypeContact;
-import com.codurance.katalyst.payment.application.model.ports.holded.exceptions.NotValidEMailFormat;
 
 import java.util.Map;
 
 public class HoldedContactBuilder {
     private HoldedContact item;
 
-    public HoldedContactBuilder createContactDefault(HoldedEmail email, String nifCif) {
+    public HoldedContactBuilder createContactDefault(Email email, String nifCif) {
         item = createBasicContact(email, nifCif);
         return this;
     }
@@ -25,7 +25,7 @@ public class HoldedContactBuilder {
         return item;
     }
 
-    private HoldedContact createBasicContact(HoldedEmail email, String nifCif) {
+    private HoldedContact createBasicContact(Email email, String nifCif) {
         var contact = new HoldedContact(
                 "RANDOM_NAME",
                 nifCif,
@@ -68,7 +68,7 @@ public class HoldedContactBuilder {
                 vatNumber,
                 HoldedTypeContact.CLIENT,
                 isPerson,
-                new HoldedEmail(email),
+                new Email(email),
                 phoneNumber,
                 billAddress,
                 purchaseAccount

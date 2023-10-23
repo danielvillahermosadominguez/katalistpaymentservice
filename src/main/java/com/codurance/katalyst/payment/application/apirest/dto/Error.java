@@ -1,5 +1,7 @@
 package com.codurance.katalyst.payment.application.apirest.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Error {
     public static final int ERROR_CODE_COURSE_DOESNT_EXIST = 1;
     public static final int CODE_ERROR_USER_HAS_ALREADY_A_SUSCRIPTION_TO_THIS_COURSE = 2;
@@ -9,6 +11,10 @@ public class Error {
 
     private int code;
     private String message;
+
+    public Error() {
+
+    }
 
     public Error(int code, String message) {
         this.code = code;
@@ -22,6 +28,7 @@ public class Error {
         return message;
     }
 
+    @JsonIgnore
     public String getFullMessage() {
         return String.format("[ERROR CODE] = %s, [MESSAGE] = %s",code,message );
     }
