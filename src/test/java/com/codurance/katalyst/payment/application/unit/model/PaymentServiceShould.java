@@ -243,7 +243,7 @@ public class PaymentServiceShould {
         assertThat(paymentData.getMethodId()).isEqualTo(1);
         assertThat(paymentData.getOriginalIp()).isEqualTo(ip);
         assertThat(paymentData.getTokenUser()).isEqualTo(token);
-        assertThat(paymentData.getOrder()).isEqualTo("PAY202309261800001");
+        assertThat(paymentData.getOrder()).isEqualTo("PAY20230926180000000");
     }
 
     @Test
@@ -275,8 +275,8 @@ public class PaymentServiceShould {
         assertThat(savedPaymentTransaction.getTpvUser()).isEqualTo(idUser);
         assertThat(savedPaymentTransaction.getTpvToken()).isEqualTo(token);
         assertThat(savedPaymentTransaction.getTransactionType()).isEqualTo(TransactionType.AUTHORIZATION);
-        assertThat(savedPaymentTransaction.getOrder()).isEqualTo("PAY202309261800001");
-        assertThat(savedPaymentTransaction.getDate()).isEqualTo("20230926180000");
+        assertThat(savedPaymentTransaction.getOrder()).isEqualTo("PAY20230926180000000");
+        assertThat(savedPaymentTransaction.getDate()).isEqualTo("20230926180000000");
         assertThat(savedPaymentTransaction.getState()).isEqualTo(PaymentTransactionState.PENDING);
         assertThat(paymentTransaction.getId()).isNotEqualTo(-1);
     }
