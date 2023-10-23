@@ -74,6 +74,22 @@ public class ObtainTheCourseShould {
 
         assertThat(exception).isNotNull();
     }
+    @Test
+    void throw_not_price_available_when_the_course_price_is_zero() throws CustomFieldNotExists, MoodleNotRespond {
+       var moodleCourse = new MoodleCourse(
+                2,
+                "tdd_with_zero",
+                new MoodlePrice("0")
+        );
+
+        when(moodleApiClient.getCourse("2")).thenReturn(moodleCourse);
+
+        var exception = Assert.assertThrows(NoPriceAvailable.class, () -> {
+            obtainTheCourseUseCase.getCourse("2");
+        });
+
+        assertThat(exception).isNotNull();
+    }
 
     @Test
     void throw_not_elearning_system_not_available_when_the_course_has_not_price() throws MoodleNotRespond {

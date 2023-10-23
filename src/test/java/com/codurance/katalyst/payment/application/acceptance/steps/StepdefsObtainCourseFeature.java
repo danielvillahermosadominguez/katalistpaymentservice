@@ -52,8 +52,8 @@ public class StepdefsObtainCourseFeature {
         moodleApiClient.reset();
     }
 
-    @Given("a set of courses availables in the learning platform")
-    public void a_set_of_courses_availables_in_the_learning_platform(DataTable dataTable) {
+    @Given("a set of courses available in the learning platform")
+    public void a_set_of_courses_available_in_the_learning_platform(DataTable dataTable) {
         var availableCoursesInTableFormat = dataTable.asMaps(String.class, String.class);
         var availableCourses = createMoodleCourses(availableCoursesInTableFormat);
         for (var course : availableCourses) {
@@ -98,6 +98,15 @@ public class StepdefsObtainCourseFeature {
         var courseNotExistErrors = getErrorsWith(CODE_GENERAL_PROBLEM_WITH_THE_PLATFORM);
         assertThat(courseNotExistErrors.size()).isEqualTo(1);
     }
+
+    @Then("the customer can see the course is not available because the course price is zero.")
+    public void the_customer_can_see_the_course_is_not_available_because_the_course_price_is_zero() {
+        assertThat(selectedCourse).isNull();
+        var courseNotExistErrors = getErrorsWith(CODE_COURSE_DOESNT_HAVE_PRICE);
+        assertThat(courseNotExistErrors.size()).isEqualTo(1);
+    }
+
+
 
     private List<Error> getErrorsWith(int code) {
         var errors = this.apiClient.getLastErrors();

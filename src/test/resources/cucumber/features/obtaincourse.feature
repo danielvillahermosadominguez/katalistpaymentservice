@@ -4,7 +4,7 @@ Feature: As an user interested in Katalyst courses
   Scenario: The customer can visualize the course name and price.
   We use an identifier for the course because the user has clicked in Katalyst and it send the identifier to
   the payment system
-    Given a set of courses availables in the learning platform
+    Given a set of courses available in the learning platform
       | ID | NAME               | PRICE                |
       | 1  | TDD in depth       | 49.9                 |
       | 2  | Technical Coaching | 45.39                |
@@ -15,7 +15,7 @@ Feature: As an user interested in Katalyst courses
   Scenario: The customer cannot visualize the course name and price.
   They should use the payment system. It could be because an user could manipulate the parameters or there is an error in the integration with
   Katalyst
-    Given a set of courses availables in the learning platform
+    Given a set of courses available in the learning platform
       | ID | NAME               | PRICE                |
       | 1  | TDD in depth       | 49.9                 |
       | 2  | Technical Coaching | 45.39                |
@@ -25,7 +25,7 @@ Feature: As an user interested in Katalyst courses
 
   Scenario: The course selected by the user has not a price.
   This is because it is not configurated in the e-learning platform.
-    Given a set of courses availables in the learning platform
+    Given a set of courses available in the learning platform
       | ID | NAME               | PRICE                |
       | 1  | TDD in depth       | 49.9                 |
       | 2  | Technical Coaching | 45.39                |
@@ -33,9 +33,19 @@ Feature: As an user interested in Katalyst courses
     When the customer open the payment system with the id 3 for the course
     Then the customer can see the course is not available because the course has not a price
 
+  Scenario: The course selected by the user has price zero.
+  This is because it is not configured in the e-learning platform.
+    Given a set of courses available in the learning platform
+      | ID | NAME               | PRICE |
+      | 1  | TDD in depth       | 49.9  |
+      | 2  | Technical Coaching | 45.39 |
+      | 3  | CPC                | 0     |
+    When the customer open the payment system with the id 3 for the course
+    Then the customer can see the course is not available because the course price is zero.
+
   Scenario: The user cannot see the course because the learning platform is not available.
   In this case, the user can see a message with the error and can try again later
-    Given a set of courses availables in the learning platform
+    Given a set of courses available in the learning platform
       | ID | NAME               | PRICE                |
       | 1  | TDD in depth       | 49.9                 |
       | 2  | Technical Coaching | 45.39                |

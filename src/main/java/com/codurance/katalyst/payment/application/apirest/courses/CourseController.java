@@ -19,7 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 public class CourseController {
     @Autowired
-    private ObtainTheCourse obtainTheCourseUseCase;
+    private ObtainTheCourse obtainCourse;
 
     @Autowired
     private AbstractLog log;
@@ -31,14 +31,13 @@ public class CourseController {
     @ResponseBody
     public ResponseEntity<?> getCourse(@PathVariable("id") String id) {
         try {
-            var course = obtainTheCourseUseCase.getCourse(id);
+            var course = obtainCourse.getCourse(id);
             if (course == null) {
                 return responseFactory.createBadRequest(
                         Error.ERROR_CODE_COURSE_DOESNT_EXIST,
                         "The course with the id " + id + " doesn't exists"
                 );
             }
-            logIfCourseIsFree(course);
             return new ResponseEntity<>(
                     course,
                     HttpStatus.OK
@@ -58,17 +57,6 @@ public class CourseController {
             return responseFactory.createBadRequest(
                     Error.CODE_ERROR_GENERAL_SUBSCRIPTION,
                     "We have had a problem with the creation of the contact and the invoicing"
-            );
-        }
-    }
-
-    private void logIfCourseIsFree(Course course) {
-        if (course.getPrice() <= 0) {
-            log.warn(this.getClass(), String.format(
-                            "[FREE COURSE] Course with id=%s and name = %s has price zero o less (free course).",
-                            course.getId(),
-                            course.getName()
-                    )
             );
         }
     }
