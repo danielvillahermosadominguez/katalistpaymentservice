@@ -605,6 +605,15 @@ In Support you can create tikets you can use "Support-> Creation of tiket"
 ```
 * The IP is something which is important, the External IP of the client, because paycomet use it
   to authorize the payment and other parameters (password, order, etc)
+* We calculate the order code for each payment. Currently, the code is "PAYyyyyMMddHHmmssSSS" where:
+  * yyyy = year, for example 2023
+  * MM = month, for example 12 (December)
+  * dd = day of the month, for example 3
+  * HH = hour, for example 15
+  * mm = minute, for example 55
+  * ss = seconds, for example 12
+  * SSS = milliseconds, for example 345
+* To test the payment, you will need to use https://docs.paycomet.com/en/recursos/testcards
 
 # CI/CD with Github actions
 # The pipeline

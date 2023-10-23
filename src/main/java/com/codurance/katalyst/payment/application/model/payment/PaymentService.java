@@ -26,9 +26,8 @@ import java.util.List;
 public class PaymentService {
 
     public static final String DEFAULT_CURRENCY_EUR = "EUR";
-    public static final String DATETIME_FORMAT_IN_STRING = "yyyyMMddHHmmss";
+    public static final String DATETIME_FORMAT_IN_STRING = "yyyyMMddHHmmssSSS";
     public static final String ORDER_PREFIX = "PAY";
-    public static final String ORDER_SUFIX = "1";
     private final int terminal;
     private final TransactionRepository transactionRepository;
     private final PayCometApiClient payCometApiClient;
@@ -108,7 +107,7 @@ public class PaymentService {
     }
 
     private String generateOrderName(String date) {
-        return ORDER_PREFIX + date + ORDER_SUFIX;
+        return ORDER_PREFIX + date;
     }
 
     private CreatedUser getUser(String paytpvToken) throws CreditCardNotValid, PayCometNotRespond {
