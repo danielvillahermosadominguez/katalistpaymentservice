@@ -3,12 +3,15 @@ package com.codurance.katalyst.payment.application.unit.moodle;
 import com.codurance.katalyst.payment.application.model.ports.moodle.dto.MoodlePrice;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullSource;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class MoodlePriceShould {
     @ParameterizedTest
     @CsvSource({
+            ",0",
+            "'',0",
             "'A_RANDOM_TEXT',0",
             "'10',10",
             "'10.',10",
